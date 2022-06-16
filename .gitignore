@@ -1,0 +1,5 @@
+*.o
+*.asm
+*.pyc
+__pycache__/
+benchmark

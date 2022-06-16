@@ -1,0 +1,6 @@
+{
+    "files.associations": {
+        "algebraic_elements.h": "c",
+        "zkp_common.h": "c"
+    }
+}
