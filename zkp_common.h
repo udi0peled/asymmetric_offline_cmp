@@ -14,11 +14,14 @@
  * 
  */
 
+#include <inttypes.h>
+
 #ifndef __CMP20_ECDSA_MPC_ZKP_COMMON_H__
 #define __CMP20_ECDSA_MPC_ZKP_COMMON_H__
 
 #include <assert.h>
 #include <string.h>
+#include <inttypes.h>
 #include "algebraic_elements.h"
 #include "paillier_cryptosystem.h"
 #include "ring_pedersen_parameters.h"

@@ -1,20 +1,15 @@
 Bench_Name := benchmark
 
-App_C_Flags := -g -O0 -Wall -Wextra -Wvla -Wno-unknown-pragmas -I. 
-App_Cpp_Flags := $(App_C_Flags) -std=c++14 
-App_Link_Flags := -lcrypto -pthread 
+App_C_Flags := -g -O0 -Wall -Wextra -Wvla -Wno-unknown-pragmas -Wno-deprecated-declarations -I. 
+App_Link_Flags := $(App_C_Flags) -lssl -lcrypto -pthread -I/usr/local/opt/openssl/include -L/usr/local/opt/openssl/lib
 
-all: $(Bench_Name)
+all: tests
 
-benchmark.o: benchmark.c common.o tests.o primitives.o 
+benchmark.o: benchmark.c common.o tests.o primitives 
 	@$(CC) $(App_C_Flags) -c $< -o $@
 	@echo "CC   <=  $<"
 
-cmp_protocol.o: cmp_protocol.c cmp_protocol.h common.o primitives.o 
-	@$(CC) $(App_C_Flags) -c $< -o $@
-	@echo "CC   <=  $<"
-
-tests.o: tests.c tests.h common.o primitives.o 
+cmp_protocol.o: cmp_protocol.c cmp_protocol.h common.o primitives 
 	@$(CC) $(App_C_Flags) -c $< -o $@
 	@echo "CC   <=  $<"
 
@@ -54,6 +49,13 @@ zkp_encryption_in_range.o: zkp_encryption_in_range.c zkp_encryption_in_range.h z
 	@$(CC) $(App_C_Flags) -c $< -o $@
 	@echo "CC   <=  $<"
 
+zkp_no_small_factors.o: zkp_no_small_factors.c zkp_no_small_factors.h zkp_common.o
+	@$(CC) $(App_C_Flags) -c $< -o $@
+	@echo "CC   <=  $<"
+zkp_tight_range.o: zkp_tight_range.c zkp_tight_range.h zkp_common.o
+	@$(CC) $(App_C_Flags) -c $< -o $@
+	@echo "CC   <=  $<"
+
 zkp_group_vs_paillier_range.o: zkp_group_vs_paillier_range.c zkp_group_vs_paillier_range.h zkp_common.o
 	@$(CC) $(App_C_Flags) -c $< -o $@
 	@echo "CC   <=  $<"
@@ -66,14 +68,20 @@ zkp_operation_paillier_commitment_range.o: zkp_operation_paillier_commitment_ran
 	@$(CC) $(App_C_Flags) -c $< -o $@
 	@echo "CC   <=  $<"
 
-primitives.o: algebraic_elements.o paillier_cryptosystem.o ring_pedersen_parameters.o  zkp_common.o zkp_paillier_blum_modulus.o zkp_ring_pedersen_param.o zkp_schnorr.o zkp_encryption_in_range.o zkp_group_vs_paillier_range.o zkp_operation_paillier_commitment_range.o zkp_operation_group_commitment_range.o
-	@$(LD) -relocatable $^ -o $@
-	@echo "LINK =>  $@"
+asymoff_key_generation.o: asymoff_key_generation.c asymoff_key_generation.h $(primitives)
+	@$(CC) $(App_C_Flags) -c $< -o $@
+	@echo "CC   <=  $<"
 
+primitives := algebraic_elements.o paillier_cryptosystem.o ring_pedersen_parameters.o  zkp_common.o zkp_paillier_blum_modulus.o zkp_ring_pedersen_param.o zkp_schnorr.o zkp_no_small_factors.o zkp_tight_range.o
+#zkp_encryption_in_range.o zkp_group_vs_paillier_range.o zkp_operation_paillier_commitment_range.o zkp_operation_group_commitment_range.o
 
-$(Bench_Name): common.o tests.o primitives.o cmp_protocol.o benchmark.o
-	@$(CXX) $^ -o $@ $(App_Link_Flags)
+tests: tests.c common.o asymoff_key_generation.o $(primitives) 
+	@${CC} $^ -o $@ $(App_Link_Flags)
+	@echo "${CC} =>  $@"
+
+$(Bench_Name): common.o primitives
+	@${CC} $^ -o $@ $(App_Link_Flags)
 	@echo "LINK =>  $@"
 
 clean:
-	@rm -rf $(Bench_Name) *.o
+	@rm -rf $(Bench_Name) *.o tests

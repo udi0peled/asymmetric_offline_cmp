@@ -3,3 +3,4 @@
 *.pyc
 __pycache__/
 benchmark
+val.out

@@ -1,0 +1,28 @@
+make --dry-run --always-make --keep-going --print-directory
+make: Entering directory `/Users/udipeled/Fireblocks/Dev/asymmetric_offline_cmp'
+cc -g -O0 -Wall -Wextra -Wvla -Wno-unknown-pragmas -Wno-deprecated-declarations -I.  -c common.c -o common.o
+echo "CC   <=  common.c"
+cc -g -O0 -Wall -Wextra -Wvla -Wno-unknown-pragmas -Wno-deprecated-declarations -I.  -c asymoff_key_generation.c -o asymoff_key_generation.o
+echo "CC   <=  asymoff_key_generation.c"
+cc -g -O0 -Wall -Wextra -Wvla -Wno-unknown-pragmas -Wno-deprecated-declarations -I.  -c algebraic_elements.c -o algebraic_elements.o
+echo "CC   <=  algebraic_elements.c"
+cc -g -O0 -Wall -Wextra -Wvla -Wno-unknown-pragmas -Wno-deprecated-declarations -I.  -c paillier_cryptosystem.c -o paillier_cryptosystem.o
+echo "CC   <=  paillier_cryptosystem.c"
+cc -g -O0 -Wall -Wextra -Wvla -Wno-unknown-pragmas -Wno-deprecated-declarations -I.  -c ring_pedersen_parameters.c -o ring_pedersen_parameters.o
+echo "CC   <=  ring_pedersen_parameters.c"
+cc -g -O0 -Wall -Wextra -Wvla -Wno-unknown-pragmas -Wno-deprecated-declarations -I.  -c zkp_common.c -o zkp_common.o
+echo "CC   <=  zkp_common.c"
+cc -g -O0 -Wall -Wextra -Wvla -Wno-unknown-pragmas -Wno-deprecated-declarations -I.  -c zkp_paillier_blum_modulus.c -o zkp_paillier_blum_modulus.o
+echo "CC   <=  zkp_paillier_blum_modulus.c"
+cc -g -O0 -Wall -Wextra -Wvla -Wno-unknown-pragmas -Wno-deprecated-declarations -I.  -c zkp_ring_pedersen_param.c -o zkp_ring_pedersen_param.o
+echo "CC   <=  zkp_ring_pedersen_param.c"
+cc -g -O0 -Wall -Wextra -Wvla -Wno-unknown-pragmas -Wno-deprecated-declarations -I.  -c zkp_schnorr.c -o zkp_schnorr.o
+echo "CC   <=  zkp_schnorr.c"
+cc -g -O0 -Wall -Wextra -Wvla -Wno-unknown-pragmas -Wno-deprecated-declarations -I.  -c zkp_no_small_factors.c -o zkp_no_small_factors.o
+echo "CC   <=  zkp_no_small_factors.c"
+cc -g -O0 -Wall -Wextra -Wvla -Wno-unknown-pragmas -Wno-deprecated-declarations -I.  -c zkp_tight_range.c -o zkp_tight_range.o
+echo "CC   <=  zkp_tight_range.c"
+cc tests.c common.o asymoff_key_generation.o algebraic_elements.o paillier_cryptosystem.o ring_pedersen_parameters.o zkp_common.o zkp_paillier_blum_modulus.o zkp_ring_pedersen_param.o zkp_schnorr.o zkp_no_small_factors.o zkp_tight_range.o -o tests -g -O0 -Wall -Wextra -Wvla -Wno-unknown-pragmas -Wno-deprecated-declarations -I.  -lssl -lcrypto -pthread -I/usr/local/opt/openssl/include -L/usr/local/opt/openssl/lib
+echo "cc =>  tests"
+make: Leaving directory `/Users/udipeled/Fireblocks/Dev/asymmetric_offline_cmp'
+ 

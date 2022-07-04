@@ -1,0 +1,26 @@
+{
+  "configurations": [
+    {
+      "name": "make and debug",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/tests",
+      "console": "internalConsole",
+      "args": [],
+      "stopAtEntry": false,
+      "cwd": "${workspaceFolder}",
+      "environment": [],
+      "externalConsole": false,
+      "MIMode": "gdb",
+      "preLaunchTask": "make tests",
+      "setupCommands": [
+        {
+          "description": "Enable pretty-printing for gdb",
+          "text": "-enable-pretty-printing",
+          "ignoreFailures": true
+        }
+      ]
+    },
+  ],
+  "version": "2.0.0"
+}

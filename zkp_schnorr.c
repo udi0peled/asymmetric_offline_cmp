@@ -78,7 +78,12 @@ int   zkp_schnorr_verify (const zkp_schnorr_proof_t *proof, const zkp_schnorr_pu
   return is_verified;
 }
 
-void  zkp_schnorr_proof_to_bytes   (uint8_t **bytes, uint64_t *byte_len, const zkp_schnorr_proof_t *proof, const ec_group_t G, int move_to_end)
+uint64_t zkp_schnorr_proof_bytelen() {
+  return GROUP_ELEMENT_BYTES + GROUP_ORDER_BYTES;
+}
+
+/*
+void  zkp_schnorr_proof_to_bytes   (uint8_t **bytes, uint64_t *byte_len, const zkp_schnorr_proof_t *proof, const ec_group_t G, int move_to_snd)
 {
   uint64_t needed_byte_len = GROUP_ELEMENT_BYTES + GROUP_ORDER_BYTES;
 
@@ -117,3 +122,5 @@ void  zkp_schnorr_proof_from_bytes (zkp_schnorr_proof_t *proof, uint8_t **bytes,
   *byte_len = needed_byte_len;
   if (move_to_end) *bytes = read_bytes;
 }
+
+*/

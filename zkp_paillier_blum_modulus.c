@@ -194,6 +194,10 @@ void  zkp_paillier_blum_prove  (zkp_paillier_blum_modulus_proof_t *proof, const 
   scalar_free(y_4th_root_mod_q);
   scalar_free(q_exp_4th_root);
   scalar_free(p_exp_4th_root);
+  scalar_free(legendre_p);
+  scalar_free(legendre_q);
+  scalar_free(q_euler_exp);
+  scalar_free(p_euler_exp);
   scalar_free(p_minus_1);
   scalar_free(q_minus_1);
   scalar_free(crt_mod_q_factor);
@@ -201,6 +205,7 @@ void  zkp_paillier_blum_prove  (zkp_paillier_blum_modulus_proof_t *proof, const 
   scalar_free(temp);
   scalar_free(w_p_part);
   scalar_free(w_q_part);
+  scalar_free(y_qr);
   
   BN_CTX_free(bn_ctx);
 }
@@ -239,6 +244,12 @@ int   zkp_paillier_blum_verify (zkp_paillier_blum_modulus_proof_t *proof, const 
 
   return is_verified;
 }
+
+uint64_t zkp_paillier_blum_proof_bytelen() {
+  return  PAILLIER_MODULUS_BYTES*(1 + 2*STATISTICAL_SECURITY) + 2*STATISTICAL_SECURITY;
+}
+
+/*
 
 void zkp_paillier_blum_proof_to_bytes (uint8_t **bytes, uint64_t *byte_len, const zkp_paillier_blum_modulus_proof_t *proof, int move_to_end)
 {
@@ -292,3 +303,5 @@ void zkp_paillier_blum_proof_from_bytes (zkp_paillier_blum_modulus_proof_t *proo
   *byte_len = needed_byte_len;
   if (move_to_end) *bytes = read_bytes;
 }
+
+*/

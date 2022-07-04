@@ -16,10 +16,11 @@
  * 
  */
 
+#include <inttypes.h>
+
 #ifndef __CMP20_ECDSA_MPC_ALGEBRAIC_ELEMENTS_H__
 #define __CMP20_ECDSA_MPC_ALGEBRAIC_ELEMENTS_H__
 
-#include <stdint.h>
 #include <openssl/bn.h>
 #include <openssl/ec.h>
 #include <openssl/objects.h>
@@ -27,6 +28,8 @@
 #define GROUP_ID NID_secp256k1
 #define GROUP_ORDER_BYTES 32
 #define GROUP_ELEMENT_BYTES 33
+
+typedef uint8_t hash_chunk[64];
 
 typedef EC_GROUP *ec_group_t;
 typedef EC_POINT *gr_elem_t;

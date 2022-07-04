@@ -1,6 +1,19 @@
 {
     "files.associations": {
-        "algebraic_elements.h": "c",
-        "zkp_common.h": "c"
-    }
+      "algebraic_elements.h": "c",
+      "zkp_common.h": "c",
+      "zkp_no_small_factors.h": "c",
+      "ring_pedersen_parameters.h": "c",
+      "paillier_cryptosystem.h": "c",
+      "common.h": "c",
+      "inttypes.h": "c",
+      "stdint.h": "c",
+      "zkp_ring_pedersen_param.h": "c",
+      "bn.h": "c",
+      "zkp_tight_range.h": "c",
+      "sha.h": "c",
+      "asymoff_key_generation.h": "c",
+      "rand.h": "c"
+    },
+    "C_Cpp.intelliSenseEngineFallback": "Disabled"
 }

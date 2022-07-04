@@ -1,5 +1,6 @@
 #include <string.h>
 #include <openssl/sha.h>
+#include <stdint.h>
 
 #include "zkp_common.h"
 

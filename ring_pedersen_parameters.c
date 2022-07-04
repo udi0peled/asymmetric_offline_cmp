@@ -128,9 +128,7 @@ void  ring_pedersen_free_param(ring_pedersen_private_t *priv, ring_pedersen_publ
 
 void  ring_pedersen_commit(scalar_t rped_commitment, const scalar_t *s_exp, uint64_t num_s_exp, const scalar_t t_exp, const ring_pedersen_public_t *rped_pub)
 {
-  if (num_s_exp > RING_PEDERSEN_MULTIPLICITY) {
-    return;
-  }
+  assert(num_s_exp <= RING_PEDERSEN_MULTIPLICITY);
 
   BN_CTX *bn_ctx = BN_CTX_secure_new();
 
@@ -152,9 +150,13 @@ void  ring_pedersen_commit(scalar_t rped_commitment, const scalar_t *s_exp, uint
   BN_CTX_free(bn_ctx);
 }
 
+uint64_t  ring_pedersen_public_bytelen (uint64_t rped_modulus_bytes){
+  return (2+RING_PEDERSEN_MULTIPLICITY)*rped_modulus_bytes;
+}
+
 void ring_pedersen_public_to_bytes (uint8_t **bytes, uint64_t *byte_len, const ring_pedersen_public_t *rped_pub, uint64_t rped_modulus_bytes, int move_to_end)
 {
-  uint64_t needed_byte_len = (2+RING_PEDERSEN_MULTIPLICITY)*rped_modulus_bytes;
+  uint64_t needed_byte_len = ring_pedersen_public_bytelen(rped_modulus_bytes);
 
   if ((!bytes) || (!*bytes) || (!rped_pub) || (needed_byte_len > *byte_len))
   {
