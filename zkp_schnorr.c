@@ -18,7 +18,7 @@ void zkp_schnorr_free (zkp_schnorr_proof_t *proof)
   free(proof);
 }
 
-void  zkp_schnorr_commit (gr_elem_t commited_A, scalar_t alpha, const zkp_schnorr_public_t *public)
+void  zkp_schnorr_anchor (gr_elem_t commited_A, scalar_t alpha, const zkp_schnorr_public_t *public)
 {
   scalar_sample_in_range(alpha, ec_group_order(public->G), 0);
   group_operation(commited_A, NULL, public->g, alpha, public->G);

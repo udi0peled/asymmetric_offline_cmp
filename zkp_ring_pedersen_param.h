@@ -18,8 +18,8 @@
 #include <inttypes.h>
 #include "zkp_common.h"
 
-#ifndef __CMP20_ECDSA_MPC_ZKP_RING_PEDERSEN_H__
-#define __CMP20_ECDSA_MPC_ZKP_RING_PEDERSEN_H__
+#ifndef __ASYMOFF_ZKP_RING_PEDERSEN_H__
+#define __ASYMOFF_ZKP_RING_PEDERSEN_H__
 
 /**
  *  Ring Pedersend Parameters ZKProof

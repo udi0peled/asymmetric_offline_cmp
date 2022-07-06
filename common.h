@@ -8,8 +8,8 @@
  * 
  */
 
-#ifndef __CMP20_ECDSA_MPC_COMMON_H__
-#define __CMP20_ECDSA_MPC_COMMON_H__
+#ifndef __ASYMOFF_COMMON_H__
+#define __ASYMOFF_COMMON_H__
 
 #include <string.h>
 #include <assert.h>

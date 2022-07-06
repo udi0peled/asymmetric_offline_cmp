@@ -12,8 +12,8 @@
  * 
  */
 
-#ifndef __CMP20_ECDSA_MPC_RING_PEDERSEN_PARAMS_H__
-#define __CMP20_ECDSA_MPC_RING_PEDERSEN_PARAMS_H__
+#ifndef __ASYMOFF_RING_PEDERSEN_PARAMS_H__
+#define __ASYMOFF_RING_PEDERSEN_PARAMS_H__
 
 #include <stdint.h>
 #include <openssl/bn.h>

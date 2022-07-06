@@ -15,8 +15,8 @@
  * 
  */
 
-#ifndef __CMP20_ECDSA_MPC_ZKP_TIGHT_RANGE_H__
-#define __CMP20_ECDSA_MPC_ZKP_TIGHT_RANGE_H__
+#ifndef __ASYMOFF_ZKP_TIGHT_RANGE_H__
+#define __ASYMOFF_ZKP_TIGHT_RANGE_H__
 
 #include "zkp_common.h"
 

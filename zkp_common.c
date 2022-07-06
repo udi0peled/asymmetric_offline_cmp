@@ -1,5 +1,6 @@
 #include <string.h>
 #include <openssl/sha.h>
+#include <openssl/bn.h>
 #include <stdint.h>
 
 #include "zkp_common.h"
@@ -9,6 +10,7 @@
  */
 
 #define FS_HALF 32      // Half of SHA512 64 bytes digest
+#define PACKING_SHIFT 600
 
 /** 
  *  Denote hash digest as 2 equal length (FS_HALF) parts (LH, RH).
@@ -141,4 +143,30 @@ void zkp_aux_info_free(zkp_aux_info_t *aux)
   
   free(aux->info);
   free(aux);
+}
+
+
+void pack_ciphertexts(scalar_t packed, const scalar_t ciphertext[PACKING_SIZE], const paillier_public_key_t *pub) {
+  
+  BN_CTX *bn_ctx = BN_CTX_new();
+  scalar_t shifted = scalar_new();
+
+  BN_set_word(packed, 1);
+  for (uint64_t i = 0; i < PACKING_SIZE; ++i) {
+    BN_mod_lshift(shifted, ciphertext[i], PACKING_SHIFT*i,  pub->N2, bn_ctx);
+    BN_mod_mul(packed, packed, shifted, pub->N2, bn_ctx);
+  }
+  BN_CTX_free(bn_ctx);
+}
+
+void pack_plaintexts(scalar_t packed, const scalar_t plaintext[PACKING_SIZE], const paillier_public_key_t *pub) {
+  BN_CTX *bn_ctx = BN_CTX_secure_new();
+  scalar_t shifted = scalar_new();
+
+  BN_set_word(packed, 0);
+  for (uint64_t i = 0; i < PACKING_SIZE; ++i) {
+    BN_mod_lshift(shifted, plaintext[i], PACKING_SHIFT*i,  pub->N, bn_ctx);
+    BN_mod_add(packed, packed, shifted, pub->N, bn_ctx);
+  }
+  BN_CTX_free(bn_ctx);
 }

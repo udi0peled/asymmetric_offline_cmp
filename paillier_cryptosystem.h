@@ -13,8 +13,8 @@
  * 
  */
 
-#ifndef __CMP20_ECDSA_MPC_PAILLIER_CRYPTOSYSTEM_H__
-#define __CMP20_ECDSA_MPC_PAILLIER_CRYPTOSYSTEM_H__
+#ifndef __ASYMOFF_PAILLIER_CRYPTOSYSTEM_H__
+#define __ASYMOFF_PAILLIER_CRYPTOSYSTEM_H__
 
 #include "algebraic_elements.h"
 #include <assert.h>

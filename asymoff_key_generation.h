@@ -102,7 +102,7 @@ typedef struct
 } asymoff_key_gen_data_t;
 
 asymoff_key_gen_data_t **asymoff_key_gen_parties_new(scalar_t *private_x, uint64_t num_parties, hash_chunk sid, ec_group_t ec, gr_elem_t ec_gen);
-void asymoff_key_gen_parties_free(asymoff_key_gen_data_t **parties, uint64_t num_parties);
+void asymoff_key_gen_parties_free(asymoff_key_gen_data_t **parties);
 
 int asymoff_key_gen_compute_round_1(asymoff_key_gen_data_t *party);
 int asymoff_key_gen_compute_round_2(asymoff_key_gen_data_t *party);
@@ -116,6 +116,6 @@ void asymoff_key_gen_send_msg_2(asymoff_key_gen_data_t *sender, asymoff_key_gen_
 void asymoff_key_gen_send_msg_3(asymoff_key_gen_data_t *sender, asymoff_key_gen_data_t *receiver);
 void asymoff_key_gen_send_msg_4(asymoff_key_gen_data_t *sender, asymoff_key_gen_data_t *receiver);
 
-
+void asymoff_key_gen_send_msg_to_all_others(asymoff_key_gen_data_t **parties, uint64_t sender_i, void (*send_func)(asymoff_key_gen_data_t*, asymoff_key_gen_data_t*));
 
 #endif

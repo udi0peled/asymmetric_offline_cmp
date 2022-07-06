@@ -15,8 +15,8 @@
  * 
  */
 
-#ifndef __CMP20_ECDSA_MPC_ZKP_NO_SMALL_FACTORS_H__
-#define __CMP20_ECDSA_MPC_ZKP_NO_SMALL_FACTORS_H__
+#ifndef __ASYMOFF_ZKP_NO_SMALL_FACTORS_H__
+#define __ASYMOFF_ZKP_NO_SMALL_FACTORS_H__
 
 #include "zkp_common.h"
 #include "ring_pedersen_parameters.h"

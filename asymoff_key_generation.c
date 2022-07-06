@@ -74,10 +74,13 @@ asymoff_key_gen_data_t **asymoff_key_gen_parties_new(scalar_t *private_x, uint64
   return parties;
 }
 
-void asymoff_key_gen_parties_free(asymoff_key_gen_data_t **parties, uint64_t num_parties)
+void asymoff_key_gen_parties_free(asymoff_key_gen_data_t **parties)
 {
 
+  uint64_t num_parties = parties[0]->num_parties;
+
   scalar_free(parties[0]->W_0);
+
   for (uint64_t j= 1; j < num_parties; ++j) {
     zkp_tight_range_free(parties[0]->pi_tight[j]);
   }
@@ -162,7 +165,7 @@ int asymoff_key_gen_compute_round_1(asymoff_key_gen_data_t *party) {
   zkp_schnorr_public_t psi_sch_public;
   psi_sch_public.G = party->ec;
   psi_sch_public.g = party->gen;
-  zkp_schnorr_commit(party->A, party->tau, &psi_sch_public);
+  zkp_schnorr_anchor(party->A, party->tau, &psi_sch_public);
 
   paillier_encryption_generate_private(party->paillier_priv, 4*PAILLIER_MODULUS_BYTES);
   paillier_encryption_copy_keys(NULL, party->paillier_pub, party->paillier_priv, NULL);
@@ -427,4 +430,11 @@ int asymoff_key_gen_compute_output(asymoff_key_gen_data_t *party) {
   }
 
   return 0;
+}
+
+void asymoff_key_gen_send_msg_to_all_others(asymoff_key_gen_data_t **parties, uint64_t sender_i, void (*send_func)(asymoff_key_gen_data_t*, asymoff_key_gen_data_t*)) {
+  for (uint64_t j = 0; j < parties[sender_i]->num_parties; ++j) {
+    if (sender_i == j) continue;
+    send_func(parties[sender_i], parties[j]);
+  }
 }

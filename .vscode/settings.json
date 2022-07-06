@@ -13,7 +13,8 @@
       "zkp_tight_range.h": "c",
       "sha.h": "c",
       "asymoff_key_generation.h": "c",
-      "rand.h": "c"
+      "rand.h": "c",
+      "asymoff_protocol.h": "c"
     },
     "C_Cpp.intelliSenseEngineFallback": "Disabled"
 }

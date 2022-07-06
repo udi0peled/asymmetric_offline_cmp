@@ -480,7 +480,7 @@ int   zkp_tight_range_verify (const zkp_tight_range_proof_t *proof, const zkp_ti
 
   uint8_t *hash_bytes = malloc(2*PAILLIER_MODULUS_BYTES);
 
-  uint8_t computed_anchor_hash[sizeof(proof->anchor_hash)];
+  hash_chunk computed_anchor_hash;
   SHA512_CTX anchor_hash_ctx;
   SHA512_Init(&anchor_hash_ctx);
 

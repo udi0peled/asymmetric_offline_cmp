@@ -68,14 +68,26 @@ zkp_operation_paillier_commitment_range.o: zkp_operation_paillier_commitment_ran
 	@$(CC) $(App_C_Flags) -c $< -o $@
 	@echo "CC   <=  $<"
 
+zkp_range_el_gamal_commitment.o: zkp_range_el_gamal_commitment.c zkp_range_el_gamal_commitment.h zkp_common.o
+	@$(CC) $(App_C_Flags) -c $< -o $@
+	@echo "CC   <=  $<"
+
+zkp_el_gamal_dlog.o: zkp_el_gamal_dlog.c zkp_el_gamal_dlog.h zkp_common.o
+	@$(CC) $(App_C_Flags) -c $< -o $@
+	@echo "CC   <=  $<"
+
 asymoff_key_generation.o: asymoff_key_generation.c asymoff_key_generation.h $(primitives)
 	@$(CC) $(App_C_Flags) -c $< -o $@
 	@echo "CC   <=  $<"
 
-primitives := algebraic_elements.o paillier_cryptosystem.o ring_pedersen_parameters.o  zkp_common.o zkp_paillier_blum_modulus.o zkp_ring_pedersen_param.o zkp_schnorr.o zkp_no_small_factors.o zkp_tight_range.o
-#zkp_encryption_in_range.o zkp_group_vs_paillier_range.o zkp_operation_paillier_commitment_range.o zkp_operation_group_commitment_range.o
+asymoff_protocol.o: asymoff_protocol.c asymoff_protocol.h $(protocol_phases)
+	@$(CC) $(App_C_Flags) -c $< -o $@
+	@echo "CC   <=  $<"
 
-tests: tests.c common.o asymoff_key_generation.o $(primitives) 
+primitives := algebraic_elements.o paillier_cryptosystem.o ring_pedersen_parameters.o  zkp_common.o zkp_paillier_blum_modulus.o zkp_ring_pedersen_param.o zkp_schnorr.o zkp_no_small_factors.o zkp_tight_range.o zkp_range_el_gamal_commitment.o zkp_el_gamal_dlog.o
+protoco_phases := asymoff_key_generation.o
+
+tests: tests.c common.o asymoff_protocol.o asymoff_key_generation.o $(primitives) 
 	@${CC} $^ -o $@ $(App_Link_Flags)
 	@echo "${CC} =>  $@"
 

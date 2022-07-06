@@ -18,8 +18,8 @@
 
 #include <inttypes.h>
 
-#ifndef __CMP20_ECDSA_MPC_ALGEBRAIC_ELEMENTS_H__
-#define __CMP20_ECDSA_MPC_ALGEBRAIC_ELEMENTS_H__
+#ifndef __ASYMOFF_ALGEBRAIC_ELEMENTS_H__
+#define __ASYMOFF_ALGEBRAIC_ELEMENTS_H__
 
 #include <openssl/bn.h>
 #include <openssl/ec.h>
