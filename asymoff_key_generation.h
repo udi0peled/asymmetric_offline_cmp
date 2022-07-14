@@ -1,6 +1,6 @@
 
-#ifndef __ASYMOFF_KEY_GENERATION__
-#define __ASYMOFF_KEY_GENERATION__
+#ifndef __ASYMOFF_KEY_GENERATION_H__
+#define __ASYMOFF_KEY_GENERATION_H__
 
 #include "algebraic_elements.h"
 #include "paillier_cryptosystem.h"
@@ -11,6 +11,7 @@
 #include "zkp_no_small_factors.h"
 #include "zkp_tight_range.h"
 #include "zkp_schnorr.h"
+#include "asymoff_protocol.h"
 
 typedef struct
 {
@@ -101,21 +102,21 @@ typedef struct
 
 } asymoff_key_gen_data_t;
 
-asymoff_key_gen_data_t **asymoff_key_gen_parties_new(scalar_t *private_x, uint64_t num_parties, hash_chunk sid, ec_group_t ec, gr_elem_t ec_gen);
+asymoff_key_gen_data_t **asymoff_key_gen_parties_new(asymoff_party_data_t **parties);
 void asymoff_key_gen_parties_free(asymoff_key_gen_data_t **parties);
 
 int asymoff_key_gen_compute_round_1(asymoff_key_gen_data_t *party);
 int asymoff_key_gen_compute_round_2(asymoff_key_gen_data_t *party);
 int asymoff_key_gen_compute_round_3(asymoff_key_gen_data_t *party);
 int asymoff_key_gen_compute_round_4(asymoff_key_gen_data_t *party);
-int asymoff_key_gen_compute_output (asymoff_key_gen_data_t *party);
+int asymoff_key_gen_compute_final (asymoff_key_gen_data_t *party);
 
+uint64_t asymoff_key_gen_send_msg_1(asymoff_key_gen_data_t *sender, asymoff_key_gen_data_t *receiver);
+uint64_t asymoff_key_gen_send_msg_2(asymoff_key_gen_data_t *sender, asymoff_key_gen_data_t *receiver);
+uint64_t asymoff_key_gen_send_msg_3(asymoff_key_gen_data_t *sender, asymoff_key_gen_data_t *receiver);
+uint64_t asymoff_key_gen_send_msg_4(asymoff_key_gen_data_t *sender, asymoff_key_gen_data_t *receiver);
 
-void asymoff_key_gen_send_msg_1(asymoff_key_gen_data_t *sender, asymoff_key_gen_data_t *receiver);
-void asymoff_key_gen_send_msg_2(asymoff_key_gen_data_t *sender, asymoff_key_gen_data_t *receiver);
-void asymoff_key_gen_send_msg_3(asymoff_key_gen_data_t *sender, asymoff_key_gen_data_t *receiver);
-void asymoff_key_gen_send_msg_4(asymoff_key_gen_data_t *sender, asymoff_key_gen_data_t *receiver);
-
-void asymoff_key_gen_send_msg_to_all_others(asymoff_key_gen_data_t **parties, uint64_t sender_i, void (*send_func)(asymoff_key_gen_data_t*, asymoff_key_gen_data_t*));
+void asymoff_key_gen_export_data(asymoff_party_data_t **parties, asymoff_key_gen_data_t **kgd_parties);
+void asymoff_key_gen_mock_export_data(asymoff_party_data_t **parties);
 
 #endif

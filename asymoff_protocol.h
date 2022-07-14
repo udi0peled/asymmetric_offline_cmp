@@ -1,18 +1,18 @@
-#ifndef __ASYMOFF_PROTOCOL__
-#define __ASYMOFF_PROTOCOL__
+#ifndef __ASYMOFF_PROTOCOL_H_
+#define __ASYMOFF_PROTOCOL_H_
 
 #include "common.h"
+#include "zkp_common.h"
 #include "algebraic_elements.h"
 #include "paillier_cryptosystem.h"
 #include "ring_pedersen_parameters.h"
-#include "asymoff_key_generation.h"
-
 
 typedef struct 
 {
   uint64_t i;
   uint64_t num_parties;
 
+  hash_chunk sid;
   hash_chunk srid;
 
   ec_group_t ec;
@@ -30,12 +30,21 @@ typedef struct
   
   scalar_t W_0;
 
+  uint64_t batch_size;
+
+  scalar_pack_t *alpha;
+  gr_el_pack_t  *H;
+  gr_el_pack_t  **B1;
+  gr_el_pack_t  **B2;
+  
 } asymoff_party_data_t;
 
 
 asymoff_party_data_t **asymoff_protocol_parties_new(uint64_t num_parties);
 void asymoff_protocol_parties_free(asymoff_party_data_t **parties);
+void asymoff_protocol_parties_set(asymoff_party_data_t **parties, hash_chunk sid, scalar_t *private_x);
 
-void asymoff_save_data_from_key_gen(asymoff_party_data_t **parties, asymoff_key_gen_data_t **kgd_parties);
+void asymoff_protocol_parties_new_batch(asymoff_party_data_t **parties, uint64_t batch_size);
+void asymoff_protocol_parties_free_batch(asymoff_party_data_t **parties);
 
 #endif

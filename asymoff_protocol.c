@@ -1,4 +1,5 @@
 #include "asymoff_protocol.h"
+#include <openssl/rand.h>
 
 asymoff_party_data_t **asymoff_protocol_parties_new(uint64_t num_parties) {
 
@@ -23,14 +24,14 @@ asymoff_party_data_t **asymoff_protocol_parties_new(uint64_t num_parties) {
   
     parties[i]->rped_priv = ring_pedersen_private_new();
     parties[i]->rped_pub = calloc(num_parties, sizeof(ring_pedersen_public_t));
-    
-    if (i != 0) parties[i]->W_0 = scalar_new();
   
     for (uint64_t j = 0; j < num_parties; ++j) {
         parties[i]->X[j] = group_elem_new(ec);
         parties[i]->paillier_pub[j] = paillier_encryption_public_new();
         parties[i]->rped_pub[j] = ring_pedersen_public_new();
     }
+    
+    if (i != 0) parties[i]->W_0 = scalar_new();
   }
   
   return parties;
@@ -51,12 +52,13 @@ void asymoff_protocol_parties_free(asymoff_party_data_t **parties) {
     free(parties[i]->paillier_pub);
     free(parties[i]->rped_pub);
 
-    if (i != 0) scalar_free(parties[i]->W_0);
     scalar_free(parties[i]->x);
     group_elem_free(parties[i]->Y);
     paillier_encryption_free_keys(parties[i]->paillier_priv, NULL);
     ring_pedersen_free_param(parties[i]->rped_priv, NULL);
     ec_group_free(parties[i]->ec);
+
+    if (i != 0) scalar_free(parties[i]->W_0);
 
     free(parties[i]);
   }
@@ -64,33 +66,88 @@ void asymoff_protocol_parties_free(asymoff_party_data_t **parties) {
   free(parties);
 }
 
-void asymoff_save_data_from_key_gen(asymoff_party_data_t **parties, asymoff_key_gen_data_t **kgd_parties) {
+void asymoff_protocol_parties_set(asymoff_party_data_t **parties, hash_chunk sid, scalar_t *private_x)
+{
   uint64_t num_parties = parties[0]->num_parties;
-  
-  // Compute joint Y
   ec_group_t ec = parties[0]->ec;
-  for (uint64_t i = 1; i < num_parties; ++i) {
-    group_operation(parties[0]->Y, parties[0]->Y, kgd_parties[0]->in_msg_2[i].Y, NULL, ec);
+  hash_chunk sid_init;
+
+  if (sid) {
+    memcpy(sid_init, sid, sizeof(hash_chunk));
+  } else {
+    RAND_bytes(sid_init, sizeof(hash_chunk));
   }
 
+  for(uint64_t i = 0; i < num_parties; ++i) {
+
+    memcpy(parties[i]->sid, sid_init, sizeof(hash_chunk));
+
+    if (private_x) {
+      scalar_copy(parties[i]->x, private_x[i]);
+    } else {
+      scalar_sample_in_range(parties[i]->x, ec_group_order(ec) , 0);
+    }
+  }
+}
+
+void asymoff_protocol_parties_new_batch(asymoff_party_data_t **parties, uint64_t batch_size) {
+
+  uint64_t num_parties = parties[0]->num_parties;
+  ec_group_t ec = parties[0]->ec;
+
   for (uint64_t i = 0; i < num_parties; ++i) {
+    
+    parties[i]->batch_size = batch_size;
+    
+    parties[i]->H = new_gr_el_pack_array(batch_size, ec);
 
-    asymoff_party_data_t *party = parties[i];
-    asymoff_key_gen_data_t *kgd = kgd_parties[i];
+    if (i == 0) {
 
-    memcpy(party->srid, kgd->joint_srid, sizeof(hash_chunk));
-    scalar_copy(party->x, kgd->x);
+      parties[i]->alpha = new_scalar_pack_array(batch_size);
+      
+      parties[i]->B1 = calloc(1, sizeof(gr_elem_t*));
+      parties[i]->B2 = calloc(1, sizeof(gr_elem_t*));
+      parties[i]->B1[0] = new_gr_el_pack_array(batch_size, ec);
+      parties[i]->B2[0] = new_gr_el_pack_array(batch_size, ec);
 
-    if (i != 0) scalar_copy(party->W_0, kgd->in_msg_4[0].W_0);
-    group_elem_copy(party->Y, parties[0]->Y);
+    } else {
 
-    paillier_encryption_copy_keys(party->paillier_priv, NULL, kgd->paillier_priv, NULL);
-    ring_pedersen_copy_param(party->rped_priv, NULL, kgd->rped_priv, NULL);
+      parties[i]->B1 = calloc(num_parties, sizeof(gr_elem_t*));
+      parties[i]->B2 = calloc(num_parties, sizeof(gr_elem_t*));
 
-    for (uint64_t j = 0; j < num_parties; ++j) {
-      paillier_encryption_copy_keys(NULL, party->paillier_pub[j], NULL, kgd->in_msg_2[j].paillier_pub);
-      ring_pedersen_copy_param(NULL, party->rped_pub[j], NULL, kgd->in_msg_2[j].rped_pub);
-      group_elem_copy(party->X[j], kgd->in_msg_2[j].X);
+      for (uint64_t j = 1; j < num_parties; ++j) {
+        parties[i]->B1[j] = new_gr_el_pack_array(batch_size, ec);
+        parties[i]->B2[j] = new_gr_el_pack_array(batch_size, ec);
+      }
+    }
+  }
+}
+
+void asymoff_protocol_parties_free_batch(asymoff_party_data_t **parties) {
+  
+  uint64_t num_parties = parties[0]->num_parties;
+  uint64_t batch_size = parties[0]->batch_size;
+
+  for (uint64_t i = 0; i < num_parties; ++i) {
+    
+    free_gr_el_pack_array(parties[i]->H, batch_size);
+
+    if (i == 0) {
+      
+      free_scalar_pack_array(parties[i]->alpha, batch_size);
+      free_gr_el_pack_array(parties[i]->B1[0], batch_size);
+      free_gr_el_pack_array(parties[i]->B2[0], batch_size);
+      free(parties[i]->B1);
+      free(parties[i]->B2);
+
+    } else {
+      
+      for (uint64_t j = 1; j < num_parties; ++j) {
+        free_gr_el_pack_array(parties[i]->B1[j],batch_size);
+        free_gr_el_pack_array(parties[i]->B2[j],batch_size);
+      }
+      free(parties[i]->B1);
+      free(parties[i]->B2);
     }
   }
 }

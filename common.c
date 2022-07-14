@@ -7,13 +7,16 @@ void printHexBytes(const char * prefix, const uint8_t *src, unsigned len, const 
     return;
   }
 
-  if (print_len) printf("[%u]", len);
-  printf("%s", prefix);
+  if (print_len) {
+    printf("%s[%u] = {", prefix, len);
+  } else {
+    printf("%s", prefix);
+  }
   unsigned int i;
   for (i = 0; i < len-1; ++i) {
-    printf("%02x",src[i] & 0xff);
+    printf("0x%02x, ",src[i] & 0xff);
   }
-  printf("%02x%s",src[i] & 0xff, suffix);
+  printf("0x%02x%s",src[i] & 0xff, suffix);
 }
 
 void printBIGNUM(const char * prefix, const BIGNUM *bn, const char * suffix)
@@ -46,4 +49,12 @@ void printECPOINT(const char * prefix, const EC_POINT *p, const EC_GROUP *ec, co
   
   free(p_bytes);
   BN_CTX_free(bn_ctx);
+}
+
+void pinfo(const char *format, ...)
+{
+  va_list args;
+  va_start(args, format);
+  if(with_info_print) vprintf(format, args);
+  va_end(args);
 }

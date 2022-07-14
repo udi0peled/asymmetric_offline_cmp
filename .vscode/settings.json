@@ -14,7 +14,10 @@
       "sha.h": "c",
       "asymoff_key_generation.h": "c",
       "rand.h": "c",
-      "asymoff_protocol.h": "c"
+      "asymoff_protocol.h": "c",
+      "zkp_paillier_blum_modulus.h": "c",
+      "asymoff_presigning.h": "c",
+      "time.h": "c"
     },
     "C_Cpp.intelliSenseEngineFallback": "Disabled"
 }

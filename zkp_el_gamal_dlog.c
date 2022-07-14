@@ -6,26 +6,16 @@ zkp_el_gamal_dlog_proof_t *zkp_el_gamal_dlog_new (uint64_t batch_size)
   zkp_el_gamal_dlog_proof_t *proof = malloc(sizeof(zkp_el_gamal_dlog_proof_t));
   
   proof->batch_size = batch_size;
-  proof->z = calloc(batch_size, sizeof(scalar_t));
-  proof->w = calloc(batch_size, sizeof(scalar_t));
-  for (uint64_t i = 0; i < batch_size; ++i)
-  {
-    proof->z[i] = scalar_new();
-    proof->w[i] = scalar_new();
-  }
+  proof->z = new_scalar_array(batch_size);
+  proof->w = new_scalar_array(batch_size);
 
   return proof;
 }
 
 void zkp_el_gamal_dlog_free (zkp_el_gamal_dlog_proof_t *proof)
 {
-  for (uint64_t i = 0; i < proof->batch_size; ++i)
-  {
-    scalar_free(proof->z[i]);
-    scalar_free(proof->w[i]);
-  }
-  free(proof->z);
-  free(proof->w);
+  free_scalar_array(proof->z, proof->batch_size);
+  free_scalar_array(proof->w, proof->batch_size);
   free(proof);
 }
 
@@ -35,18 +25,12 @@ void  zkp_el_gamal_dlog_anchor (zkp_el_gamal_dlog_proof_t *partial_proof, zkp_el
 
   gr_elem_t curr_gr_elem  = group_elem_new(partial_public->G);
 
-  partial_secret->lambda = calloc(batch_size, sizeof(scalar_t));
-  partial_secret->rho = calloc(batch_size, sizeof(scalar_t));
-  
   uint8_t *hash_bytes = malloc(GROUP_ELEMENT_BYTES);
 
   SHA512_CTX anchor_hash_ctx;
   SHA512_Init(&anchor_hash_ctx);
 
   for (uint64_t i = 0; i < batch_size; ++i) {
-
-    partial_secret->lambda[i] = scalar_new();
-    partial_secret->rho[i] = scalar_new();
 
     scalar_sample_in_range(partial_secret->lambda[i], ec_group_order(partial_public->G), 0);
     scalar_sample_in_range(partial_secret->rho[i], ec_group_order(partial_public->G), 0);
@@ -66,6 +50,7 @@ void  zkp_el_gamal_dlog_anchor (zkp_el_gamal_dlog_proof_t *partial_proof, zkp_el
   }
 
   SHA512_Final(partial_proof->anchor_hash, &anchor_hash_ctx);
+  group_elem_free(curr_gr_elem);
   free(hash_bytes);
 }
 
@@ -89,6 +74,7 @@ void zkp_el_gamal_dlog_challenge(scalar_t *e, const zkp_el_gamal_dlog_proof_t *p
   }
   
   memcpy(data_pos, proof->anchor_hash, sizeof(hash_chunk));
+  data_pos += sizeof(hash_chunk);
 
   assert(fs_data + fs_data_len == data_pos);
 
@@ -115,7 +101,7 @@ void zkp_el_gamal_dlog_prove (zkp_el_gamal_dlog_proof_t *proof, const zkp_el_gam
     BN_mod_add(proof->w[i], proof->w[i], secret->lambda[i], ec_group_order(public->G), bn_ctx);
   }
 
-  for (uint64_t i = 0; i < public->batch_size; ++i )scalar_free(e[i]);
+  for (uint64_t i = 0; i < public->batch_size; ++i ) scalar_free(e[i]);
   free(e);
   BN_CTX_free(bn_ctx);
 }
@@ -169,8 +155,8 @@ int   zkp_el_gamal_dlog_verify (const zkp_el_gamal_dlog_proof_t *proof, const zk
   return is_verified;
 }
 
-uint64_t zkp_el_gamal_dlog_proof_bytelen() {
-  return GROUP_ELEMENT_BYTES + GROUP_ORDER_BYTES;
+uint64_t zkp_el_gamal_dlog_proof_bytelen(uint64_t batch_size) {
+  return 2*batch_size*GROUP_ORDER_BYTES + sizeof(hash_chunk);
 }
 
 /*
