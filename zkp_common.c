@@ -145,8 +145,7 @@ void zkp_aux_info_free(zkp_aux_info_t *aux)
   free(aux);
 }
 
-
-void pack_ciphertexts(scalar_t packed, const scalar_pack_t ciphertext, const paillier_public_key_t *pub) {
+void pack_ciphertexts(scalar_t packed, const scalar_t *ciphertext, const paillier_public_key_t *pub) {
   
   BN_CTX *bn_ctx = BN_CTX_new();
   scalar_t shifted = scalar_new();
@@ -159,7 +158,7 @@ void pack_ciphertexts(scalar_t packed, const scalar_pack_t ciphertext, const pai
   BN_CTX_free(bn_ctx);
 }
 
-void pack_plaintexts(scalar_t packed, const scalar_pack_t plaintext, const paillier_public_key_t *pub) {
+void pack_plaintexts(scalar_t packed, const scalar_t *plaintext, const paillier_public_key_t *pub) {
   BN_CTX *bn_ctx = BN_CTX_secure_new();
   scalar_t shifted = scalar_new();
 
@@ -172,25 +171,11 @@ void pack_plaintexts(scalar_t packed, const scalar_pack_t plaintext, const paill
   BN_CTX_free(bn_ctx);
 }
 
-void new_scalar_pack(scalar_pack_t scalars) {
-  for (uint64_t p = 0; p < PACKING_SIZE; ++p) scalars[p] = scalar_new(); 
-}
 
 scalar_t *new_scalar_array(uint64_t len) {
   scalar_t *scalars = calloc(len, sizeof(scalar_t));
   for (uint64_t i = 0; i < len; ++i) scalars[i] = scalar_new();
   return scalars;
-}
-
-scalar_pack_t *new_scalar_pack_array(uint64_t len) {
-  scalar_pack_t *scalars = calloc(len, sizeof(scalar_pack_t));
-  for (uint64_t i = 0; i < len; ++i) new_scalar_pack(scalars[i]);
-  return scalars;
-}
-
-void new_gr_el_pack(gr_el_pack_t grels, ec_group_t ec)
-{
-  for (uint64_t p = 0; p < PACKING_SIZE; ++p) grels[p] = group_elem_new(ec);
 }
 
 gr_elem_t *new_gr_el_array(uint64_t len, ec_group_t ec) {
@@ -199,28 +184,9 @@ gr_elem_t *new_gr_el_array(uint64_t len, ec_group_t ec) {
   return grels;
 }
 
-gr_el_pack_t  *new_gr_el_pack_array(uint64_t len, ec_group_t ec) {
-  gr_el_pack_t *grels = calloc(len, sizeof(gr_el_pack_t));
-  for (uint64_t i = 0; i < len; ++i) new_gr_el_pack(grels[i], ec);
-  return grels;
-}
-
-void free_scalar_pack(scalar_pack_t scalars) {
-  for (uint64_t p = 0; p < PACKING_SIZE; ++p) scalar_free(scalars[p]);
-}
-
 void free_scalar_array(scalar_t * scalars, uint64_t len) {
   for (uint64_t i = 0; i < len; ++i) scalar_free(scalars[i]);
   free(scalars);
-}
-
-void free_scalar_pack_array(scalar_pack_t *scalars, uint64_t len) {
-  for (uint64_t i = 0; i < len; ++i) free_scalar_pack(scalars[i]);
-  free(scalars);
-}
-
-void free_gr_el_pack(gr_el_pack_t grels) {
-  for (uint64_t p = 0; p < PACKING_SIZE; ++p) group_elem_free(grels[p]);
 }
 
 void free_gr_el_array(gr_elem_t * grels, uint64_t len) {
@@ -228,49 +194,10 @@ void free_gr_el_array(gr_elem_t * grels, uint64_t len) {
   free(grels);
 }
 
-void free_gr_el_pack_array(gr_el_pack_t *grels, uint64_t len) {
-  for (uint64_t i = 0; i < len; ++i) free_gr_el_pack(grels[i]);
-  free(grels);
-}
-
-
 void copy_scalar_array(scalar_t *copy, scalar_t *source, uint64_t len) {
   for (uint64_t i = 0; i < len; ++i) scalar_copy(copy[i], source[i]);
 }
 
-void copy_scalar_pack_array(scalar_pack_t *copy, scalar_pack_t *source, uint64_t len) {
-   for (uint64_t i = 0; i < len; ++i) {
-    for (uint64_t p = 0; p < PACKING_SIZE; ++p) {
-      scalar_copy(copy[i][p], source[i][p]);
-    }
-  }
-}
-
 void copy_gr_el_array(gr_elem_t *copy, gr_elem_t *source, uint64_t len) {
   for (uint64_t i = 0; i < len; ++i) group_elem_copy(copy[i], source[i]);
-}
-
-void copy_gr_el_pack_array(gr_el_pack_t *copy, gr_el_pack_t *source, uint64_t len) {
-   for (uint64_t i = 0; i < len; ++i) {
-    for (uint64_t p = 0; p < PACKING_SIZE; ++p) {
-      group_elem_copy(copy[i][p], source[i][p]);
-    }
-  }
-}
-
-
-void flatten_scalar_pack_array(scalar_t *flattened, scalar_pack_t *scalars, uint64_t len) {
-  for (uint64_t i = 0; i < len; ++i) {
-    for (uint64_t p = 0; p < PACKING_SIZE; ++p) {
-      flattened[PACKING_SIZE*i + p] = scalars[i][p];
-    }
-  }
-}
-
-void flatten_gr_el_pack_array(gr_elem_t *flattened, gr_el_pack_t *grels, uint64_t len) {
-  for (uint64_t i = 0; i < len; ++i) {
-    for (uint64_t p = 0; p < PACKING_SIZE; ++p) {
-      flattened[PACKING_SIZE*i + p] = grels[i][p];
-    }
-  }
 }

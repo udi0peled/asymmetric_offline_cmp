@@ -102,21 +102,21 @@ typedef struct
 
 } asymoff_key_gen_data_t;
 
-asymoff_key_gen_data_t **asymoff_key_gen_parties_new(asymoff_party_data_t **parties);
+asymoff_key_gen_data_t **asymoff_key_gen_parties_new(asymoff_party_data_t ** const parties);
 void asymoff_key_gen_parties_free(asymoff_key_gen_data_t **parties);
 
-int asymoff_key_gen_compute_round_1(asymoff_key_gen_data_t *party);
-int asymoff_key_gen_compute_round_2(asymoff_key_gen_data_t *party);
-int asymoff_key_gen_compute_round_3(asymoff_key_gen_data_t *party);
-int asymoff_key_gen_compute_round_4(asymoff_key_gen_data_t *party);
-int asymoff_key_gen_compute_final (asymoff_key_gen_data_t *party);
+int asymoff_key_gen_execute_round_1(asymoff_key_gen_data_t *party);
+int asymoff_key_gen_execute_round_2(asymoff_key_gen_data_t *party);
+int asymoff_key_gen_execute_round_3(asymoff_key_gen_data_t *party);
+int asymoff_key_gen_execute_round_4(asymoff_key_gen_data_t *party);
+int asymoff_key_gen_execute_final (asymoff_key_gen_data_t *party);
 
 uint64_t asymoff_key_gen_send_msg_1(asymoff_key_gen_data_t *sender, asymoff_key_gen_data_t *receiver);
 uint64_t asymoff_key_gen_send_msg_2(asymoff_key_gen_data_t *sender, asymoff_key_gen_data_t *receiver);
 uint64_t asymoff_key_gen_send_msg_3(asymoff_key_gen_data_t *sender, asymoff_key_gen_data_t *receiver);
 uint64_t asymoff_key_gen_send_msg_4(asymoff_key_gen_data_t *sender, asymoff_key_gen_data_t *receiver);
 
-void asymoff_key_gen_export_data(asymoff_party_data_t **parties, asymoff_key_gen_data_t **kgd_parties);
+void asymoff_key_gen_export_data(asymoff_party_data_t **parties, asymoff_key_gen_data_t ** const kgd_parties);
 void asymoff_key_gen_mock_export_data(asymoff_party_data_t **parties);
 
 #endif

@@ -131,28 +131,6 @@ int zkp_ring_pedersen_param_verify (const zkp_ring_pedersen_param_proof_t *proof
 
   int is_verified = memcmp(computed_A_hash, proof->A_hashed, sizeof(computed_A_hash)) == 0;
 
-  /*
-  scalar_t lhs_value = scalar_new();
-  scalar_t rhs_value = scalar_new();
-  scalar_t temp;
-
-  int is_verified = BN_num_bytes(public->N) == RING_PED_MODULUS_BYTES;
-
-  for (uint64_t i = 0; i < STATISTICAL_SECURITY; ++i)
-  {
-    BN_mod_exp(lhs_value, public->t, proof->z[i], public->N, bn_ctx);
-
-    temp = (scalar_t) BN_value_one();
-    if (e[i] & 0x01) temp = public->s;
-
-    BN_mod_mul(rhs_value, proof->A[i], temp, public->N, bn_ctx);
-
-    is_verified &= scalar_equal(lhs_value, rhs_value);
-  }  
-
-  scalar_free(lhs_value);
-  scalar_free(rhs_value);
-  */
   scalar_free(curr_A);
   free(curr_A_bytes);
   for (uint64_t j = 0; j < RING_PEDERSEN_MULTIPLICITY; ++j) scalar_free(s_inv[j]);

@@ -17,7 +17,9 @@
       "asymoff_protocol.h": "c",
       "zkp_paillier_blum_modulus.h": "c",
       "asymoff_presigning.h": "c",
-      "time.h": "c"
+      "time.h": "c",
+      "asymoff_signing.h": "c",
+      "stdarg.h": "c"
     },
     "C_Cpp.intelliSenseEngineFallback": "Disabled"
 }

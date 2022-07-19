@@ -2,9 +2,9 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "make tests",
+      "label": "make benchmark",
       "type": "shell",
-      "command": "make tests",
+      "command": "make benchmark",
       "group": "build",
       "presentation": {
         "reveal": "always",

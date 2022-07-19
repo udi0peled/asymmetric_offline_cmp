@@ -14,9 +14,11 @@ void printHexBytes(const char * prefix, const uint8_t *src, unsigned len, const 
   }
   unsigned int i;
   for (i = 0; i < len-1; ++i) {
-    printf("0x%02x, ",src[i] & 0xff);
+    //printf("0x%02x, ",src[i] & 0xff);
+    printf("%02x",src[i] & 0xff);
   }
-  printf("0x%02x%s",src[i] & 0xff, suffix);
+  //printf("0x%02x%s",src[i] & 0xff, suffix);
+  printf("%02x%s",src[i] & 0xff, suffix);
 }
 
 void printBIGNUM(const char * prefix, const BIGNUM *bn, const char * suffix)

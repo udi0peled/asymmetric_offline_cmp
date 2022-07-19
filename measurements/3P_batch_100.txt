@@ -1,0 +1,61 @@
+Key Generation
+
+Round 1, Party 0 to Party 1, Bytes Sent: 64
+Round 1, Party 0 to Party 2, Bytes Sent: 64
+Round 1, Party 1 to Party 0, Bytes Sent: 64
+Round 1, Party 1 to Party 2, Bytes Sent: 64
+Round 1, Party 2 to Party 0, Bytes Sent: 64
+Round 1, Party 2 to Party 1, Bytes Sent: 64
+
+Round 2, Party 0 to Party 1, Bytes Sent: 675
+Round 2, Party 0 to Party 2, Bytes Sent: 675
+Round 2, Party 1 to Party 0, Bytes Sent: 675
+Round 2, Party 1 to Party 2, Bytes Sent: 675
+Round 2, Party 2 to Party 0, Bytes Sent: 675
+Round 2, Party 2 to Party 1, Bytes Sent: 675
+
+Round 3, Party 0 to Party 1, Bytes Sent: 51745
+Round 3, Party 0 to Party 2, Bytes Sent: 51745
+Round 3, Party 1 to Party 0, Bytes Sent: 51745
+Round 3, Party 1 to Party 2, Bytes Sent: 51745
+Round 3, Party 2 to Party 0, Bytes Sent: 51745
+Round 3, Party 2 to Party 1, Bytes Sent: 51745
+
+Round 4, Party 0 to Party 1, Bytes Sent: 5793
+Round 4, Party 0 to Party 2, Bytes Sent: 5793
+Round 4, Party 1 to Party 0, Bytes Sent: 2001
+Round 4, Party 1 to Party 2, Bytes Sent: 2001
+Round 4, Party 2 to Party 0, Bytes Sent: 2001
+Round 4, Party 2 to Party 1, Bytes Sent: 2001
+batch size = 100
+Presigning
+
+Round 1, Party 0 to Party 1, Bytes Sent: 0
+Round 1, Party 0 to Party 2, Bytes Sent: 0
+Round 1, Party 1 to Party 0, Bytes Sent: 66033
+Round 1, Party 1 to Party 2, Bytes Sent: 66033
+Round 1, Party 2 to Party 0, Bytes Sent: 66033
+Round 1, Party 2 to Party 1, Bytes Sent: 66033
+
+Round 2, Party 0 to Party 1, Bytes Sent: 101597
+Round 2, Party 0 to Party 2, Bytes Sent: 101597
+Round 2, Party 1 to Party 0, Bytes Sent: 0
+Round 2, Party 1 to Party 2, Bytes Sent: 0
+Round 2, Party 2 to Party 0, Bytes Sent: 0
+Round 2, Party 2 to Party 1, Bytes Sent: 0
+
+Round 0, Party 0, Time: 0.000001
+Round 0, Party 1, Time: 1.939097
+Round 0, Party 2, Time: 1.884435
+
+Round 1, Party 0, Time: 3.591799
+Round 1, Party 1, Time: 0.444027
+Round 1, Party 2, Time: 0.486674
+
+Round 2, Party 0, Time: 0.000001
+Round 2, Party 1, Time: 1.418867
+Round 2, Party 2, Time: 1.316133
+
+real	0m15.683s
+user	0m15.363s
+sys	0m0.060s

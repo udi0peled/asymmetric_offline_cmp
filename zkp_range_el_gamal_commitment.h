@@ -1,20 +1,3 @@
-/**
- * 
- *  Name:
- *  zkp_tight_range
- *  
- *  Description:
- *  Group Element vs Paillier Paillier Encryption in Range Zero Knowledge Proof
- * 
- *  Usage:
- *  Constructor and destructor for zkp_<...>_t don't set any values and handles only proof fields.
- *  When using <...>_prove, all public and secret fields of zkp_<...>_t needs to be already populated (externally).
- *  Calling <...>_prove sets only the proof fields.
- *  When using <...>_verify, all public and proof fields of zkp_<...>_t need to be already populated.
- *  Calling <...>_verify return 0/1 (fail/pass).
- * 
- */
-
 #ifndef __ASYMOFF_ZKP_RANGE_EL_GAMAL_H__
 #define __ASYMOFF_ZKP_RANGE_EL_GAMAL_H__
 
@@ -30,17 +13,17 @@ typedef struct
   gr_elem_t Y;
 
   uint64_t batch_size;
-  scalar_t  *C;
-  gr_el_pack_t *A1;
-  gr_el_pack_t *A2;
+  scalar_t  *packed_C;
+  gr_elem_t *A1;
+  gr_elem_t *A2;
 
 } zkp_range_el_gamal_public_t;
 
 typedef struct
 {
-  scalar_pack_t *x;
-  scalar_t *rho;
-  scalar_pack_t *b;
+  scalar_t *x;
+  scalar_t *packed_rho;
+  scalar_t *b;
 
 } zkp_range_el_gamal_secret_t;
 
@@ -48,16 +31,16 @@ typedef struct
 {
   uint64_t batch_size;
   
-  scalar_t *S;
-  scalar_t D;
-  gr_el_pack_t V1;
-  gr_el_pack_t V2;
-  scalar_t T;   
+  scalar_t *packed_S;
+  scalar_t packed_D;
+  gr_elem_t V1[PACKING_SIZE];
+  gr_elem_t V2[PACKING_SIZE];
+  scalar_t packed_T;   
 
-  scalar_pack_t z_1; 
-  scalar_t z_2;
-  scalar_t z_3;
-  scalar_pack_t w;
+  scalar_t z_1[PACKING_SIZE]; 
+  scalar_t packed_z_2;
+  scalar_t packed_z_3;
+  scalar_t w[PACKING_SIZE];
 
 } zkp_range_el_gamal_proof_t;
 

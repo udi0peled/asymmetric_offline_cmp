@@ -3,7 +3,7 @@
 #include <openssl/rand.h>
 #include <openssl/sha.h>
 
-asymoff_key_gen_data_t **asymoff_key_gen_parties_new(asymoff_party_data_t **parties)
+asymoff_key_gen_data_t **asymoff_key_gen_parties_new(asymoff_party_data_t ** const parties)
 {
   uint64_t num_parties = parties[0]->num_parties;
   ec_group_t ec = parties[0]->ec;
@@ -110,7 +110,7 @@ void asymoff_key_gen_parties_free(asymoff_key_gen_data_t **kgd_parties)
   free(kgd_parties);
 }
 
-void asymoff_key_gen_round_1_hash(hash_chunk hash, asymoff_key_gen_msg_round_2_t *msg_2, uint64_t sender_i, hash_chunk sid, ec_group_t ec) {
+void asymoff_key_gen_round_1_hash(hash_chunk hash, asymoff_key_gen_msg_round_2_t * const msg_2, uint64_t sender_i, hash_chunk sid, ec_group_t ec) {
 
   uint64_t rped_pub_byteln = ring_pedersen_public_bytelen(RING_PED_MODULUS_BYTES);
   uint8_t *temp_bytes = malloc(PAILLIER_MODULUS_BYTES + rped_pub_byteln);
@@ -142,7 +142,7 @@ void asymoff_key_gen_round_1_hash(hash_chunk hash, asymoff_key_gen_msg_round_2_t
   free(temp_bytes);
 }
 
-int asymoff_key_gen_compute_round_1(asymoff_key_gen_data_t *party) {
+int asymoff_key_gen_execute_round_1(asymoff_key_gen_data_t *party) {
 
   pinfo("Player %ld: Starting Round 1\n", party->i);
 
@@ -166,16 +166,16 @@ int asymoff_key_gen_compute_round_1(asymoff_key_gen_data_t *party) {
   RAND_bytes(party->u, sizeof(hash_chunk));
 
   // Temporarily generate future decomitment to hash, in order to commit
-  asymoff_key_gen_msg_round_2_t *msg_2 = &party->in_msg_2[party->i]; // This is temp outgoing message (since on local index);
-  msg_2->A = party->A;
-  msg_2->srid = &party->srid;
-  msg_2->X = party->X;
-  msg_2->Y = party->Y;
-  msg_2->paillier_pub = party->paillier_pub;
-  msg_2->rped_pub = party->rped_pub;
-  msg_2->u = &party->u;
+  asymoff_key_gen_msg_round_2_t msg_2;
+  msg_2.A = party->A;
+  msg_2.srid = &party->srid;
+  msg_2.X = party->X;
+  msg_2.Y = party->Y;
+  msg_2.paillier_pub = party->paillier_pub;
+  msg_2.rped_pub = party->rped_pub;
+  msg_2.u = &party->u;
 
-  asymoff_key_gen_round_1_hash(party->V, msg_2, party->i, party->sid, party->ec);
+  asymoff_key_gen_round_1_hash(party->V, &msg_2, party->i, party->sid, party->ec);
 
   return 0;
 }
@@ -187,7 +187,7 @@ uint64_t asymoff_key_gen_send_msg_1(asymoff_key_gen_data_t *sender, asymoff_key_
   return sizeof(hash_chunk);
 }
 
-int asymoff_key_gen_compute_round_2(asymoff_key_gen_data_t *party) {
+int asymoff_key_gen_execute_round_2(asymoff_key_gen_data_t *party) {
   pinfo("Player %ld: Starting Round 2\n", party->i);
 
   // For convinience, set in_msg_1 V for self as outgoing V
@@ -196,7 +196,7 @@ int asymoff_key_gen_compute_round_2(asymoff_key_gen_data_t *party) {
   SHA512_CTX sha_ctx;
   SHA512_Init(&sha_ctx);
   for (uint64_t j = 0; j < party->num_parties; ++j) {
-    SHA512_Update(&sha_ctx, party->in_msg_1[j].V, sizeof(hash_chunk));
+    SHA512_Update(&sha_ctx, *party->in_msg_1[j].V, sizeof(hash_chunk));
   }
   SHA512_Final(party->echo_all_V, &sha_ctx);
 
@@ -218,8 +218,10 @@ uint64_t asymoff_key_gen_send_msg_2(asymoff_key_gen_data_t *sender, asymoff_key_
 }
 
 
-int asymoff_key_gen_compute_round_3(asymoff_key_gen_data_t *party) {
+int asymoff_key_gen_execute_round_3(asymoff_key_gen_data_t *party) {
   pinfo("Player %ld: Starting Round 3\n", party->i);
+
+  hash_chunk computed_V;
 
   // Initialize joint srid to self, later will xor with rest
   memcpy(party->joint_srid, party->srid, sizeof(hash_chunk));
@@ -229,6 +231,13 @@ int asymoff_key_gen_compute_round_3(asymoff_key_gen_data_t *party) {
     if (party->i == j) continue;
 
     asymoff_key_gen_msg_round_2_t *in_msg_2 = &party->in_msg_2[j];
+    asymoff_key_gen_round_1_hash(computed_V, in_msg_2, j, party->sid, party->ec);
+
+    if (memcmp(computed_V, party->in_msg_1[j].V, sizeof(hash_chunk)) != 0) {
+      printf("Bad decommitment of previous round. Received from party %ld\n", j);
+      return 1;
+    }
+
     // Verify echo broadcast from others is same
     if (memcmp(party->echo_all_V, in_msg_2->echo_all_V, sizeof(hash_chunk)) != 0) {
       printf("Echo broadcast equality failure. Received from party %ld\n", j);
@@ -292,7 +301,7 @@ uint64_t asymoff_key_gen_send_msg_3(asymoff_key_gen_data_t *sender, asymoff_key_
   return zkp_schnorr_proof_bytelen() + zkp_paillier_blum_proof_bytelen() + zkp_ring_pedersen_param_proof_bytelen();
 }
 
-int asymoff_key_gen_compute_round_4(asymoff_key_gen_data_t *party) {
+int asymoff_key_gen_execute_round_4(asymoff_key_gen_data_t *party) {
   pinfo("Player %ld: Starting Round 4\n", party->i);
 
   zkp_schnorr_public_t psi_sch_public;
@@ -392,7 +401,7 @@ uint64_t asymoff_key_gen_send_msg_4(asymoff_key_gen_data_t *sender, asymoff_key_
 }
 
 
-int asymoff_key_gen_compute_final(asymoff_key_gen_data_t *party) {
+int asymoff_key_gen_execute_final(asymoff_key_gen_data_t *party) {
   pinfo("Player %ld: Starting Final\n", party->i);
 
   // Validate data recevied from others
@@ -431,7 +440,7 @@ int asymoff_key_gen_compute_final(asymoff_key_gen_data_t *party) {
   return 0;
 }
 
-void asymoff_key_gen_export_data(asymoff_party_data_t **parties, asymoff_key_gen_data_t **kgd_parties) {
+void asymoff_key_gen_export_data(asymoff_party_data_t **parties, asymoff_key_gen_data_t ** const kgd_parties) {
   uint64_t num_parties = parties[0]->num_parties;
   
   // Compute joint Y
@@ -443,7 +452,7 @@ void asymoff_key_gen_export_data(asymoff_party_data_t **parties, asymoff_key_gen
   for (uint64_t i = 0; i < num_parties; ++i) {
 
     asymoff_party_data_t *party = parties[i];
-    asymoff_key_gen_data_t *kgd = kgd_parties[i];
+    const asymoff_key_gen_data_t *kgd = kgd_parties[i];
 
     memcpy(party->srid, kgd->joint_srid, sizeof(hash_chunk));
     scalar_copy(party->x, kgd->x);
@@ -453,6 +462,11 @@ void asymoff_key_gen_export_data(asymoff_party_data_t **parties, asymoff_key_gen
 
     paillier_encryption_copy_keys(party->paillier_priv, NULL, kgd->paillier_priv, NULL);
     ring_pedersen_copy_param(party->rped_priv, NULL, kgd->rped_priv, NULL);
+
+    // For easy of copy
+    kgd->in_msg_2[i].X            = kgd->X;
+    kgd->in_msg_2[i].rped_pub     = kgd->rped_pub;
+    kgd->in_msg_2[i].paillier_pub = kgd->paillier_pub;
 
     for (uint64_t j = 0; j < num_parties; ++j) {
       paillier_encryption_copy_keys(NULL, party->paillier_pub[j], NULL, kgd->in_msg_2[j].paillier_pub);

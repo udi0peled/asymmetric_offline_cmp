@@ -39,9 +39,6 @@
 
 #define PACKING_SIZE 3
 
-typedef scalar_t scalar_pack_t[PACKING_SIZE];
-typedef gr_elem_t gr_el_pack_t[PACKING_SIZE];
-
 typedef struct
 {
   uint8_t *info;
@@ -62,32 +59,16 @@ void zkp_aux_info_update_move (zkp_aux_info_t *aux, uint64_t *at_pos, const void
 void fiat_shamir_bytes            (uint8_t *digest, uint64_t digest_len, const uint8_t *data, uint64_t data_len);
 void fiat_shamir_scalars_in_range (scalar_t *results, uint64_t num_res, const scalar_t range, const uint8_t *data, uint64_t data_len);
 
-void pack_ciphertexts(scalar_t packed, const scalar_pack_t ciphertext, const paillier_public_key_t *pub);
-void pack_plaintexts(scalar_t packed, const scalar_pack_t ciphertext, const paillier_public_key_t *pub);
+void pack_ciphertexts(scalar_t packed, const scalar_t *ciphertext, const paillier_public_key_t *pub);
+void pack_plaintexts(scalar_t packed, const scalar_t *ciphertext, const paillier_public_key_t *pub);
 
-void           new_scalar_pack(scalar_pack_t scalars);
 scalar_t      *new_scalar_array(uint64_t len);
-scalar_pack_t *new_scalar_pack_array(uint64_t len);
-
-void           new_gr_el_pack(gr_el_pack_t grels, ec_group_t ec);
 gr_elem_t     *new_gr_el_array(uint64_t len, ec_group_t ec);
-gr_el_pack_t  *new_gr_el_pack_array(uint64_t len, ec_group_t ec);
 
-void free_scalar_pack(scalar_pack_t scalars);
 void free_scalar_array(scalar_t *scalars, uint64_t len);
-void free_scalar_pack_array(scalar_pack_t *scalars, uint64_t len);
-
-void free_gr_el_pack(gr_el_pack_t grels);
 void free_gr_el_array(gr_elem_t *grels, uint64_t len);
-void free_gr_el_pack_array(gr_el_pack_t *grels, uint64_t len);
 
 void copy_scalar_array(scalar_t *copy, scalar_t *source, uint64_t len);
-void copy_scalar_pack_array(scalar_pack_t *copy, scalar_pack_t *source, uint64_t len);
 void copy_gr_el_array(gr_elem_t *copy, gr_elem_t *source, uint64_t len);
-void copy_gr_el_pack_array(gr_el_pack_t *copy, gr_el_pack_t *source, uint64_t len);
-
-void flatten_scalar_pack_array(scalar_t *flattened, scalar_pack_t *scalars, uint64_t len);
-void flatten_gr_el_pack_array(gr_elem_t *flattened, gr_el_pack_t *grels, uint64_t len);
-
 
 #endif

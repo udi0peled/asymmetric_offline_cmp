@@ -31,16 +31,21 @@ typedef struct
   scalar_t W_0;
 
   uint64_t batch_size;
+  uint64_t next_index;
+  
+  gr_elem_t  *H;
+  scalar_t *nonce;
+  scalar_t *b;
 
-  scalar_pack_t *alpha;
-  gr_el_pack_t  *H;
-  gr_el_pack_t  **B1;
-  gr_el_pack_t  **B2;
+  uint64_t B_num;
+  gr_elem_t  **B1;
+  gr_elem_t  **B2;
   
 } asymoff_party_data_t;
 
 
-asymoff_party_data_t **asymoff_protocol_parties_new(uint64_t num_parties);
+asymoff_party_data_t **
+     asymoff_protocol_parties_new(uint64_t num_parties);
 void asymoff_protocol_parties_free(asymoff_party_data_t **parties);
 void asymoff_protocol_parties_set(asymoff_party_data_t **parties, hash_chunk sid, scalar_t *private_x);
 

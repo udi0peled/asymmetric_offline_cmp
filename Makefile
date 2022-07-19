@@ -4,7 +4,8 @@ App_Link_Flags := $(App_C_Flags) -lssl -lcrypto -pthread -I/usr/local/opt/openss
 all: benchmark
 
 primitives := algebraic_elements.o paillier_cryptosystem.o ring_pedersen_parameters.o  zkp_common.o zkp_paillier_blum_modulus.o zkp_ring_pedersen_param.o zkp_schnorr.o zkp_no_small_factors.o zkp_tight_range.o zkp_range_el_gamal_commitment.o zkp_el_gamal_dlog.o
-protocol_phases := asymoff_key_generation.o asymoff_presigning.o
+
+protocol_phases := asymoff_key_generation.o asymoff_presigning.o asymoff_signing.o
 
 benchmark.o: benchmark.c common.o tests.o primitives 
 	@$(CC) $(App_C_Flags) -c $< -o $@
@@ -53,6 +54,7 @@ zkp_encryption_in_range.o: zkp_encryption_in_range.c zkp_encryption_in_range.h z
 zkp_no_small_factors.o: zkp_no_small_factors.c zkp_no_small_factors.h zkp_common.o
 	@$(CC) $(App_C_Flags) -c $< -o $@
 	@echo "CC   <=  $<"
+
 zkp_tight_range.o: zkp_tight_range.c zkp_tight_range.h zkp_common.o
 	@$(CC) $(App_C_Flags) -c $< -o $@
 	@echo "CC   <=  $<"
@@ -77,21 +79,28 @@ zkp_el_gamal_dlog.o: zkp_el_gamal_dlog.c zkp_el_gamal_dlog.h zkp_common.o
 	@$(CC) $(App_C_Flags) -c $< -o $@
 	@echo "CC   <=  $<"
 
-asymoff_key_generation.o: asymoff_key_generation.c asymoff_key_generation.h $(primitives)
+
+asymoff_protocol.o: asymoff_protocol.c asymoff_protocol.h $(primitives)
 	@$(CC) $(App_C_Flags) -c $< -o $@
 	@echo "CC   <=  $<"
 
-asymoff_presigning.o: asymoff_presigning.c asymoff_presigning.h $(primitives)
+asymoff_key_generation.o: asymoff_key_generation.c asymoff_key_generation.h asymoff_protocol.o $(primitives)
 	@$(CC) $(App_C_Flags) -c $< -o $@
 	@echo "CC   <=  $<"
 
-asymoff_protocol.o: asymoff_protocol.c asymoff_protocol.h $(protocol_phases) $(primitives)
+asymoff_presigning.o: asymoff_presigning.c asymoff_presigning.h asymoff_protocol.o $(primitives)
 	@$(CC) $(App_C_Flags) -c $< -o $@
 	@echo "CC   <=  $<"
+
+asymoff_signing.o: asymoff_signing.c asymoff_signing.h asymoff_protocol.o $(primitives)
+	@$(CC) $(App_C_Flags) -c $< -o $@ -Wno-unused-parameter
+	@echo "CC   <=  $<"
+
 
 benchmark: benchmark.c common.o asymoff_protocol.o $(protocol_phases) $(primitives) 
 	@${CC} $^ -o $@ $(App_Link_Flags)
 	@echo "${CC} =>  $@"
+
 
 clean:
 	@rm -rf $(Bench_Name) *.o tests

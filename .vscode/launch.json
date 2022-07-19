@@ -4,7 +4,7 @@
       "name": "make and debug",
       "type": "cppdbg",
       "request": "launch",
-      "program": "${workspaceFolder}/tests",
+      "program": "${workspaceFolder}/benchmark",
       "console": "internalConsole",
       "args": [],
       "stopAtEntry": false,
@@ -12,7 +12,7 @@
       "environment": [],
       "externalConsole": false,
       "MIMode": "gdb",
-      "preLaunchTask": "make tests",
+      "preLaunchTask": "make benchmark",
       "setupCommands": [
         {
           "description": "Enable pretty-printing for gdb",
