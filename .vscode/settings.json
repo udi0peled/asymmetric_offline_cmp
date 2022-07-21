@@ -19,7 +19,8 @@
       "asymoff_presigning.h": "c",
       "time.h": "c",
       "asymoff_signing.h": "c",
-      "stdarg.h": "c"
+      "stdarg.h": "c",
+      "zkp_double_el_gamal.h": "c"
     },
     "C_Cpp.intelliSenseEngineFallback": "Disabled"
 }

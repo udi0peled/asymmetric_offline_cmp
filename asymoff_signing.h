@@ -9,6 +9,7 @@
 #include "zkp_common.h"
 #include "zkp_range_el_gamal_commitment.h"
 #include "zkp_el_gamal_dlog.h"
+#include "zkp_double_el_gamal.h"
 #include "asymoff_protocol.h"
 
 typedef struct
@@ -30,28 +31,28 @@ typedef struct
 typedef struct
 {  
   hash_chunk *T;
+
 } asymoff_signing_aggregate_msg_round_1_t;
 
 typedef struct
 {
-  hash_chunk *echo_all_T;
   zkp_el_gamal_dlog_proof_t *pi_eph_anchor;
+  zkp_double_el_gamal_proof_t *pi_chi_anchor;
+  
+  gr_elem_t *V1;
+  gr_elem_t *V2;
 
+  hash_chunk *echo_all_T;
   hash_chunk *u;
+
 } asymoff_signing_aggregate_msg_round_2_t;
 
 typedef struct
 {
   zkp_el_gamal_dlog_proof_t *pi_eph_local_proof;
+  zkp_double_el_gamal_proof_t *pi_chi_local_proof;
+
 } asymoff_signing_aggregate_msg_round_3_t;
-
-typedef struct {
-
-} asymoff_signing_online_t;
-
-typedef struct {
-
-} asymoff_signing_offline_t;
 
 typedef struct 
 {
@@ -64,18 +65,28 @@ typedef struct
   gr_elem_t gen;
   gr_elem_t Y;
 
-  scalar_t secret_x;
+  scalar_t x;
+  gr_elem_t *X;
+  gr_elem_t online_X;
 
   uint64_t num_sigs;
   
+  gr_elem_t *H;
   gr_elem_t **B1;
   gr_elem_t **B2;
-  gr_elem_t *H;
+  gr_elem_t *V1;
+  gr_elem_t *V2;
+
+  gr_elem_t *joint_B1;
+  gr_elem_t *joint_B2;
+  gr_elem_t *joint_V1;
+  gr_elem_t *joint_V2;
 
   gr_elem_t *R;
   scalar_t *b;
   scalar_t *nonce;
   scalar_t *chi;
+  scalar_t *v;
 
   hash_chunk T;
   hash_chunk u;
@@ -87,9 +98,12 @@ typedef struct
   zkp_el_gamal_dlog_proof_t *pi_eph_local_agg_proof;
   zkp_el_gamal_dlog_proof_t *pi_eph_anchor;
   zkp_el_gamal_dlog_secret_t pi_eph_anchor_secret;
-  
-  scalar_t *pi_eph_B_dprime;
-  
+
+  zkp_double_el_gamal_public_t pi_chi_agg_public;
+  zkp_double_el_gamal_proof_t *pi_chi_local_agg_proof;
+  zkp_double_el_gamal_proof_t *pi_chi_anchor;
+  zkp_double_el_gamal_secret_t pi_chi_anchor_secret;
+    
   paillier_public_key_t **paillier_pub;
   ring_pedersen_public_t **rped_pub;
   

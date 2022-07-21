@@ -63,13 +63,13 @@ void zkp_range_el_gamal_challenge (scalar_t *e, const zkp_range_el_gamal_proof_t
   for (uint64_t p = 0; p < PACKING_SIZE; ++p) {
     scalar_to_bytes(&data_pos, RING_PED_MODULUS_BYTES , public->rped_pub->s[p], 1);
   }
-  group_elem_to_bytes(&data_pos, GROUP_ELEMENT_BYTES, public->g, public->G, 1);
-  group_elem_to_bytes(&data_pos, GROUP_ELEMENT_BYTES, public->Y, public->G, 1);
+  group_elem_to_bytes(&data_pos, GROUP_ELEMENT_BYTES, public->g, public->ec, 1);
+  group_elem_to_bytes(&data_pos, GROUP_ELEMENT_BYTES, public->Y, public->ec, 1);
   
   for (uint64_t i = 0; i < public->batch_size; ++i)
   {
-    group_elem_to_bytes(&data_pos, GROUP_ELEMENT_BYTES, public->A1[i], public->G, 1);
-    group_elem_to_bytes(&data_pos, GROUP_ELEMENT_BYTES, public->A2[i], public->G, 1);
+    group_elem_to_bytes(&data_pos, GROUP_ELEMENT_BYTES, public->A1[i], public->ec, 1);
+    group_elem_to_bytes(&data_pos, GROUP_ELEMENT_BYTES, public->A2[i], public->ec, 1);
   }
   
   for (uint64_t i = 0; i < public->batch_size/PACKING_SIZE; ++i)
@@ -79,18 +79,18 @@ void zkp_range_el_gamal_challenge (scalar_t *e, const zkp_range_el_gamal_proof_t
   }
   
   for (uint64_t p = 0; p < PACKING_SIZE; ++p) {
-    group_elem_to_bytes(&data_pos, GROUP_ELEMENT_BYTES, proof->V1[p], public->G, 1);
-    group_elem_to_bytes(&data_pos, GROUP_ELEMENT_BYTES, proof->V2[p], public->G, 1);
+    group_elem_to_bytes(&data_pos, GROUP_ELEMENT_BYTES, proof->V1[p], public->ec, 1);
+    group_elem_to_bytes(&data_pos, GROUP_ELEMENT_BYTES, proof->V2[p], public->ec, 1);
   }
 
   scalar_to_bytes(&data_pos, 2*PAILLIER_MODULUS_BYTES, proof->packed_D, 1);
 
   assert(fs_data + fs_data_len == data_pos);
 
-  fiat_shamir_scalars_in_range(e, public->batch_size/PACKING_SIZE, ec_group_order(public->G), fs_data, fs_data_len);
+  fiat_shamir_scalars_in_range(e, public->batch_size/PACKING_SIZE, ec_group_order(public->ec), fs_data, fs_data_len);
 
   for (uint64_t i = 0; i < public->batch_size/PACKING_SIZE; ++i) {
-    scalar_make_signed(e[i], ec_group_order(public->G));
+    scalar_make_signed(e[i], ec_group_order(public->ec));
   }
 
   free(fs_data);
@@ -121,7 +121,7 @@ void zkp_range_el_gamal_prove (zkp_range_el_gamal_proof_t *proof, const zkp_rang
     scalar_sample_in_range(alpha[p], temp_range, 0);
     scalar_make_signed(alpha[p], temp_range);
 
-    scalar_sample_in_range(beta[p], ec_group_order(public->G), 0);
+    scalar_sample_in_range(beta[p], ec_group_order(public->ec), 0);
   }
 
   BN_lshift(temp_range, public->rped_pub->N, SLACKNESS_EPS);
@@ -143,10 +143,10 @@ void zkp_range_el_gamal_prove (zkp_range_el_gamal_proof_t *proof, const zkp_rang
   paillier_encryption_encrypt(proof->packed_D, alpha_pack, r, public->paillier_pub);
 
   for (uint64_t p = 0; p < PACKING_SIZE; ++p) {
-    group_operation(proof->V1[p], NULL, public->g, beta[p], public->G);
+    group_operation(proof->V1[p], NULL, public->g, beta[p], public->ec);
 
-    group_operation(proof->V2[p], NULL, public->g, alpha[p], public->G);
-    group_operation(proof->V2[p], proof->V2[p], public->Y, beta[p], public->G);
+    group_operation(proof->V2[p], NULL, public->g, alpha[p], public->ec);
+    group_operation(proof->V2[p], proof->V2[p], public->Y, beta[p], public->ec);
   }
 
   ring_pedersen_commit(proof->packed_T, alpha, PACKING_SIZE, gamma, public->rped_pub);
@@ -163,8 +163,8 @@ void zkp_range_el_gamal_prove (zkp_range_el_gamal_proof_t *proof, const zkp_rang
       BN_mul(temp, e[i/PACKING_SIZE], secret->x[i], bn_ctx);
       BN_add(proof->z_1[p], proof->z_1[p], temp); 
 
-      BN_mod_mul(temp, e[i/PACKING_SIZE], secret->b[i], ec_group_order(public->G), bn_ctx);
-      BN_mod_add(proof->w[p], proof->w[p], temp,  ec_group_order(public->G), bn_ctx);
+      BN_mod_mul(temp, e[i/PACKING_SIZE], secret->b[i], ec_group_order(public->ec), bn_ctx);
+      BN_mod_add(proof->w[p], proof->w[p], temp,  ec_group_order(public->ec), bn_ctx);
     }
   }
 
@@ -204,8 +204,8 @@ int   zkp_range_el_gamal_verify (const zkp_range_el_gamal_proof_t *proof, const 
   scalar_t temp    = scalar_new();
   scalar_t lhs     = scalar_new();
   scalar_t rhs     = scalar_new();
-  gr_elem_t lhs_gr = group_elem_new(public->G);
-  gr_elem_t rhs_gr = group_elem_new(public->G);
+  gr_elem_t lhs_gr = group_elem_new(public->ec);
+  gr_elem_t rhs_gr = group_elem_new(public->ec);
   scalar_t *e      = new_scalar_array(public->batch_size/PACKING_SIZE);
 
   zkp_range_el_gamal_challenge(e, proof, public, aux);
@@ -230,20 +230,20 @@ int   zkp_range_el_gamal_verify (const zkp_range_el_gamal_proof_t *proof, const 
 
   for (uint64_t p = 0; p < PACKING_SIZE; ++p) {
 
-      group_operation(lhs_gr, NULL, public->g, proof->w[p], public->G);
+      group_operation(lhs_gr, NULL, public->g, proof->w[p], public->ec);
       
       group_elem_copy(rhs_gr, proof->V1[p]);
-      for (uint64_t i = p; i < public->batch_size; i += PACKING_SIZE) group_operation(rhs_gr, rhs_gr, public->A1[i], e[i/PACKING_SIZE], public->G);
+      for (uint64_t i = p; i < public->batch_size; i += PACKING_SIZE) group_operation(rhs_gr, rhs_gr, public->A1[i], e[i/PACKING_SIZE], public->ec);
       
       is_verified &= (scalar_equal(lhs, rhs) == 1);
 
-      group_operation(lhs_gr, NULL, public->g, proof->z_1[p], public->G);
-      group_operation(lhs_gr, lhs_gr, public->Y, proof->w[p], public->G);
+      group_operation(lhs_gr, NULL, public->g, proof->z_1[p], public->ec);
+      group_operation(lhs_gr, lhs_gr, public->Y, proof->w[p], public->ec);
 
       group_elem_copy(rhs_gr, proof->V2[p]);
-      for (uint64_t i = p; i < public->batch_size; i += PACKING_SIZE) group_operation(rhs_gr, rhs_gr, public->A2[i], e[i/PACKING_SIZE], public->G);
+      for (uint64_t i = p; i < public->batch_size; i += PACKING_SIZE) group_operation(rhs_gr, rhs_gr, public->A2[i], e[i/PACKING_SIZE], public->ec);
       
-      is_verified &= (group_elem_equal(lhs_gr, rhs_gr, public->G) == 1);
+      is_verified &= (group_elem_equal(lhs_gr, rhs_gr, public->ec) == 1);
   }
 
   ring_pedersen_commit(lhs, proof->z_1, PACKING_SIZE, proof->packed_z_3, public->rped_pub);

@@ -174,7 +174,7 @@ int asymoff_presigning_execute_round_1(asymoff_presigning_data_t *party) {
     phi_Rddh_public.A2  = online->B2;
     phi_Rddh_public.Y   = party->Y;
     phi_Rddh_public.packed_C   = online->Paillier_packed_K;
-    phi_Rddh_public.G   = party->ec;
+    phi_Rddh_public.ec   = party->ec;
     phi_Rddh_public.g   = party->gen;
 
     zkp_range_el_gamal_secret_t phi_Rddh_secret;
@@ -228,7 +228,7 @@ int asymoff_presigning_execute_round_2(asymoff_presigning_data_t *party) {
     phi_Rddh_public.A2  = in_msg_1->B2;
     phi_Rddh_public.Y   = party->Y;
     phi_Rddh_public.packed_C   = in_msg_1->Paillier_packed_K;
-    phi_Rddh_public.G   = party->ec;
+    phi_Rddh_public.ec   = party->ec;
     phi_Rddh_public.g   = party->gen;
 
     zkp_aux_info_update(party->aux, sizeof(hash_chunk), &j, sizeof(uint64_t));
@@ -274,7 +274,7 @@ int asymoff_presigning_execute_round_2(asymoff_presigning_data_t *party) {
   phi_eph_public.B2 = offline->A2;
   phi_eph_public.H  = calloc(batch_size, sizeof(gr_elem_t));
   phi_eph_public.R  = offline->H;
-  phi_eph_public.G  = party->ec;
+  phi_eph_public.ec  = party->ec;
   phi_eph_public.g  = party->gen;
   phi_eph_public.Y  = party->Y;
 
@@ -305,7 +305,7 @@ int asymoff_presigning_execute_round_2(asymoff_presigning_data_t *party) {
     phi_Rddh_public.A2  = offline->A2;
     phi_Rddh_public.Y   = party->Y;
     phi_Rddh_public.packed_C   = offline->Paillier_packed_C;
-    phi_Rddh_public.G   = party->ec;
+    phi_Rddh_public.ec   = party->ec;
     phi_Rddh_public.g   = party->gen;
 
     zkp_range_el_gamal_secret_t phi_Rddh_secret;
@@ -355,7 +355,7 @@ int asymoff_presigning_execute_final(asymoff_presigning_data_t *party) {
   phi_eph_public.B2 = in_msg_2->A2;
   phi_eph_public.H  = calloc(batch_size, sizeof(gr_elem_t));
   phi_eph_public.R  = in_msg_2->H;
-  phi_eph_public.G  = party->ec;
+  phi_eph_public.ec  = party->ec;
   phi_eph_public.g  = party->gen;
   phi_eph_public.Y  = party->Y;
 
@@ -380,7 +380,7 @@ int asymoff_presigning_execute_final(asymoff_presigning_data_t *party) {
   phi_Rddh_public.A2  = in_msg_2->A2;
   phi_Rddh_public.Y   = party->Y;
   phi_Rddh_public.packed_C   = in_msg_2->packed_C;
-  phi_Rddh_public.G   = party->ec;
+  phi_Rddh_public.ec   = party->ec;
   phi_Rddh_public.g   = party->gen;
 
   zkp_aux_info_update(party->aux, sizeof(hash_chunk), &party_0_i, sizeof(uint64_t));
@@ -398,46 +398,49 @@ void asymoff_presigning_export_data(asymoff_party_data_t **parties, asymoff_pres
   uint64_t num_parties = presign_parties[0]->num_parties;
   uint64_t batch_size  = presign_parties[0]->batch_size;
   ec_group_t ec        = presign_parties[0]->ec;
-
+  
   for (uint64_t i = 0; i < num_parties; ++i) {
     parties[i]->batch_size = batch_size;
     parties[i]->next_index = 0;
+    
+    asymoff_presigning_msg_round_1_t *in_msg_1 = presign_parties[i]->in_msg_1;
+      
+    // For copy conviniene
+    if (i != 0) {
+      in_msg_1[i].B1 = presign_parties[i]->online->B1;
+      in_msg_1[i].B2 = presign_parties[i]->online->B2;
+    }
+
+    gr_elem_t curr_B1;
+    gr_elem_t curr_B2;
+
+    for (uint64_t l = 0; l < batch_size; ++l) {
+      curr_B1 = parties[i]->joint_B1[l];
+      curr_B2 = parties[i]->joint_B2[l];
+
+      group_operation(curr_B1, NULL, NULL, NULL, ec);
+      group_operation(curr_B2, NULL, NULL, NULL, ec);
+
+      for (uint64_t j = 1; j < num_parties; ++j) {
+
+        group_operation(curr_B1, curr_B1, in_msg_1[j].B1[l], NULL, ec);
+        group_operation(curr_B2, curr_B2, in_msg_1[j].B2[l], NULL, ec);
+      }
+    }
 
     if (i == 0 ) {
 
       asymoff_presigning_data_offline_t *offline = presign_parties[i]->offline; 
-      asymoff_presigning_msg_round_1_t *in_msg_1 = presign_parties[i]->in_msg_1;
 
       copy_scalar_array(parties[i]->nonce, offline->alpha, batch_size);
       copy_gr_el_array(parties[i]->H, offline->H, batch_size);
 
-      gr_elem_t curr_B1;
-      gr_elem_t curr_B2;
-
-      for (uint64_t l = 0; l < batch_size; ++l) {
-        curr_B1 = parties[i]->B1[0][l];
-        curr_B2 = parties[i]->B2[0][l];
-
-        group_operation(curr_B1, NULL, NULL, NULL, ec);
-        group_operation(curr_B2, NULL, NULL, NULL, ec);
-
-        for (uint64_t j = 1; j < num_parties; ++j) {
-
-          group_operation(curr_B1, curr_B1, in_msg_1[j].B1[l], NULL, ec);
-          group_operation(curr_B2, curr_B2, in_msg_1[j].B2[l], NULL, ec);
-        }
-      }
     } else { // i > 0
-      asymoff_presigning_msg_round_1_t *in_msg_1 = presign_parties[i]->in_msg_1;
       asymoff_presigning_msg_round_2_t *in_msg_2 = presign_parties[i]->in_msg_2;
 
       copy_scalar_array(parties[i]->b, presign_parties[i]->online->b, batch_size);
       copy_scalar_array(parties[i]->nonce, presign_parties[i]->online->k, batch_size);
       copy_gr_el_array(parties[i]->H, in_msg_2[0].H, batch_size);
-
-      // For copy conviniene
-      in_msg_1[i].B1 = presign_parties[i]->online->B1;
-      in_msg_1[i].B2 = presign_parties[i]->online->B2;
 
       for (uint64_t l = 0; l < batch_size; ++l) {
         for (uint64_t j = 1; j < num_parties; ++j) {

@@ -173,12 +173,14 @@ void pack_plaintexts(scalar_t packed, const scalar_t *plaintext, const paillier_
 
 
 scalar_t *new_scalar_array(uint64_t len) {
+  if (!len) return NULL;
   scalar_t *scalars = calloc(len, sizeof(scalar_t));
   for (uint64_t i = 0; i < len; ++i) scalars[i] = scalar_new();
   return scalars;
 }
 
 gr_elem_t *new_gr_el_array(uint64_t len, ec_group_t ec) {
+   if (!len) return NULL;
   gr_elem_t *grels = calloc(len, sizeof(gr_elem_t));
   for (uint64_t i = 0; i < len; ++i) grels[i] = group_elem_new(ec);
   return grels;

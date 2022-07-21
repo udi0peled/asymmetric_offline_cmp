@@ -24,7 +24,7 @@ typedef struct
 { 
   ring_pedersen_public_t *rped_pub;
   paillier_public_key_t *paillier_pub;
-  ec_group_t G;
+  ec_group_t ec;
   gr_elem_t g;    
   gr_elem_t X;       
   scalar_t W;
@@ -82,7 +82,7 @@ void zkp_tight_range_splitting_free     (zkp_tight_range_positive_splitting_t *s
 
 
 
-//void zkp_tight_range_proof_to_bytes   (uint8_t **bytes, uint64_t *byte_len, const zkp_tight_range_proof_t *proof, uint64_t x_range_bytes, const ec_group_t G, int move_to_end);
-//void zkp_tight_range_proof_from_bytes (zkp_tight_range_proof_t *proof, uint8_t **bytes, uint64_t *byte_len, uint64_t x_range_bytes, const scalar_t N0, const ec_group_t G, int move_to_end);
+//void zkp_tight_range_proof_to_bytes   (uint8_t **bytes, uint64_t *byte_len, const zkp_tight_range_proof_t *proof, uint64_t x_range_bytes, const ec_group_t ec, int move_to_end);
+//void zkp_tight_range_proof_from_bytes (zkp_tight_range_proof_t *proof, uint8_t **bytes, uint64_t *byte_len, uint64_t x_range_bytes, const scalar_t N0, const ec_group_t ec, int move_to_end);
 
 #endif

@@ -37,9 +37,12 @@ typedef struct
   scalar_t *nonce;
   scalar_t *b;
 
-  uint64_t B_num;
   gr_elem_t  **B1;
   gr_elem_t  **B2;
+  gr_elem_t *joint_B1;
+  gr_elem_t *joint_B2;
+  gr_elem_t *joint_V1;
+  gr_elem_t *joint_V2;
   
 } asymoff_party_data_t;
 

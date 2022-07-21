@@ -65,8 +65,8 @@ void zkp_tight_range_challenge (scalar_t e, const zkp_tight_range_proof_t *proof
   scalar_to_bytes(&data_pos, RING_PED_MODULUS_BYTES , public->rped_pub->N, 1);
   scalar_to_bytes(&data_pos, RING_PED_MODULUS_BYTES , public->rped_pub->t, 1);
   scalar_to_bytes(&data_pos, RING_PED_MODULUS_BYTES , public->rped_pub->s[0], 1);
-  group_elem_to_bytes(&data_pos, GROUP_ELEMENT_BYTES, public->g, public->G, 1);
-  group_elem_to_bytes(&data_pos, GROUP_ELEMENT_BYTES, public->X, public->G, 1);
+  group_elem_to_bytes(&data_pos, GROUP_ELEMENT_BYTES, public->g, public->ec, 1);
+  group_elem_to_bytes(&data_pos, GROUP_ELEMENT_BYTES, public->X, public->ec, 1);
   scalar_to_bytes(&data_pos, 2*PAILLIER_MODULUS_BYTES, public->W, 1);
   
   scalar_to_bytes(&data_pos, RING_PED_MODULUS_BYTES, proof->S, 1);
@@ -79,8 +79,8 @@ void zkp_tight_range_challenge (scalar_t e, const zkp_tight_range_proof_t *proof
 
   assert(fs_data + fs_data_len == data_pos);
 
-  fiat_shamir_scalars_in_range(&e, 1, ec_group_order(public->G), fs_data, fs_data_len);
-  scalar_make_signed(e, ec_group_order(public->G));
+  fiat_shamir_scalars_in_range(&e, 1, ec_group_order(public->ec), fs_data, fs_data_len);
+  scalar_make_signed(e, ec_group_order(public->ec));
 
   free(fs_data);
 }
@@ -228,7 +228,7 @@ void zkp_tight_range_prove (zkp_tight_range_proof_t *proof, const zkp_tight_rang
   scalar_t D          = scalar_new();
   scalar_t C          = scalar_new();
   scalar_t e          = scalar_new();
-  gr_elem_t Y         = group_elem_new(public->G);
+  gr_elem_t Y         = group_elem_new(public->ec);
   
   // Sample proof randmoness
 
@@ -282,7 +282,7 @@ void zkp_tight_range_prove (zkp_tight_range_proof_t *proof, const zkp_tight_rang
   ring_pedersen_commit(proof->T_2, &secret->splitting->alpha_2, 1, lambda_2, public->rped_pub);
   ring_pedersen_commit(proof->T_3, &secret->splitting->alpha_3, 1, lambda_3, public->rped_pub);
 
-  group_operation(Y, NULL, public->g, gamma, public->G);
+  group_operation(Y, NULL, public->g, gamma, public->ec);
 
   ring_pedersen_commit(U, &gamma, 1, omega, public->rped_pub);
   ring_pedersen_commit(V_1, &y_1, 1, v_1, public->rped_pub);
@@ -312,7 +312,7 @@ void zkp_tight_range_prove (zkp_tight_range_proof_t *proof, const zkp_tight_rang
   SHA512_CTX anchor_hash_ctx;
   SHA512_Init(&anchor_hash_ctx);
 
-  group_elem_to_bytes(&hash_bytes, GROUP_ELEMENT_BYTES, Y, public->G, 0);
+  group_elem_to_bytes(&hash_bytes, GROUP_ELEMENT_BYTES, Y, public->ec, 0);
   SHA512_Update(&anchor_hash_ctx, hash_bytes, GROUP_ELEMENT_BYTES);
 
   scalar_to_bytes(&hash_bytes, RING_PED_MODULUS_BYTES, U, 0);
@@ -425,7 +425,7 @@ int   zkp_tight_range_verify (const zkp_tight_range_proof_t *proof, const zkp_ti
   scalar_t e        = scalar_new();
   scalar_t minus_e  = scalar_new();
   scalar_t minus_4e = scalar_new();
-  gr_elem_t Y       = group_elem_new(public->G);
+  gr_elem_t Y       = group_elem_new(public->ec);
 
   scalar_set_power_of_2(temp, SOUNDNESS_L + SLACKNESS_EPS - 1);     // -1 since comparing signed range
 
@@ -436,8 +436,8 @@ int   zkp_tight_range_verify (const zkp_tight_range_proof_t *proof, const zkp_ti
   BN_copy(minus_4e, minus_e);
   BN_mul_word(minus_4e, 4);
 
-  group_operation(Y, NULL, public->g, proof->sigma, public->G);
-  group_operation(Y, Y, public->X, minus_4e, public->G);
+  group_operation(Y, NULL, public->g, proof->sigma, public->ec);
+  group_operation(Y, Y, public->X, minus_4e, public->ec);
 
   ring_pedersen_commit(U, &proof->sigma, 1, proof->tau, public->rped_pub);
   scalar_exp(temp, proof->S, minus_4e, public->rped_pub->N);
@@ -484,7 +484,7 @@ int   zkp_tight_range_verify (const zkp_tight_range_proof_t *proof, const zkp_ti
   SHA512_CTX anchor_hash_ctx;
   SHA512_Init(&anchor_hash_ctx);
 
-  group_elem_to_bytes(&hash_bytes, GROUP_ELEMENT_BYTES, Y, public->G, 0);
+  group_elem_to_bytes(&hash_bytes, GROUP_ELEMENT_BYTES, Y, public->ec, 0);
   SHA512_Update(&anchor_hash_ctx, hash_bytes, GROUP_ELEMENT_BYTES);
  
   scalar_to_bytes(&hash_bytes, RING_PED_MODULUS_BYTES, U, 0);

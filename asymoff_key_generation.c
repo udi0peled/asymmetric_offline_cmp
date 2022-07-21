@@ -152,7 +152,7 @@ int asymoff_key_gen_execute_round_1(asymoff_key_gen_data_t *party) {
   group_operation(party->Y, NULL, party->gen, party->y, party->ec);
 
   zkp_schnorr_public_t psi_sch_public;
-  psi_sch_public.G = party->ec;
+  psi_sch_public.ec = party->ec;
   psi_sch_public.g = party->gen;
   zkp_schnorr_anchor(party->A, party->tau, &psi_sch_public);
 
@@ -275,7 +275,7 @@ int asymoff_key_gen_execute_round_3(asymoff_key_gen_data_t *party) {
   // Set Schnorr ZKP public claim and secret, then prove
 
   zkp_schnorr_public_t psi_sch_public;
-  psi_sch_public.G = party->ec;
+  psi_sch_public.ec = party->ec;
   psi_sch_public.g = party->gen;
   psi_sch_public.X = party->X;
   
@@ -305,7 +305,7 @@ int asymoff_key_gen_execute_round_4(asymoff_key_gen_data_t *party) {
   pinfo("Player %ld: Starting Round 4\n", party->i);
 
   zkp_schnorr_public_t psi_sch_public;
-  psi_sch_public.G = party->ec;
+  psi_sch_public.ec = party->ec;
   psi_sch_public.g = party->gen;
 
   // Validate data recevied from others
@@ -359,7 +359,7 @@ int asymoff_key_gen_execute_round_4(asymoff_key_gen_data_t *party) {
     for (uint64_t j = 1; j < party->num_parties; ++j) {
 
       zkp_tight_range_public_t pi_public;
-      pi_public.G = party->ec;
+      pi_public.ec = party->ec;
       pi_public.g = party->gen;
       pi_public.paillier_pub = party->paillier_pub;
       pi_public.rped_pub =  party->in_msg_2[j].rped_pub;;
@@ -424,7 +424,7 @@ int asymoff_key_gen_execute_final(asymoff_key_gen_data_t *party) {
     zkp_aux_info_update(party->aux, sizeof(hash_chunk), &party_0_i, sizeof(uint64_t));      // Update i to proving player
 
     zkp_tight_range_public_t pi_public;
-    pi_public.G = party->ec;
+    pi_public.ec = party->ec;
     pi_public.g = party->gen;
     pi_public.paillier_pub = party->in_msg_2[0].paillier_pub;
     pi_public.rped_pub = party->rped_pub;

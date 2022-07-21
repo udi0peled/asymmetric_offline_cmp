@@ -3,7 +3,7 @@ App_Link_Flags := $(App_C_Flags) -lssl -lcrypto -pthread -I/usr/local/opt/openss
 
 all: benchmark
 
-primitives := algebraic_elements.o paillier_cryptosystem.o ring_pedersen_parameters.o  zkp_common.o zkp_paillier_blum_modulus.o zkp_ring_pedersen_param.o zkp_schnorr.o zkp_no_small_factors.o zkp_tight_range.o zkp_range_el_gamal_commitment.o zkp_el_gamal_dlog.o
+primitives := algebraic_elements.o paillier_cryptosystem.o ring_pedersen_parameters.o  zkp_common.o zkp_paillier_blum_modulus.o zkp_ring_pedersen_param.o zkp_schnorr.o zkp_no_small_factors.o zkp_tight_range.o zkp_range_el_gamal_commitment.o zkp_el_gamal_dlog.o zkp_double_el_gamal.o
 
 protocol_phases := asymoff_key_generation.o asymoff_presigning.o asymoff_signing.o
 
@@ -76,6 +76,10 @@ zkp_range_el_gamal_commitment.o: zkp_range_el_gamal_commitment.c zkp_range_el_ga
 	@echo "CC   <=  $<"
 
 zkp_el_gamal_dlog.o: zkp_el_gamal_dlog.c zkp_el_gamal_dlog.h zkp_common.o
+	@$(CC) $(App_C_Flags) -c $< -o $@
+	@echo "CC   <=  $<"
+
+zkp_double_el_gamal.o: zkp_double_el_gamal.c zkp_double_el_gamal.h zkp_common.o
 	@$(CC) $(App_C_Flags) -c $< -o $@
 	@echo "CC   <=  $<"
 
