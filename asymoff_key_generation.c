@@ -144,7 +144,7 @@ void asymoff_key_gen_round_1_hash(hash_chunk hash, asymoff_key_gen_msg_round_2_t
 
 int asymoff_key_gen_execute_round_1(asymoff_key_gen_data_t *party) {
 
-  pinfo("Player %ld: Starting Round 1\n", party->i);
+  pinfo("Player %ld: Executing Round 1\n", party->i);
 
   group_operation(party->X, NULL, party->gen, party->x, party->ec);
 
@@ -188,7 +188,7 @@ uint64_t asymoff_key_gen_send_msg_1(asymoff_key_gen_data_t *sender, asymoff_key_
 }
 
 int asymoff_key_gen_execute_round_2(asymoff_key_gen_data_t *party) {
-  pinfo("Player %ld: Starting Round 2\n", party->i);
+  pinfo("Player %ld: Executing Round 2\n", party->i);
 
   // For convinience, set in_msg_1 V for self as outgoing V
   party->in_msg_1[party->i].V = &party->V;
@@ -219,7 +219,7 @@ uint64_t asymoff_key_gen_send_msg_2(asymoff_key_gen_data_t *sender, asymoff_key_
 
 
 int asymoff_key_gen_execute_round_3(asymoff_key_gen_data_t *party) {
-  pinfo("Player %ld: Starting Round 3\n", party->i);
+  pinfo("Player %ld: Executing Round 3\n", party->i);
 
   hash_chunk computed_V;
 
@@ -302,7 +302,7 @@ uint64_t asymoff_key_gen_send_msg_3(asymoff_key_gen_data_t *sender, asymoff_key_
 }
 
 int asymoff_key_gen_execute_round_4(asymoff_key_gen_data_t *party) {
-  pinfo("Player %ld: Starting Round 4\n", party->i);
+  pinfo("Player %ld: Executing Round 4\n", party->i);
 
   zkp_schnorr_public_t psi_sch_public;
   psi_sch_public.ec = party->ec;
@@ -402,7 +402,7 @@ uint64_t asymoff_key_gen_send_msg_4(asymoff_key_gen_data_t *sender, asymoff_key_
 
 
 int asymoff_key_gen_execute_final(asymoff_key_gen_data_t *party) {
-  pinfo("Player %ld: Starting Final\n", party->i);
+  pinfo("Player %ld: Executing Finalizationization\n", party->i);
 
   // Validate data recevied from others
   for (uint64_t j = 0; j < party->num_parties; ++j) {
@@ -521,7 +521,7 @@ void asymoff_key_gen_mock_export_data(asymoff_party_data_t **parties) {
 
     party = parties[i];
 
-    if (i != 0) scalar_copy(party->W_0, W_0);
+    scalar_copy(party->W_0, W_0);
 
     for (uint64_t j = 0; j < num_parties; ++j) {
       if (j == i) continue;

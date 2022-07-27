@@ -136,10 +136,10 @@ void zkp_range_el_gamal_prove (zkp_range_el_gamal_proof_t *proof, const zkp_rang
 
   for (uint64_t i = 0; i < public->batch_size/PACKING_SIZE; ++i) {
     scalar_sample_in_range(mu[i], temp_range, 0);
-    ring_pedersen_commit(proof->packed_S[i], &secret->x[PACKING_SIZE*i], 3, mu[i], public->rped_pub);
+    ring_pedersen_commit(proof->packed_S[i], &secret->x[PACKING_SIZE*i], PACKING_SIZE, mu[i], public->rped_pub);
   }
 
-  pack_plaintexts(alpha_pack, alpha, public->paillier_pub);
+  pack_plaintexts(alpha_pack, alpha, public->paillier_pub->N, 1);
   paillier_encryption_encrypt(proof->packed_D, alpha_pack, r, public->paillier_pub);
 
   for (uint64_t p = 0; p < PACKING_SIZE; ++p) {
@@ -158,12 +158,14 @@ void zkp_range_el_gamal_prove (zkp_range_el_gamal_proof_t *proof, const zkp_rang
     BN_copy(proof->z_1[p], alpha[p]);
     BN_copy(proof->w[p], beta[p]);
 
-    for (uint64_t i = p; i < public->batch_size; i += PACKING_SIZE) {
+// TODO: Falty proove causes memory error and wrong error check by party
 
-      BN_mul(temp, e[i/PACKING_SIZE], secret->x[i], bn_ctx);
+    for (uint64_t i = 0; i < public->batch_size/PACKING_SIZE; ++i) {
+
+      BN_mul(temp, e[i], secret->x[PACKING_SIZE*i + p], bn_ctx);
       BN_add(proof->z_1[p], proof->z_1[p], temp); 
 
-      BN_mod_mul(temp, e[i/PACKING_SIZE], secret->b[i], ec_group_order(public->ec), bn_ctx);
+      BN_mod_mul(temp, e[i], secret->b[PACKING_SIZE*i + p], ec_group_order(public->ec), bn_ctx);
       BN_mod_add(proof->w[p], proof->w[p], temp,  ec_group_order(public->ec), bn_ctx);
     }
   }
@@ -173,7 +175,7 @@ void zkp_range_el_gamal_prove (zkp_range_el_gamal_proof_t *proof, const zkp_rang
 
   for (uint64_t i = 0; i < public->batch_size/PACKING_SIZE; ++i) {
 
-    scalar_exp(temp, secret->packed_rho[i], e[i], public->paillier_pub->N);
+    scalar_exp(temp, secret->rho[i], e[i], public->paillier_pub->N);
     BN_mod_mul(proof->packed_z_2, proof->packed_z_2, temp, public->paillier_pub->N, bn_ctx);
 
     BN_mul(temp, mu[i], e[i], bn_ctx);
@@ -210,20 +212,17 @@ int   zkp_range_el_gamal_verify (const zkp_range_el_gamal_proof_t *proof, const 
 
   zkp_range_el_gamal_challenge(e, proof, public, aux);
 
-  scalar_set_power_of_2(rhs, SOUNDNESS_L + SLACKNESS_EPS);
-  
   int is_verified = 1;
   for (uint64_t p = 0; p < PACKING_SIZE; ++p) {
-    is_verified &= (BN_ucmp(proof->z_1[p], rhs) < 0);
+    is_verified &= ( BN_num_bits(proof->z_1[p]) <= SOUNDNESS_L + SLACKNESS_EPS );
   }
 
-  pack_plaintexts(packed, proof->z_1, public->paillier_pub);
+  pack_plaintexts(packed, proof->z_1, public->paillier_pub->N, 1);
   paillier_encryption_encrypt(lhs, packed, proof->packed_z_2, public->paillier_pub);
 
   BN_copy(rhs, proof->packed_D); 
   for (uint64_t i = 0; i < public->batch_size/PACKING_SIZE; ++i) {
-    scalar_exp(temp, public->packed_C[i], e[i], public->paillier_pub->N2);
-    BN_mod_mul(rhs, rhs, temp, public->paillier_pub->N2, bn_ctx);
+    paillier_encryption_homomorphic(rhs, public->packed_C[i], e[i], rhs, public->paillier_pub);
   }
 
   is_verified &= (scalar_equal(lhs, rhs) == 1);
@@ -233,7 +232,7 @@ int   zkp_range_el_gamal_verify (const zkp_range_el_gamal_proof_t *proof, const 
       group_operation(lhs_gr, NULL, public->g, proof->w[p], public->ec);
       
       group_elem_copy(rhs_gr, proof->V1[p]);
-      for (uint64_t i = p; i < public->batch_size; i += PACKING_SIZE) group_operation(rhs_gr, rhs_gr, public->A1[i], e[i/PACKING_SIZE], public->ec);
+      for (uint64_t i = 0; i < public->batch_size/PACKING_SIZE; ++i) group_operation(rhs_gr, rhs_gr, public->A1[PACKING_SIZE*i + p], e[i], public->ec);
       
       is_verified &= (scalar_equal(lhs, rhs) == 1);
 
@@ -241,7 +240,7 @@ int   zkp_range_el_gamal_verify (const zkp_range_el_gamal_proof_t *proof, const 
       group_operation(lhs_gr, lhs_gr, public->Y, proof->w[p], public->ec);
 
       group_elem_copy(rhs_gr, proof->V2[p]);
-      for (uint64_t i = p; i < public->batch_size; i += PACKING_SIZE) group_operation(rhs_gr, rhs_gr, public->A2[i], e[i/PACKING_SIZE], public->ec);
+      for (uint64_t i = 0; i < public->batch_size/PACKING_SIZE; ++i) group_operation(rhs_gr, rhs_gr, public->A2[PACKING_SIZE*i + p], e[i], public->ec);
       
       is_verified &= (group_elem_equal(lhs_gr, rhs_gr, public->ec) == 1);
   }

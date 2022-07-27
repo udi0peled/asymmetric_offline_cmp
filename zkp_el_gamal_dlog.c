@@ -16,20 +16,16 @@ zkp_el_gamal_dlog_proof_t *zkp_el_gamal_dlog_new (uint64_t batch_size, ec_group_
   return proof;
 }
 
-zkp_el_gamal_dlog_proof_t *zkp_el_gamal_dlog_duplicate (zkp_el_gamal_dlog_proof_t * const proof)
+void zkp_el_gamal_dlog_copy (zkp_el_gamal_dlog_proof_t * copy_proof, zkp_el_gamal_dlog_proof_t * const proof)
 {
-  zkp_el_gamal_dlog_proof_t *new_proof = zkp_el_gamal_dlog_new(proof->batch_size, proof->ec);
+  copy_gr_el_array(copy_proof->V, proof->V, proof->batch_size);
+  copy_gr_el_array(copy_proof->W1, proof->W1, proof->batch_size);
+  copy_gr_el_array(copy_proof->W2, proof->W2, proof->batch_size);
   
-  copy_gr_el_array(new_proof->V, proof->V, proof->batch_size);
-  copy_gr_el_array(new_proof->W1, proof->W1, proof->batch_size);
-  copy_gr_el_array(new_proof->W2, proof->W2, proof->batch_size);
-  
-  memcpy(new_proof->anchor_hash, proof->anchor_hash, sizeof(hash_chunk));
+  memcpy(copy_proof->anchor_hash, proof->anchor_hash, sizeof(hash_chunk));
 
-  copy_scalar_array(new_proof->z, proof->z, proof->batch_size);
-  copy_scalar_array(new_proof->w, proof->w, proof->batch_size);
-
-  return new_proof;
+  copy_scalar_array(copy_proof->z, proof->z, proof->batch_size);
+  copy_scalar_array(copy_proof->w, proof->w, proof->batch_size);
 }
 
 void zkp_el_gamal_dlog_free (zkp_el_gamal_dlog_proof_t *proof)

@@ -18,20 +18,16 @@ zkp_double_el_gamal_proof_t *zkp_double_el_gamal_new (ec_group_t ec)
   return proof;
 }
 
-zkp_double_el_gamal_proof_t *zkp_double_el_gamal_duplicate (zkp_double_el_gamal_proof_t * const proof)
+void zkp_double_el_gamal_copy (zkp_double_el_gamal_proof_t * copy_proof, zkp_double_el_gamal_proof_t * const proof)
 {
-  zkp_double_el_gamal_proof_t *new_proof = zkp_double_el_gamal_new(proof->ec);
-  
-  group_elem_copy(new_proof->U1, proof->U1);
-  group_elem_copy(new_proof->U2, proof->U2);
-  group_elem_copy(new_proof->W1, proof->W1);
-  group_elem_copy(new_proof->W2, proof->W2);
+  group_elem_copy(copy_proof->U1, proof->U1);
+  group_elem_copy(copy_proof->U2, proof->U2);
+  group_elem_copy(copy_proof->W1, proof->W1);
+  group_elem_copy(copy_proof->W2, proof->W2);
 
-  scalar_copy(new_proof->z, proof->z);
-  scalar_copy(new_proof->w_1, proof->w_1);
-  scalar_copy(new_proof->w_2, proof->w_2);
-
-  return new_proof;
+  scalar_copy(copy_proof->z, proof->z);
+  scalar_copy(copy_proof->w_1, proof->w_1);
+  scalar_copy(copy_proof->w_2, proof->w_2);
 }
 
 void zkp_double_el_gamal_free (zkp_double_el_gamal_proof_t *proof)
@@ -206,7 +202,7 @@ int   zkp_double_el_gamal_verify (const zkp_double_el_gamal_proof_t *proof, cons
   return is_verified;
 }
 
-void zkp_double_el_gamal_aggregate_anchors (zkp_double_el_gamal_proof_t *agg_anchor, zkp_double_el_gamal_proof_t ** const anchors, uint64_t num) {
+void zkp_double_el_gamal_aggregate_anchors (zkp_double_el_gamal_proof_t *agg_anchor, zkp_double_el_gamal_proof_t ** anchors, uint64_t num) {
 
   ec_group_t ec = agg_anchor->ec;
 
@@ -224,7 +220,7 @@ void zkp_double_el_gamal_aggregate_anchors (zkp_double_el_gamal_proof_t *agg_anc
   }   
 }
 
-void zkp_double_el_gamal_aggregate_local_proofs (zkp_double_el_gamal_proof_t *agg_proof, zkp_double_el_gamal_proof_t ** const local_proofs, uint64_t num) {
+void zkp_double_el_gamal_aggregate_local_proofs (zkp_double_el_gamal_proof_t *agg_proof, zkp_double_el_gamal_proof_t ** local_proofs, uint64_t num) {
 
   ec_group_t ec = agg_proof->ec;
     

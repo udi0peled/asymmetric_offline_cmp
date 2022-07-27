@@ -10,7 +10,7 @@
  */
 
 #define FS_HALF 32      // Half of SHA512 64 bytes digest
-#define PACKING_SHIFT 682
+#define PACKING_SHIFT 682 // TODO: Check
 
 /** 
  *  Denote hash digest as 2 equal length (FS_HALF) parts (LH, RH).
@@ -145,30 +145,60 @@ void zkp_aux_info_free(zkp_aux_info_t *aux)
   free(aux);
 }
 
-void pack_ciphertexts(scalar_t packed, const scalar_t *ciphertext, const paillier_public_key_t *pub) {
-  
-  BN_CTX *bn_ctx = BN_CTX_new();
-  scalar_t shifted = scalar_new();
-
-  BN_set_word(packed, 1);
-  for (uint64_t i = 0; i < PACKING_SIZE; ++i) {
-    BN_mod_lshift(shifted, ciphertext[i], PACKING_SHIFT*i,  pub->N2, bn_ctx);
-    BN_mod_mul(packed, packed, shifted, pub->N2, bn_ctx);
-  }
-  BN_CTX_free(bn_ctx);
-}
-
-void pack_plaintexts(scalar_t packed, const scalar_t *plaintext, const paillier_public_key_t *pub) {
-  BN_CTX *bn_ctx = BN_CTX_secure_new();
+void pack_plaintexts(scalar_t packed, const scalar_t plaintext[PACKING_SIZE], scalar_t domain, int test_decoding) {
   scalar_t shifted = scalar_new();
 
   BN_set_word(packed, 0);
-  for (uint64_t i = 0; i < PACKING_SIZE; ++i) {
-    BN_mod_lshift(shifted, plaintext[i], PACKING_SHIFT*i,  pub->N, bn_ctx);
-    BN_mod_add(packed, packed, shifted, pub->N, bn_ctx);
+  for (uint64_t p = 0; p < PACKING_SIZE; ++p) {
+
+    // To allow correct unpacking later
+    if (test_decoding) {
+      if (BN_num_bits(plaintext[p]) >= PACKING_SHIFT-1) {
+        BN_set_word(packed, 0);
+        printf("PACKING ERROR ########################### plaintext bitlen = %d too big for packing shift %d\n", BN_num_bits(plaintext[p]), PACKING_SHIFT);
+      break;
+      }
+    }
+
+    BN_lshift(shifted, plaintext[p], PACKING_SHIFT*p);
+    BN_add(packed, packed, shifted);
   }
   scalar_free(shifted);
-  BN_CTX_free(bn_ctx);
+
+  // To avoid overflow errors
+  if (domain) {
+    if (BN_cmp(packed, domain) == 1) {
+      printf("ACKING ERROR ########################### packed bitlengh = %d overflows modulus\n", BN_num_bits(packed));
+      BN_set_word(packed, 0);
+    }
+  }
+}
+
+void unpack_plaintexts(scalar_t unpacked[PACKING_SIZE], const scalar_t packed_plaintext) {
+
+  scalar_t shifted = scalar_new();
+  scalar_copy(shifted, packed_plaintext);
+
+  scalar_t exp_2 = scalar_new();
+  scalar_set_power_of_2(exp_2, PACKING_SHIFT-1);
+
+  for (uint64_t p = 0; p < PACKING_SIZE; ++p) {
+    BN_add(shifted, shifted, exp_2);
+    BN_lshift(exp_2, exp_2, PACKING_SHIFT);
+  }
+  
+  scalar_set_power_of_2(exp_2, PACKING_SHIFT-1);
+
+  uint64_t curr_bit_shift = PACKING_SHIFT*(PACKING_SIZE-1);
+
+  for (uint64_t p = PACKING_SIZE; p > 0; --p) {
+    
+    BN_rshift(unpacked[p-1], shifted, curr_bit_shift);
+    BN_sub(unpacked[p-1], unpacked[p-1], exp_2);
+    
+    BN_mask_bits(shifted, curr_bit_shift);
+    curr_bit_shift -= PACKING_SHIFT;
+  }
 }
 
 

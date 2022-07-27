@@ -137,7 +137,7 @@ int asymoff_presigning_execute_round_1(asymoff_presigning_data_t *party) {
 
   if (party->i == 0) return 1;
 
-  pinfo("Player %ld: Starting Round 1\n", party->i);
+  pinfo("Player %ld: Executing Round 1\n", party->i);
 
   asymoff_presigning_data_online_t *online = party->online;
   uint64_t num_parties = party->num_parties;
@@ -159,7 +159,7 @@ int asymoff_presigning_execute_round_1(asymoff_presigning_data_t *party) {
 
   for (uint64_t packed_l = 0; packed_l < batch_size/PACKING_SIZE; ++packed_l) {
       paillier_encryption_sample(nu[packed_l],party->paillier_pub[party->i]);
-      pack_plaintexts(packed_k, &online->k[PACKING_SIZE*packed_l], party->paillier_pub[party->i]);
+      pack_plaintexts(packed_k, &online->k[PACKING_SIZE*packed_l], party->paillier_pub[party->i]->N, 1);
       paillier_encryption_encrypt(online->Paillier_packed_K[packed_l], packed_k, nu[packed_l], party->paillier_pub[party->i]);
     }
 
@@ -179,7 +179,7 @@ int asymoff_presigning_execute_round_1(asymoff_presigning_data_t *party) {
 
     zkp_range_el_gamal_secret_t phi_Rddh_secret;
     phi_Rddh_secret.b = online->b;
-    phi_Rddh_secret.packed_rho = nu; 
+    phi_Rddh_secret.rho = nu; 
     phi_Rddh_secret.x = online->k;
 
     zkp_aux_info_update(party->aux, sizeof(hash_chunk), &party->i, sizeof(uint64_t));
@@ -208,7 +208,7 @@ uint64_t asymoff_presigning_send_msg_1(asymoff_presigning_data_t *sender, asymof
 }
 
 int asymoff_presigning_execute_round_2(asymoff_presigning_data_t *party) {
-  pinfo("Player %ld: Starting Round 2\n", party->i);
+  pinfo("Player %ld: Executing Round 2\n", party->i);
 
   uint64_t num_parties = party->num_parties;
   uint64_t batch_size  = party->batch_size;
@@ -262,7 +262,7 @@ int asymoff_presigning_execute_round_2(asymoff_presigning_data_t *party) {
 
   for (uint64_t packed_l = 0; packed_l < batch_size/PACKING_SIZE; ++packed_l) {
 
-    pack_plaintexts(temp, &offline->alpha[PACKING_SIZE*packed_l], party->paillier_pub[party->i]);
+    pack_plaintexts(temp, &offline->alpha[PACKING_SIZE*packed_l], party->paillier_pub[party->i]->N, 1);
     paillier_encryption_sample(rho[packed_l], party->paillier_pub[party->i]);
     paillier_encryption_encrypt(offline->Paillier_packed_C[packed_l], temp, rho[packed_l], party->paillier_pub[party->i]);
   }
@@ -310,7 +310,7 @@ int asymoff_presigning_execute_round_2(asymoff_presigning_data_t *party) {
 
     zkp_range_el_gamal_secret_t phi_Rddh_secret;
     phi_Rddh_secret.b = lambda;
-    phi_Rddh_secret.packed_rho = rho; 
+    phi_Rddh_secret.rho = rho; 
     phi_Rddh_secret.x = offline->alpha;
 
     zkp_aux_info_update(party->aux, sizeof(hash_chunk), &party->i, sizeof(uint64_t));
@@ -342,7 +342,7 @@ uint64_t asymoff_presigning_send_msg_2(asymoff_presigning_data_t *sender, asymof
 }
 
 int asymoff_presigning_execute_final(asymoff_presigning_data_t *party) {
-  pinfo("Player %ld: Starting Final\n", party->i);
+  pinfo("Player %ld: Executing Finalizationization\n", party->i);
   if (party->i ==0) return 0;
   
   uint64_t batch_size = party->batch_size;
@@ -394,7 +394,8 @@ int asymoff_presigning_execute_final(asymoff_presigning_data_t *party) {
 }
 
 void asymoff_presigning_export_data(asymoff_party_data_t **parties, asymoff_presigning_data_t ** const presign_parties) {
-  
+  pinfo("Exporting Presigning Data\n");
+
   uint64_t num_parties = presign_parties[0]->num_parties;
   uint64_t batch_size  = presign_parties[0]->batch_size;
   ec_group_t ec        = presign_parties[0]->ec;

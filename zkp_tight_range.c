@@ -427,9 +427,9 @@ int   zkp_tight_range_verify (const zkp_tight_range_proof_t *proof, const zkp_ti
   scalar_t minus_4e = scalar_new();
   gr_elem_t Y       = group_elem_new(public->ec);
 
-  scalar_set_power_of_2(temp, SOUNDNESS_L + SLACKNESS_EPS - 1);     // -1 since comparing signed range
+  int is_verified = 1;
 
-  int is_verified = (BN_ucmp(proof->sigma, temp) < 0);
+  is_verified &= ( BN_num_bits(proof->sigma) <= SOUNDNESS_L + SLACKNESS_EPS - 1 );
 
   zkp_tight_range_challenge(e, proof, public, aux);
   scalar_negate(minus_e, e);
@@ -456,8 +456,7 @@ int   zkp_tight_range_verify (const zkp_tight_range_proof_t *proof, const zkp_ti
   BN_mod_mul(V_3, V_3, temp, public->rped_pub->N, bn_ctx);
 
   paillier_encryption_encrypt(D, proof->sigma, proof->eta, public->paillier_pub);
-  scalar_exp(temp, public->W, minus_4e, public->paillier_pub->N2);
-  BN_mod_mul(D, D, temp, public->paillier_pub->N2, bn_ctx);
+  paillier_encryption_homomorphic(D, public->W, minus_4e, D, public->paillier_pub);
 
   scalar_negate(temp, proof->delta);
   ring_pedersen_commit(C, &minus_e, 1, temp, public->rped_pub);

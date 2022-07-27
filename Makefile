@@ -3,9 +3,9 @@ App_Link_Flags := $(App_C_Flags) -lssl -lcrypto -pthread -I/usr/local/opt/openss
 
 all: benchmark
 
-primitives := algebraic_elements.o paillier_cryptosystem.o ring_pedersen_parameters.o  zkp_common.o zkp_paillier_blum_modulus.o zkp_ring_pedersen_param.o zkp_schnorr.o zkp_no_small_factors.o zkp_tight_range.o zkp_range_el_gamal_commitment.o zkp_el_gamal_dlog.o zkp_double_el_gamal.o
+primitives := algebraic_elements.o paillier_cryptosystem.o ring_pedersen_parameters.o  zkp_common.o zkp_paillier_blum_modulus.o zkp_ring_pedersen_param.o zkp_schnorr.o zkp_no_small_factors.o zkp_tight_range.o zkp_range_el_gamal_commitment.o zkp_el_gamal_dlog.o zkp_double_el_gamal.o zkp_well_formed_signature.o
 
-protocol_phases := asymoff_key_generation.o asymoff_presigning.o asymoff_signing.o
+protocol_phases := asymoff_key_generation.o asymoff_presigning.o asymoff_signing_cmp.o asymoff_signing_aggregate.o
 
 benchmark.o: benchmark.c common.o tests.o primitives 
 	@$(CC) $(App_C_Flags) -c $< -o $@
@@ -83,6 +83,10 @@ zkp_double_el_gamal.o: zkp_double_el_gamal.c zkp_double_el_gamal.h zkp_common.o
 	@$(CC) $(App_C_Flags) -c $< -o $@
 	@echo "CC   <=  $<"
 
+zkp_well_formed_signature.o: zkp_well_formed_signature.c zkp_well_formed_signature.h zkp_common.o
+	@$(CC) $(App_C_Flags) -c $< -o $@
+	@echo "CC   <=  $<"
+
 
 asymoff_protocol.o: asymoff_protocol.c asymoff_protocol.h $(primitives)
 	@$(CC) $(App_C_Flags) -c $< -o $@
@@ -96,9 +100,15 @@ asymoff_presigning.o: asymoff_presigning.c asymoff_presigning.h asymoff_protocol
 	@$(CC) $(App_C_Flags) -c $< -o $@
 	@echo "CC   <=  $<"
 
-asymoff_signing.o: asymoff_signing.c asymoff_signing.h asymoff_protocol.o $(primitives)
+
+asymoff_signing_cmp.o: asymoff_signing_cmp.c asymoff_signing_cmp.h asymoff_protocol.o $(primitives)
 	@$(CC) $(App_C_Flags) -c $< -o $@ -Wno-unused-parameter
 	@echo "CC   <=  $<"
+	
+asymoff_signing_aggregate.o: asymoff_signing_aggregate.c asymoff_signing_aggregate.h asymoff_protocol.o $(primitives)
+	@$(CC) $(App_C_Flags) -c $< -o $@ -Wno-unused-parameter
+	@echo "CC   <=  $<"
+	
 
 
 benchmark: benchmark.c common.o asymoff_protocol.o $(protocol_phases) $(primitives) 

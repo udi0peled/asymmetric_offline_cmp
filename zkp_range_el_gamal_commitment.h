@@ -22,7 +22,7 @@ typedef struct
 typedef struct
 {
   scalar_t *x;
-  scalar_t *packed_rho;
+  scalar_t *rho;
   scalar_t *b;
 
 } zkp_range_el_gamal_secret_t;

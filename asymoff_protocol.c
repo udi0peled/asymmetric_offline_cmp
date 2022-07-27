@@ -31,7 +31,7 @@ asymoff_party_data_t **asymoff_protocol_parties_new(uint64_t num_parties) {
         parties[i]->rped_pub[j] = ring_pedersen_public_new();
     }
     
-    if (i != 0) parties[i]->W_0 = scalar_new();
+    parties[i]->W_0 = scalar_new();
   }
   
   return parties;
@@ -98,11 +98,15 @@ void asymoff_protocol_parties_new_batch(asymoff_party_data_t **parties, uint64_t
   for (uint64_t i = 0; i < num_parties; ++i) {
     
     parties[i]->batch_size = batch_size;
+    parties[i]->curr_index = 0;
+    parties[i]->next_index = 0;
     
-    parties[i]->b     = new_scalar_array(batch_size);
-    parties[i]->nonce = new_scalar_array(batch_size);
-    
+    parties[i]->R        = new_gr_el_array(batch_size, ec);
     parties[i]->H        = new_gr_el_array(batch_size, ec);
+
+    parties[i]->b        = new_scalar_array(batch_size);
+    parties[i]->nonce    = new_scalar_array(batch_size);
+    parties[i]->chi      = new_scalar_array(batch_size);
     parties[i]->joint_B1 = new_gr_el_array(batch_size, ec);
     parties[i]->joint_B2 = new_gr_el_array(batch_size, ec);
     parties[i]->joint_V1 = new_gr_el_array(batch_size, ec);

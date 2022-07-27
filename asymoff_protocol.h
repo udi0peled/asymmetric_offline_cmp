@@ -31,11 +31,15 @@ typedef struct
   scalar_t W_0;
 
   uint64_t batch_size;
+  uint64_t num_sigs;
+  uint64_t curr_index;
   uint64_t next_index;
-  
-  gr_elem_t  *H;
+
+  gr_elem_t *H;
   scalar_t *nonce;
   scalar_t *b;
+  scalar_t *chi;
+  gr_elem_t *R;
 
   gr_elem_t  **B1;
   gr_elem_t  **B2;
