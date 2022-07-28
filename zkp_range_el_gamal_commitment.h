@@ -34,16 +34,16 @@ typedef struct
   uint64_t batch_size;
   uint64_t packing_size;
   
-  scalar_t *packed_S;
-  scalar_t packed_D;
-  gr_elem_t *V1;
-  gr_elem_t *V2;
-  scalar_t packed_T;   
+  scalar_t *packed_S;   // RING_PED x batch
+  scalar_t packed_D;    // 2*PAILLIER
+  gr_elem_t *V1;        // GROUP_EL x packing
+  gr_elem_t *V2;        // GROUP_EL x packing
+  scalar_t packed_T;    // RING_PED
 
-  scalar_t *z_1; 
-  scalar_t packed_z_2;
-  scalar_t packed_z_3;
-  scalar_t *w;
+  scalar_t *z_1;        // (ELL + EPS) x packing
+  scalar_t packed_z_2;  // PAILLIER
+  scalar_t packed_z_3;  // RING_PED + EPS
+  scalar_t *w;          // GROUP_ORDER x packing
 
 } zkp_range_el_gamal_proof_t;
 

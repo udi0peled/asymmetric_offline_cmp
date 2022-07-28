@@ -2,8 +2,8 @@
 #include "common.h"
 #include <openssl/sha.h>
 
-#define SOUNDNESS_L 256
-#define SLACKNESS_EPS (SOUNDNESS_L + 64)
+#define SOUNDNESS_ELL 256
+#define SLACKNESS_EPS (SOUNDNESS_ELL + 64)
 
 zkp_range_el_gamal_proof_t *zkp_range_el_gamal_new (uint64_t batch_size, uint64_t packing_size, ec_group_t ec)
 {
@@ -125,13 +125,9 @@ void zkp_range_el_gamal_prove (zkp_range_el_gamal_proof_t *proof, const zkp_rang
   scalar_t *alpha = new_scalar_array(packing_size); 
   scalar_t *beta  = new_scalar_array(packing_size);
 
-  scalar_set_power_of_2(temp_range, SOUNDNESS_L + SLACKNESS_EPS);
+  scalar_set_power_of_2(temp_range, SOUNDNESS_ELL + SLACKNESS_EPS);
 
   for (uint64_t p = 0; p < packing_size; ++p) {
-    
-    alpha[p] = scalar_new();
-    beta[p] = scalar_new();
-
     scalar_sample_in_range(alpha[p], temp_range, 0);
     scalar_make_signed(alpha[p], temp_range);
 
@@ -146,7 +142,7 @@ void zkp_range_el_gamal_prove (zkp_range_el_gamal_proof_t *proof, const zkp_rang
   paillier_encryption_sample(r, public->paillier_pub);
 
   // Start computing anchors
-  BN_lshift(temp_range, public->rped_pub->N, SOUNDNESS_L);
+  BN_lshift(temp_range, public->rped_pub->N, SOUNDNESS_ELL);
 
   for (uint64_t i = 0; i < packed_len; ++i) {
     scalar_sample_in_range(mu[i], temp_range, 0);
@@ -196,10 +192,9 @@ void zkp_range_el_gamal_prove (zkp_range_el_gamal_proof_t *proof, const zkp_rang
     BN_add(proof->packed_z_3, proof->packed_z_3, temp); 
   }
 
-  for (uint64_t p = 0; p < packing_size; ++p) {
-    scalar_free(alpha[p]);
-    scalar_free(beta[p]);
-  }
+  free_scalar_array(alpha, packing_size);
+  free_scalar_array(beta, packing_size);
+
   free_scalar_array(mu, packed_len);
   free_scalar_array(e, packed_len);
 
@@ -232,7 +227,7 @@ int   zkp_range_el_gamal_verify (const zkp_range_el_gamal_proof_t *proof, const 
 
   int is_verified = 1;
   for (uint64_t p = 0; p < packing_size; ++p) {
-    is_verified &= ( BN_num_bits(proof->z_1[p]) <= SOUNDNESS_L + SLACKNESS_EPS );
+    is_verified &= ( BN_num_bits(proof->z_1[p]) <= SOUNDNESS_ELL + SLACKNESS_EPS );
   }
 
   pack_plaintexts(packed, proof->z_1, packing_size, public->paillier_pub->N, 1);
@@ -287,6 +282,6 @@ int   zkp_range_el_gamal_verify (const zkp_range_el_gamal_proof_t *proof, const 
 }
 
 uint64_t  zkp_range_el_gamal_proof_bytelen (uint64_t batch_size, uint64_t packing_size) {
-  return 3*PAILLIER_MODULUS_BYTES + 2*RING_PED_MODULUS_BYTES + 3*packing_size*GROUP_ELEMENT_BYTES + SOUNDNESS_L/8 + 2*SLACKNESS_EPS/8 + batch_size*RING_PED_MODULUS_BYTES;
+  return 3*PAILLIER_MODULUS_BYTES + 2*RING_PED_MODULUS_BYTES + packing_size*(2*GROUP_ELEMENT_BYTES + GROUP_ORDER_BYTES + SOUNDNESS_ELL/8 + SLACKNESS_EPS/8) + SLACKNESS_EPS/8 + batch_size*RING_PED_MODULUS_BYTES;
 }
 

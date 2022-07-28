@@ -2,8 +2,8 @@
 #include "common.h"
 #include <openssl/sha.h>
 
-#define SOUNDNESS_L 256
-#define SLACKNESS_EPS (SOUNDNESS_L + 64)
+#define SOUNDNESS_ELL 256
+#define SLACKNESS_EPS (SOUNDNESS_ELL + 64)
 
 zkp_tight_range_proof_t *zkp_tight_range_new ()
 {
@@ -113,7 +113,7 @@ zkp_tight_range_positive_splitting_t *zkp_tight_range_splitting_new (scalar_t se
   splitting->alpha_2 = scalar_new();
   splitting->alpha_3 = scalar_new();
 
-  assert(BN_num_bits(secret) <= SOUNDNESS_L);
+  assert(BN_num_bits(secret) <= SOUNDNESS_ELL);
 
   BN_CTX *bn_ctx = BN_CTX_secure_new();
 
@@ -127,9 +127,9 @@ zkp_tight_range_positive_splitting_t *zkp_tight_range_splitting_new (scalar_t se
   scalar_t a          = scalar_new();
   scalar_t r0         = scalar_new();
 
-  zkp_tight_range_positive_from_secret(positive, secret, SOUNDNESS_L);
+  zkp_tight_range_positive_from_secret(positive, secret, SOUNDNESS_ELL);
 
-  scalar_set_power_of_2(range, SOUNDNESS_L/2 - 1);
+  scalar_set_power_of_2(range, SOUNDNESS_ELL/2 - 1);
 
   BN_set_word(prime_diff, 6);
   
@@ -232,7 +232,7 @@ void zkp_tight_range_prove (zkp_tight_range_proof_t *proof, const zkp_tight_rang
   
   // Sample proof randmoness
 
-  BN_lshift(temp_range, public->rped_pub->N, SOUNDNESS_L);
+  BN_lshift(temp_range, public->rped_pub->N, SOUNDNESS_ELL);
 
   scalar_sample_in_range(mu, temp_range, 0);
   scalar_sample_in_range(lambda_1, temp_range, 0);
@@ -244,7 +244,7 @@ void zkp_tight_range_prove (zkp_tight_range_proof_t *proof, const zkp_tight_rang
   scalar_make_signed(lambda_2, temp_range);
   scalar_make_signed(lambda_3, temp_range);
 
-  scalar_set_power_of_2(temp_range, SOUNDNESS_L + SLACKNESS_EPS);
+  scalar_set_power_of_2(temp_range, SOUNDNESS_ELL + SLACKNESS_EPS);
 
   scalar_sample_in_range(gamma, temp_range, 0);
   scalar_sample_in_range(y_1, temp_range, 0);
@@ -256,7 +256,7 @@ void zkp_tight_range_prove (zkp_tight_range_proof_t *proof, const zkp_tight_rang
   scalar_make_signed(y_2, temp_range);
   scalar_make_signed(y_3, temp_range);
 
-  BN_lshift(temp_range, public->rped_pub->N, SOUNDNESS_L + SLACKNESS_EPS);
+  BN_lshift(temp_range, public->rped_pub->N, SOUNDNESS_ELL + SLACKNESS_EPS);
   
   scalar_sample_in_range(omega, temp_range, 0);
   scalar_sample_in_range(v_1, temp_range, 0);
@@ -268,7 +268,7 @@ void zkp_tight_range_prove (zkp_tight_range_proof_t *proof, const zkp_tight_rang
   scalar_make_signed(v_2, temp_range);
   scalar_make_signed(v_3, temp_range);
 
-  BN_lshift(temp_range, public->rped_pub->N, 2*SOUNDNESS_L + SLACKNESS_EPS);
+  BN_lshift(temp_range, public->rped_pub->N, 2*SOUNDNESS_ELL + SLACKNESS_EPS);
 
   scalar_sample_in_range(beta, temp_range, 0);
   scalar_make_signed(beta, temp_range);
@@ -291,7 +291,7 @@ void zkp_tight_range_prove (zkp_tight_range_proof_t *proof, const zkp_tight_rang
 
   paillier_encryption_encrypt(D, gamma, r, public->paillier_pub);
 
-  BN_lshift(temp, gamma, SOUNDNESS_L);
+  BN_lshift(temp, gamma, SOUNDNESS_ELL);
   ring_pedersen_commit(C, &temp, 1, beta, public->rped_pub);
   BN_mod_inverse(C, C, public->rped_pub->N, bn_ctx);
 
@@ -429,7 +429,7 @@ int   zkp_tight_range_verify (const zkp_tight_range_proof_t *proof, const zkp_ti
 
   int is_verified = 1;
 
-  is_verified &= ( BN_num_bits(proof->sigma) <= SOUNDNESS_L + SLACKNESS_EPS - 1 );
+  is_verified &= ( BN_num_bits(proof->sigma) <= SOUNDNESS_ELL + SLACKNESS_EPS - 1 );
 
   zkp_tight_range_challenge(e, proof, public, aux);
   scalar_negate(minus_e, e);
@@ -461,7 +461,7 @@ int   zkp_tight_range_verify (const zkp_tight_range_proof_t *proof, const zkp_ti
   scalar_negate(temp, proof->delta);
   ring_pedersen_commit(C, &minus_e, 1, temp, public->rped_pub);
 
-  scalar_set_power_of_2(temp, SOUNDNESS_L);
+  scalar_set_power_of_2(temp, SOUNDNESS_ELL);
   scalar_negate(temp, temp);
   scalar_exp(temp, public->rped_pub->s[0], temp, public->rped_pub->N);
   scalar_mul(temp, temp, proof->S, public->rped_pub->N);
@@ -527,6 +527,6 @@ int   zkp_tight_range_verify (const zkp_tight_range_proof_t *proof, const zkp_ti
 }
 
 uint64_t  zkp_tight_range_proof_bytelen () {
-  return PAILLIER_MODULUS_BYTES + 5*RING_PED_MODULUS_BYTES + 10*SOUNDNESS_L/8 + 9*SLACKNESS_EPS/8 + sizeof(hash_chunk);
+  return PAILLIER_MODULUS_BYTES + 5*RING_PED_MODULUS_BYTES + 10*SOUNDNESS_ELL/8 + 9*SLACKNESS_EPS/8 + sizeof(hash_chunk);
 }
 

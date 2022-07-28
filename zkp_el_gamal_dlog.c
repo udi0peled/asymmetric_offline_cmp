@@ -243,6 +243,10 @@ void zkp_el_gamal_dlog_aggregate_local_proofs (zkp_el_gamal_dlog_proof_t *agg_pr
   }
 }
 
+uint64_t zkp_el_gamal_dlog_anchor_bytelen   (uint64_t batch_size, int use_hash) {
+  return (use_hash ? sizeof(hash_chunk) : 3*batch_size*GROUP_ELEMENT_BYTES);
+}
+
 uint64_t zkp_el_gamal_dlog_proof_bytelen(uint64_t batch_size, int use_hash) {
-  return 2*batch_size*GROUP_ORDER_BYTES + (use_hash ? sizeof(hash_chunk) : 3*batch_size*GROUP_ELEMENT_BYTES);
+  return 2*batch_size*GROUP_ORDER_BYTES + zkp_el_gamal_dlog_anchor_bytelen(batch_size, use_hash);
 }

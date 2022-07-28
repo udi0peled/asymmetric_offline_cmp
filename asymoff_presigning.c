@@ -200,12 +200,13 @@ uint64_t asymoff_presigning_send_msg_1(asymoff_presigning_data_t *sender, asymof
   if (sender->i == 0) return 0;
 
   asymoff_presigning_msg_round_1_t *in_msg_1 = &receiver->in_msg_1[sender->i];
+
   in_msg_1->B1 = sender->online->B1;
   in_msg_1->B2 = sender->online->B2;
   in_msg_1->Paillier_packed_K = sender->online->Paillier_packed_K;
   in_msg_1->phi_Rddh = sender->online->phi_Rddh[receiver->i];
 
-  return sender->batch_size * (2  + 2 * PAILLIER_MODULUS_BYTES) + zkp_range_el_gamal_proof_bytelen(sender->batch_size, PACKING_SIZE);
+  return sender->batch_size*2*GROUP_ELEMENT_BYTES  + 2*(sender->batch_size/PACKING_SIZE)*PAILLIER_MODULUS_BYTES + zkp_range_el_gamal_proof_bytelen(sender->batch_size, PACKING_SIZE);
 }
 
 int asymoff_presigning_execute_round_2(asymoff_presigning_data_t *party) {
@@ -340,7 +341,7 @@ uint64_t asymoff_presigning_send_msg_2(asymoff_presigning_data_t *sender, asymof
   in_msg_2->phi_eph   = offline->phi_eph;
   in_msg_2->phi_Rddh  = offline->phi_Rddh[receiver->i];
 
-  return sender->batch_size * (3 * GROUP_ELEMENT_BYTES + 2 * PAILLIER_MODULUS_BYTES) + zkp_el_gamal_dlog_proof_bytelen(sender->batch_size, 1) + zkp_range_el_gamal_proof_bytelen(sender->batch_size, PACKING_SIZE);
+  return sender->batch_size * (3*GROUP_ELEMENT_BYTES + 2*PAILLIER_MODULUS_BYTES) + zkp_el_gamal_dlog_proof_bytelen(sender->batch_size, 1) + zkp_range_el_gamal_proof_bytelen(sender->batch_size, PACKING_SIZE);
 }
 
 int asymoff_presigning_execute_final(asymoff_presigning_data_t *party) {

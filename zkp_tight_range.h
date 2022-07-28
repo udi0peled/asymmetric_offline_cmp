@@ -80,9 +80,4 @@ zkp_tight_range_positive_splitting_t *
      zkp_tight_range_splitting_new      (scalar_t secret);
 void zkp_tight_range_splitting_free     (zkp_tight_range_positive_splitting_t *splitting);
 
-
-
-//void zkp_tight_range_proof_to_bytes   (uint8_t **bytes, uint64_t *byte_len, const zkp_tight_range_proof_t *proof, uint64_t x_range_bytes, const ec_group_t ec, int move_to_end);
-//void zkp_tight_range_proof_from_bytes (zkp_tight_range_proof_t *proof, uint8_t **bytes, uint64_t *byte_len, uint64_t x_range_bytes, const scalar_t N0, const ec_group_t ec, int move_to_end);
-
 #endif

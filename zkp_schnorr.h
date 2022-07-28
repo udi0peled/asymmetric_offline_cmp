@@ -49,6 +49,4 @@ void  zkp_schnorr_prove            (zkp_schnorr_proof_t *proof, const scalar_t a
 int   zkp_schnorr_verify           (const zkp_schnorr_proof_t *proof, const zkp_schnorr_public_t *public, const zkp_aux_info_t *aux);
 uint64_t zkp_schnorr_proof_bytelen();
 
-//void  zkp_schnorr_proof_to_bytes   (uint8_t **bytes, uint64_t *byte_len, const zkp_schnorr_proof_t *proof, const ec_group_t ec, int move_to_end);
-//void  zkp_schnorr_proof_from_bytes (zkp_schnorr_proof_t *proof, uint8_t **bytes, uint64_t *byte_len, const ec_group_t ec, int move_to_end);
 #endif

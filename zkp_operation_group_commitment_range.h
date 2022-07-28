@@ -55,4 +55,6 @@ void zkp_oper_group_commit_range_free             (zkp_oper_group_commit_range_p
 void zkp_oper_group_commit_range_prove            (zkp_oper_group_commit_range_proof_t *proof, const zkp_oper_group_commit_range_secret_t *secret, const zkp_oper_group_commit_range_public_t *public, const zkp_aux_info_t *aux);
 int  zkp_oper_group_commit_range_verify           (const zkp_oper_group_commit_range_proof_t *proof, const zkp_oper_group_commit_range_public_t *public, const zkp_aux_info_t *aux);
 
+uint64_t zkp_oper_group_commit_range_bytelen(uint64_t x_range_bytes, uint64_t y_range_bytes);
+
 #endif

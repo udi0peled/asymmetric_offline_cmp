@@ -65,6 +65,7 @@ int   zkp_el_gamal_dlog_verify  (const zkp_el_gamal_dlog_proof_t *proof, const z
 void zkp_el_gamal_dlog_aggregate_anchors      (zkp_el_gamal_dlog_proof_t *agg_anchor, zkp_el_gamal_dlog_proof_t ** const anchors, uint64_t num);
 void zkp_el_gamal_dlog_aggregate_local_proofs (zkp_el_gamal_dlog_proof_t *agg_proof, zkp_el_gamal_dlog_proof_t ** const local_proofs, uint64_t num);
 
+uint64_t zkp_el_gamal_dlog_anchor_bytelen   (uint64_t batch_size, int use_hash);
 uint64_t zkp_el_gamal_dlog_proof_bytelen    (uint64_t batch_size, int use_hash);
 
 #endif

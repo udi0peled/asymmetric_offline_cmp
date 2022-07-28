@@ -181,7 +181,9 @@ int asymoff_key_gen_execute_round_1(asymoff_key_gen_data_t *party) {
 }
 
 uint64_t asymoff_key_gen_send_msg_1(asymoff_key_gen_data_t *sender, asymoff_key_gen_data_t *receiver) {
+  
   asymoff_key_gen_msg_round_1_t *in_msg_1 = &receiver->in_msg_1[sender->i];
+  
   in_msg_1->V = &sender->V;
 
   return sizeof(hash_chunk);
@@ -204,7 +206,9 @@ int asymoff_key_gen_execute_round_2(asymoff_key_gen_data_t *party) {
 }
 
 uint64_t asymoff_key_gen_send_msg_2(asymoff_key_gen_data_t *sender, asymoff_key_gen_data_t *receiver) {
+
   asymoff_key_gen_msg_round_2_t *in_msg_2 = &receiver->in_msg_2[sender->i];
+
   in_msg_2->A = sender->A;
   in_msg_2->srid = &sender->srid;
   in_msg_2->X = sender->X;
@@ -214,7 +218,7 @@ uint64_t asymoff_key_gen_send_msg_2(asymoff_key_gen_data_t *sender, asymoff_key_
   in_msg_2->u = &sender->u;
   in_msg_2->echo_all_V = &sender->echo_all_V;
 
-  return 3*GROUP_ELEMENT_BYTES + PAILLIER_MODULUS_BYTES + RING_PED_MODULUS_BYTES + 3*sizeof(hash_chunk);
+  return 3*GROUP_ELEMENT_BYTES + PAILLIER_MODULUS_BYTES + (RING_PEDERSEN_MULTIPLICITY + 2)*RING_PED_MODULUS_BYTES + 3*sizeof(hash_chunk);
 }
 
 
@@ -389,6 +393,7 @@ uint64_t asymoff_key_gen_send_msg_4(asymoff_key_gen_data_t *sender, asymoff_key_
   in_msg_4->W_0 = NULL;
 
   if (sender->i == 0) {
+    
     in_msg_4->pi_tight = sender->pi_tight[receiver->i];
     in_msg_4->W_0 = sender->W_0;
     

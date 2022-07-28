@@ -58,7 +58,7 @@ void asymoff_protocol_parties_free(asymoff_party_data_t **parties) {
     ring_pedersen_free_param(parties[i]->rped_priv, NULL);
     ec_group_free(parties[i]->ec);
 
-    if (i != 0) scalar_free(parties[i]->W_0);
+    scalar_free(parties[i]->W_0);
 
     free(parties[i]);
   }
@@ -107,6 +107,7 @@ void asymoff_protocol_parties_new_batch(asymoff_party_data_t **parties, uint64_t
     parties[i]->b        = new_scalar_array(batch_size);
     parties[i]->nonce    = new_scalar_array(batch_size);
     parties[i]->chi      = new_scalar_array(batch_size);
+
     parties[i]->joint_B1 = new_gr_el_array(batch_size, ec);
     parties[i]->joint_B2 = new_gr_el_array(batch_size, ec);
     parties[i]->joint_V1 = new_gr_el_array(batch_size, ec);
@@ -132,8 +133,11 @@ void asymoff_protocol_parties_free_batch(asymoff_party_data_t **parties) {
   for (uint64_t i = 0; i < num_parties; ++i) {
     
     free_gr_el_array(parties[i]->H, batch_size);
+    free_gr_el_array(parties[i]->R, batch_size);
+    
     free_scalar_array(parties[i]->b, batch_size);
     free_scalar_array(parties[i]->nonce, batch_size);
+    free_scalar_array(parties[i]->chi, batch_size);
     
     if (i != 0) {
       for (uint64_t j = 1; j < num_parties; ++j) {

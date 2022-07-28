@@ -1,8 +1,8 @@
 #include <openssl/sha.h>
 #include "zkp_well_formed_signature.h"
 
-#define SOUNDNESS_L 256
-#define SLACKNESS_EPS (SOUNDNESS_L + 64)
+#define SOUNDNESS_ELL 256
+#define SLACKNESS_EPS (SOUNDNESS_ELL + 64)
 
 zkp_well_formed_signature_proof_t *zkp_well_formed_signature_new (uint64_t batch_size, uint64_t packing_size, ec_group_t ec)
 {
@@ -89,13 +89,13 @@ void  zkp_well_formed_signature_anchor (zkp_well_formed_signature_proof_t *parti
   scalar_t temp = scalar_new();
   scalar_t packed = scalar_new();
 
-  scalar_set_power_of_2(temp, SOUNDNESS_L + 2*SLACKNESS_EPS);
+  scalar_set_power_of_2(temp, SOUNDNESS_ELL + 2*SLACKNESS_EPS);
   for (uint64_t p = 0; p < packing_size; ++p) {
     scalar_sample_in_range(partial_secret->alpha[p], temp, 0);
   }
 
   
-  scalar_set_power_of_2(temp, SOUNDNESS_L + SLACKNESS_EPS);
+  scalar_set_power_of_2(temp, SOUNDNESS_ELL + SLACKNESS_EPS);
   for (uint64_t p = 0; p < packing_size; ++p) scalar_sample_in_range(partial_secret->beta[p], temp, 0);
 
   for (uint64_t p = 0; p < packing_size; ++p) {
@@ -249,7 +249,7 @@ void zkp_well_formed_signature_prove (zkp_well_formed_signature_proof_t *proof, 
     }
   }
 
-  free(temp);
+  scalar_free(temp);
   free_scalar_array(e, packed_len);
   BN_CTX_free(bn_ctx);
 }
@@ -273,8 +273,8 @@ int   zkp_well_formed_signature_verify (const zkp_well_formed_signature_proof_t 
 
   int is_verified = 1;
   for (uint64_t p = 0; p < packing_size; ++p) {
-    is_verified &= ( BN_num_bits(proof->z_UA[p]) <= SOUNDNESS_L + 2*SLACKNESS_EPS + agg_range_slack);
-    is_verified &= ( BN_num_bits(proof->z_LB[p]) <= SOUNDNESS_L + SLACKNESS_EPS + agg_range_slack);
+    is_verified &= ( BN_num_bits(proof->z_UA[p]) <= SOUNDNESS_ELL + 2*SLACKNESS_EPS + agg_range_slack);
+    is_verified &= ( BN_num_bits(proof->z_LB[p]) <= SOUNDNESS_ELL + SLACKNESS_EPS + agg_range_slack);
   }
 
   zkp_well_formed_signature_challenge(e, proof, public, aux);
@@ -427,7 +427,10 @@ void zkp_well_formed_signature_aggregate_local_proofs (zkp_well_formed_signature
     }
   }   
 }
+uint64_t zkp_well_formed_signature_anchor_bytelen(uint64_t packing_size) {
+  return 2*PAILLIER_MODULUS_BYTES + RING_PED_MODULUS_BYTES + packing_size*4*GROUP_ELEMENT_BYTES;
+}
 
 uint64_t zkp_well_formed_signature_proof_bytelen(uint64_t packing_size) {
-  return 3*PAILLIER_MODULUS_BYTES + 4*GROUP_ELEMENT_BYTES + 2*packing_size*GROUP_ORDER_BYTES + 2*RING_PED_MODULUS_BYTES + SLACKNESS_EPS + packing_size*(2*SOUNDNESS_L + 3*SLACKNESS_EPS) ;
+  return zkp_well_formed_signature_anchor_bytelen(packing_size) + packing_size*(2*GROUP_ORDER_BYTES) + RING_PED_MODULUS_BYTES + SLACKNESS_EPS/8 + packing_size*(2*SOUNDNESS_ELL/8 + 3*SLACKNESS_EPS/8) ;
 }

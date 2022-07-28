@@ -64,6 +64,7 @@ int   zkp_double_el_gamal_verify  (const zkp_double_el_gamal_proof_t *proof, con
 void zkp_double_el_gamal_aggregate_anchors      (zkp_double_el_gamal_proof_t *agg_anchor, zkp_double_el_gamal_proof_t ** anchors, uint64_t num);
 void zkp_double_el_gamal_aggregate_local_proofs (zkp_double_el_gamal_proof_t *agg_proof, zkp_double_el_gamal_proof_t ** local_proofs, uint64_t num);
 
+uint64_t zkp_double_el_gamal_anchor_bytelen ();
 uint64_t zkp_double_el_gamal_proof_bytelen ();
 
 #endif

@@ -45,7 +45,4 @@ void zkp_no_small_factors_prove            (zkp_no_small_factors_t *proof, const
 int  zkp_no_small_factors_verify           (zkp_no_small_factors_t *proof, const paillier_public_key_t *paillier_pub, const ring_pedersen_public_t *rped_pub, const zkp_aux_info_t *aux);
 uint64_t zkp_no_small_factors_proof_bytelen();
 
-//void zkp_no_small_factors_proof_to_bytes   (uint8_t **bytes, uint64_t *byte_len, const zkp_no_small_factors_t *proof, int move_to_end);
-//void zkp_no_small_factors_proof_from_bytes (zkp_no_small_factors_t *proof, uint8_t **bytes, uint64_t *byte_len, int move_to_end);
-
 #endif

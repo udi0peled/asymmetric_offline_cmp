@@ -213,6 +213,10 @@ void zkp_double_el_gamal_aggregate_local_proofs (zkp_double_el_gamal_proof_t *ag
   }   
 }
 
+uint64_t zkp_double_el_gamal_anchor_bytelen () {
+  return 4*GROUP_ELEMENT_BYTES;
+}
+
 uint64_t zkp_double_el_gamal_proof_bytelen() {
-  return 3*GROUP_ORDER_BYTES + 4*GROUP_ELEMENT_BYTES;
+  return 3*GROUP_ORDER_BYTES + zkp_double_el_gamal_anchor_bytelen();
 }

@@ -54,22 +54,22 @@ typedef struct
   
   ec_group_t ec;
 
-  scalar_t V;
-  scalar_t T;
+  scalar_t V;   // 2*PAILLIER
+  scalar_t T;   // RING_PED
 
-  gr_elem_t *A1;
-  gr_elem_t *A2;
-  gr_elem_t *B1;
-  gr_elem_t *B2;
+  gr_elem_t *A1;  // GROUP_EL x packing
+  gr_elem_t *A2;  // GROUP_EL x packing
+  gr_elem_t *B1;  // GROUP_EL x packing
+  gr_elem_t *B2;  // GROUP_EL x packing
   
   // end of partial 
 
-  scalar_t *z_UA;
-  scalar_t *z_LB;
-  scalar_t *sigma_UA;
-  scalar_t *sigma_LB;
-  scalar_t d;
-  scalar_t w;
+  scalar_t *z_UA;       // (ELL+2*EPS) x packing
+  scalar_t *z_LB;       // (ELL+EPS) x packing
+  scalar_t *sigma_UA;   // GROUP_ORDER x packing
+  scalar_t *sigma_LB;   // GROUP_ORDER x packing
+  scalar_t d;           // PAILLIER
+  scalar_t w;           // RING_PED + EPS
 
 
 } zkp_well_formed_signature_proof_t;
@@ -86,6 +86,7 @@ int   zkp_well_formed_signature_verify  (const zkp_well_formed_signature_proof_t
 void zkp_well_formed_signature_aggregate_anchors      (zkp_well_formed_signature_proof_t *agg_anchor, zkp_well_formed_signature_proof_t ** const anchors, uint64_t num, const paillier_public_key_t *paillier_pub, const ring_pedersen_public_t *rped_pub);
 void zkp_well_formed_signature_aggregate_local_proofs (zkp_well_formed_signature_proof_t *agg_proof, zkp_well_formed_signature_proof_t ** const local_proofs, uint64_t num, const paillier_public_key_t *paillier_pub);
 
+uint64_t zkp_well_formed_signature_anchor_bytelen(uint64_t packing_size);
 uint64_t zkp_well_formed_signature_proof_bytelen (uint64_t packing_size);
 
 #endif

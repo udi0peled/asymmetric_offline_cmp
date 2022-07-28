@@ -30,7 +30,7 @@ asymoff_sign_cmp_data_t **asymoff_signing_cmp_parties_new(asymoff_party_data_t *
   }
 
   asymoff_sign_cmp_data_t **cmp_parties = calloc(num_parties, sizeof(asymoff_sign_cmp_data_t *));
-
+  
   for (uint64_t i = 1; i < num_parties; ++i) {
     
     uint64_t curr_index = parties[i]->curr_index;  
@@ -141,8 +141,88 @@ asymoff_sign_cmp_data_t **asymoff_signing_cmp_parties_new(asymoff_party_data_t *
   return cmp_parties;
 }
 
-void asymoff_signing_cmp_parties_free(asymoff_sign_cmp_data_t **parties) {
+void asymoff_signing_cmp_parties_free(asymoff_sign_cmp_data_t **cmp_parties) {
 
+  uint64_t num_parties = cmp_parties[1]->num_parties;
+
+  for (uint64_t i = 1; i < num_parties; ++i) {
+    
+    uint64_t num_sigs = cmp_parties[i]->num_sigs;
+
+    asymoff_sign_cmp_data_t *party = cmp_parties[i];
+
+    zkp_aux_info_free(party->aux);
+
+    group_elem_free(party->online_X);
+
+    free_gr_el_array(party->R   , num_sigs);
+    free_scalar_array(party->chi, num_sigs);
+    
+    free(party->B1);
+    free(party->B2);
+
+    free_scalar_array(party->G    , num_sigs);
+    free_scalar_array(party->K    , num_sigs);
+    free_scalar_array(party->rho  , num_sigs);
+    free_scalar_array(party->nu   , num_sigs);
+    free_scalar_array(party->z    , num_sigs);
+    free_scalar_array(party->delta, num_sigs);
+    free_scalar_array(party->gamma, num_sigs);
+
+    free_gr_el_array(party->H_gamma, num_sigs);
+    free_gr_el_array(party->Delta  , num_sigs);
+    free_gr_el_array(party->Gamma1 , num_sigs);
+    free_gr_el_array(party->Gamma2 , num_sigs);
+    free_gr_el_array(party->Lambda , num_sigs);
+
+    for (uint64_t j = 1; j < num_parties; ++j) {
+
+      free_scalar_array(party->beta[j]    , num_sigs);
+      free_scalar_array(party->D[j]       , num_sigs);
+      free_scalar_array(party->F[j]       , num_sigs);
+      free_scalar_array(party->beta_hat[j], num_sigs);
+      free_scalar_array(party->D_hat[j]   , num_sigs);
+      free_scalar_array(party->F_hat[j]   , num_sigs);
+    }
+
+
+    free(party->beta);
+    free(party->D);
+    free(party->F);
+    free(party->beta_hat);
+    free(party->D_hat);
+    free(party->F_hat);
+
+    zkp_el_gamal_dlog_free(party->phi_ddh_H_Gamma);
+    zkp_el_gamal_dlog_free(party->psi_ddh_Delta);
+
+    for (uint64_t j = 1; j < num_parties; ++j) {
+
+      zkp_range_el_gamal_free(party->theta_Rddh_G[j]);
+      zkp_range_el_gamal_free(party->theta_Rddh_K[j]);
+
+      for (uint64_t l = 0; l < num_sigs; ++l) {
+        zkp_oper_group_commit_range_free(party->phi_affg_X[j][l]);
+        zkp_oper_group_commit_range_free(party->phi_affg_H[j][l]);
+      }
+
+      free(party->phi_affg_X[j]);
+      free(party->phi_affg_H[j]);
+    }
+
+    free(party->theta_Rddh_G);
+    free(party->theta_Rddh_K);
+    free(party->phi_affg_X  );
+    free(party->phi_affg_H  );
+
+    free(party->in_cmp_msg_1);
+    free(party->in_cmp_msg_2);
+    free(party->in_cmp_msg_3);
+
+    free(cmp_parties[i]);
+  }
+  
+  free(cmp_parties);
 }
 
 int asymoff_signing_cmp_execute_round_1(asymoff_sign_cmp_data_t *party) {
@@ -235,7 +315,7 @@ uint64_t asymoff_signing_cmp_send_msg_1(asymoff_sign_cmp_data_t *sender, asymoff
   in_cmp_msg_1->theta_Rddh_K = sender->theta_Rddh_K[receiver->i];
   in_cmp_msg_1->theta_Rddh_G = sender->theta_Rddh_G[receiver->i];
 
-  return 0;
+  return sender->num_sigs*(2*PAILLIER_MODULUS_BYTES + 2*GROUP_ELEMENT_BYTES) + 2*(sender->num_parties-1)*zkp_range_el_gamal_proof_bytelen(sender->num_sigs, 1);
 }
 
 int asymoff_signing_cmp_execute_round_2(asymoff_sign_cmp_data_t *party) {
@@ -422,7 +502,7 @@ uint64_t asymoff_signing_cmp_send_msg_2(asymoff_sign_cmp_data_t *sender, asymoff
   in_cmp_msg_2->phi_affg_X      = sender->phi_affg_X[receiver->i];
   in_cmp_msg_2->phi_affg_H      = sender->phi_affg_H[receiver->i];
 
-  return 0;
+  return zkp_el_gamal_dlog_proof_bytelen(sender->num_sigs, 1) + sender->num_sigs*(GROUP_ELEMENT_BYTES + 4*PAILLIER_MODULUS_BYTES + 2*(sender->num_parties-1)*zkp_oper_group_commit_range_bytelen(CALIGRAPHIC_I_ZKP_RANGE_BYTES, CALIGRAPHIC_J_ZKP_RANGE_BYTES));
 }
 
 
@@ -580,7 +660,7 @@ uint64_t asymoff_signing_cmp_send_msg_3(asymoff_sign_cmp_data_t *sender, asymoff
   in_cmp_msg_3->Delta = sender->Delta;
   in_cmp_msg_3->psi_ddh_Delta = sender->psi_ddh_Delta;
   
-  return 0;
+  return sender->num_sigs*( GROUP_ORDER_BYTES + GROUP_ELEMENT_BYTES) + zkp_el_gamal_dlog_proof_bytelen(sender->num_sigs, 1);
 }
 
 int asymoff_signing_cmp_execute_final(asymoff_sign_cmp_data_t *party) {

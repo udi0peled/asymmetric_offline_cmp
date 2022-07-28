@@ -1,7 +1,7 @@
 #include "zkp_no_small_factors.h"
 
-#define SOUNDNESS_L 256
-#define SLACKNESS_EPS (SOUNDNESS_L + 64)
+#define SOUNDNESS_ELL 256
+#define SLACKNESS_EPS (SOUNDNESS_ELL + 64)
 
 zkp_no_small_factors_t *zkp_no_small_factors_new ()
 {
@@ -65,7 +65,7 @@ void zkp_no_small_factors_challenge (scalar_t e, const zkp_no_small_factors_t *p
   assert(fs_data + fs_data_len == data_pos);
 
   scalar_t challange_range = scalar_new();
-  scalar_set_power_of_2(challange_range, SOUNDNESS_L);
+  scalar_set_power_of_2(challange_range, SOUNDNESS_ELL);
 
   fiat_shamir_scalars_in_range(&e, 1, challange_range, fs_data, fs_data_len);
   scalar_make_signed(e, challange_range);
@@ -90,7 +90,7 @@ void zkp_no_small_factors_prove (zkp_no_small_factors_t *proof, const paillier_p
   scalar_t y           = scalar_new();
   scalar_t e           = scalar_new();
 
-  scalar_set_power_of_2(temp_range, SOUNDNESS_L + SLACKNESS_EPS + 4*PAILLIER_MODULUS_BYTES);
+  scalar_set_power_of_2(temp_range, SOUNDNESS_ELL + SLACKNESS_EPS + 4*PAILLIER_MODULUS_BYTES);
   
   scalar_sample_in_range(alpha, temp_range, 0);
   scalar_sample_in_range(beta, temp_range, 0);
@@ -98,7 +98,7 @@ void zkp_no_small_factors_prove (zkp_no_small_factors_t *proof, const paillier_p
   scalar_make_signed(alpha, temp_range);
   scalar_make_signed(beta, temp_range);
 
-  BN_lshift(temp_range, rped_pub->N, SOUNDNESS_L);
+  BN_lshift(temp_range, rped_pub->N, SOUNDNESS_ELL);
   
   scalar_sample_in_range(mu, temp_range, 0);
   scalar_sample_in_range(sigma, temp_range, 0);
@@ -106,12 +106,12 @@ void zkp_no_small_factors_prove (zkp_no_small_factors_t *proof, const paillier_p
   scalar_make_signed(mu, temp_range);
   scalar_make_signed(sigma, temp_range);
   
-  BN_lshift(temp_range, rped_pub->N, SOUNDNESS_L + SLACKNESS_EPS + 1 + 4*PAILLIER_MODULUS_BYTES);
+  BN_lshift(temp_range, rped_pub->N, SOUNDNESS_ELL + SLACKNESS_EPS + 1 + 4*PAILLIER_MODULUS_BYTES);
   
   scalar_sample_in_range(r, temp_range, 0);
   scalar_make_signed(r, temp_range);
   
-  BN_lshift(temp_range, rped_pub->N, SOUNDNESS_L + SLACKNESS_EPS);
+  BN_lshift(temp_range, rped_pub->N, SOUNDNESS_ELL + SLACKNESS_EPS);
   
   scalar_sample_in_range(x, temp_range, 0);
   scalar_sample_in_range(y, temp_range, 0);
@@ -169,8 +169,8 @@ int  zkp_no_small_factors_verify (zkp_no_small_factors_t *proof, const paillier_
 
   int is_verified = 1;
 
-  is_verified &= ( BN_num_bits(proof->z_1) <= SOUNDNESS_L + SLACKNESS_EPS + 4*PAILLIER_MODULUS_BYTES );
-  is_verified &= ( BN_num_bits(proof->z_2) <= SOUNDNESS_L + SLACKNESS_EPS + 4*PAILLIER_MODULUS_BYTES );
+  is_verified &= ( BN_num_bits(proof->z_1) <= SOUNDNESS_ELL + SLACKNESS_EPS + 4*PAILLIER_MODULUS_BYTES );
+  is_verified &= ( BN_num_bits(proof->z_2) <= SOUNDNESS_ELL + SLACKNESS_EPS + 4*PAILLIER_MODULUS_BYTES );
 
   scalar_t e = scalar_new();
   zkp_no_small_factors_challenge(e, proof, paillier_pub, rped_pub, aux);
@@ -207,5 +207,5 @@ int  zkp_no_small_factors_verify (zkp_no_small_factors_t *proof, const paillier_
 
 uint64_t zkp_no_small_factors_proof_bytelen()
 {
-  return 4*RING_PED_MODULUS_BYTES + 5*(SOUNDNESS_L+SLACKNESS_EPS)/4 + 3*(PAILLIER_MODULUS_BYTES+1)/2 + 3*RING_PED_MODULUS_BYTES;
+  return 4*RING_PED_MODULUS_BYTES + 5*(SOUNDNESS_ELL+SLACKNESS_EPS)/4 + 3*(PAILLIER_MODULUS_BYTES+1)/2 + 3*RING_PED_MODULUS_BYTES;
 }

@@ -145,12 +145,12 @@ int asymoff_signing_aggregate_execute_round_2(asymoff_sign_agg_data_t *party);
 int asymoff_signing_aggregate_execute_round_3(asymoff_sign_agg_data_t *party);
 int asymoff_signing_aggregate_execute_final  (asymoff_sign_agg_data_t *party);
 
-int asymoff_signing_aggregate_execute_offline(asymoff_sign_agg_data_t *party, uint64_t sender_index, scalar_t *signatures_s);
+int asymoff_signing_aggregate_execute_offline(asymoff_sign_agg_data_t *party, scalar_t *signatures_s);
 
 uint64_t asymoff_signing_aggregate_send_msg_1(asymoff_sign_agg_data_t *sender, asymoff_sign_agg_data_t *receiver);
 uint64_t asymoff_signing_aggregate_send_msg_2(asymoff_sign_agg_data_t *sender, asymoff_sign_agg_data_t *receiver);
 uint64_t asymoff_signing_aggregate_send_msg_3(asymoff_sign_agg_data_t *sender, asymoff_sign_agg_data_t *receiver);
 
-uint64_t asymoff_signing_send_msg_offline(asymoff_sign_agg_data_t *sender, asymoff_sign_agg_data_t *receiver);
+uint64_t asymoff_signing_aggregate_send_msg_offline(asymoff_sign_agg_data_t *sender, asymoff_sign_agg_data_t *receiver);
 
 #endif
