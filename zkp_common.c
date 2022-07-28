@@ -145,22 +145,22 @@ void zkp_aux_info_free(zkp_aux_info_t *aux)
   free(aux);
 }
 
-void pack_plaintexts(scalar_t packed, const scalar_t plaintext[PACKING_SIZE], scalar_t domain, int test_decoding) {
+void pack_plaintexts(scalar_t packed, const scalar_t *plaintexts, uint64_t packing_size, scalar_t domain, int test_decoding) {
   scalar_t shifted = scalar_new();
 
   BN_set_word(packed, 0);
-  for (uint64_t p = 0; p < PACKING_SIZE; ++p) {
+  for (uint64_t p = 0; p < packing_size; ++p) {
 
     // To allow correct unpacking later
     if (test_decoding) {
-      if (BN_num_bits(plaintext[p]) >= PACKING_SHIFT-1) {
+      if (BN_num_bits(plaintexts[p]) >= PACKING_SHIFT-1) {
         BN_set_word(packed, 0);
-        printf("PACKING ERROR ########################### plaintext bitlen = %d too big for packing shift %d\n", BN_num_bits(plaintext[p]), PACKING_SHIFT);
+        printf("PACKING ERROR ########################### plaintext bitlen = %d too big for packing shift %d\n", BN_num_bits(plaintexts[p]), PACKING_SHIFT);
       break;
       }
     }
 
-    BN_lshift(shifted, plaintext[p], PACKING_SHIFT*p);
+    BN_lshift(shifted, plaintexts[p], PACKING_SHIFT*p);
     BN_add(packed, packed, shifted);
   }
   scalar_free(shifted);
@@ -174,7 +174,7 @@ void pack_plaintexts(scalar_t packed, const scalar_t plaintext[PACKING_SIZE], sc
   }
 }
 
-void unpack_plaintexts(scalar_t unpacked[PACKING_SIZE], const scalar_t packed_plaintext) {
+void unpack_plaintexts(scalar_t *unpacked, uint64_t packing_size, const scalar_t packed_plaintext) {
 
   scalar_t shifted = scalar_new();
   scalar_copy(shifted, packed_plaintext);
@@ -182,16 +182,16 @@ void unpack_plaintexts(scalar_t unpacked[PACKING_SIZE], const scalar_t packed_pl
   scalar_t exp_2 = scalar_new();
   scalar_set_power_of_2(exp_2, PACKING_SHIFT-1);
 
-  for (uint64_t p = 0; p < PACKING_SIZE; ++p) {
+  for (uint64_t p = 0; p < packing_size; ++p) {
     BN_add(shifted, shifted, exp_2);
     BN_lshift(exp_2, exp_2, PACKING_SHIFT);
   }
   
   scalar_set_power_of_2(exp_2, PACKING_SHIFT-1);
 
-  uint64_t curr_bit_shift = PACKING_SHIFT*(PACKING_SIZE-1);
+  uint64_t curr_bit_shift = PACKING_SHIFT*(packing_size-1);
 
-  for (uint64_t p = PACKING_SIZE; p > 0; --p) {
+  for (uint64_t p = packing_size; p > 0; --p) {
     
     BN_rshift(unpacked[p-1], shifted, curr_bit_shift);
     BN_sub(unpacked[p-1], unpacked[p-1], exp_2);

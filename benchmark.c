@@ -227,6 +227,59 @@ void print_after_presigning(asymoff_party_data_t **parties, uint64_t num_print) 
  *  Signing CMP  *
  *****************/
 
+void asymoff_signing_cmp_send_msg_to_all_others(asymoff_sign_cmp_data_t **cmp_parties, uint64_t sender_i, int round) {
+
+  uint64_t (*send_func)(asymoff_sign_cmp_data_t*, asymoff_sign_cmp_data_t*);
+
+  switch (round) {
+    case 1: send_func = asymoff_signing_cmp_send_msg_1; break;
+    case 2: send_func = asymoff_signing_cmp_send_msg_2; break;
+    case 3: send_func = asymoff_signing_cmp_send_msg_3; break;
+    default: return;
+  }
+  
+  for (uint64_t j = 1; j < cmp_parties[sender_i]->num_parties; ++j) {
+    if (sender_i == j) continue;
+    sent_bytelen[round-1][sender_i][j] = send_func(cmp_parties[sender_i], cmp_parties[j]);
+  }
+}
+
+void signing_cmp_execute(asymoff_party_data_t **parties, uint64_t num_sigs) {
+
+  printf("Signing CMP %ld msgs\n", num_sigs);
+
+  asymoff_sign_cmp_data_t **cmp_parties = asymoff_signing_cmp_parties_new(parties, num_sigs);
+  
+  for (uint64_t i = 1; i < NUM_PARTIES; ++i) {
+    start_timer();
+    asymoff_signing_cmp_execute_round_1(cmp_parties[i]);
+    exec_time[0][i] = get_time();
+    asymoff_signing_cmp_send_msg_to_all_others(cmp_parties, i, 1);
+  }
+
+  for (uint64_t i = 1; i < NUM_PARTIES; ++i) {
+    start_timer();
+    asymoff_signing_cmp_execute_round_2(cmp_parties[i]);
+    exec_time[1][i] = get_time();
+    asymoff_signing_cmp_send_msg_to_all_others(cmp_parties, i, 2);
+  }
+
+  for (uint64_t i = 1; i < NUM_PARTIES; ++i) {
+    start_timer();
+    asymoff_signing_cmp_execute_round_3(cmp_parties[i]);
+    exec_time[1][i] = get_time();
+    asymoff_signing_cmp_send_msg_to_all_others(cmp_parties, i, 3);
+  }
+
+  for (uint64_t i = 1; i < NUM_PARTIES; ++i) {
+    start_timer();
+    asymoff_signing_cmp_execute_final(cmp_parties[i]);
+    exec_time[1][i] = get_time();
+  }
+
+  asymoff_signing_cmp_export_data(parties, cmp_parties);
+
+}
 
 void signing_cmp_mock_execute(asymoff_party_data_t **parties, uint64_t num_sigs) {
     printf("Signing CMP %ld msgs - Mock\n", num_sigs);
@@ -247,7 +300,7 @@ void signing_cmp_mock_execute(asymoff_party_data_t **parties, uint64_t num_sigs)
     asymoff_signing_cmp_execute_mock_export_data(parties);
 }
 
-void print_online_cmp_ouput(asymoff_party_data_t ** const parties, uint64_t num_sigs){
+void print_signing_cmp_ouput(asymoff_party_data_t ** const parties, uint64_t num_sigs){
   
   asymoff_party_data_t *party;
   ec_group_t ec = parties[0]->ec;
@@ -260,6 +313,9 @@ void print_online_cmp_ouput(asymoff_party_data_t ** const parties, uint64_t num_
         printf("x_%ld = ", i);
         printBIGNUM("", party->x, "\n");
       }
+
+      printf("H_%ld_%ld = ", l, i);
+      printECPOINT("", party->H[l], ec, "\n", 1);
 
       printf("R_%ld_%ld = ", l, i);
       printECPOINT("", party->R[l], ec, "\n", 1);
@@ -295,10 +351,8 @@ void asymoff_signing_aggregate_send_msg_to_all_others(asymoff_sign_agg_data_t **
   }
 }
 
-void signing_aggregate_execute(asymoff_party_data_t **parties) {
-  uint64_t num_msgs = parties[0]->num_sigs;
-
-  printf("Signing %ld msgs\n", num_msgs);
+void signing_aggregate_execute(asymoff_party_data_t **parties, uint64_t num_msgs) {
+  printf("Signing Aggregate %ld msgs\n", num_msgs);
 
   scalar_t *msgs = new_scalar_array(num_msgs);
   for (uint64_t l = 0; l < num_msgs; ++l) scalar_sample_in_range(msgs[l], ec_group_order(parties[0]->ec), 0);
@@ -336,13 +390,18 @@ void signing_aggregate_execute(asymoff_party_data_t **parties) {
 
   scalar_t *sigs = new_scalar_array(num_msgs);
 
-  asymoff_signing_aggregate_execute_offline(signing_parties[0], 1, sigs);
+  assert(asymoff_signing_aggregate_execute_offline(signing_parties[0], 1, sigs) == 0);
 
   printf("All messages signed succesfully!\n");
+
   free_scalar_array(sigs, num_msgs);
 }
 
 int main(int argc, char *argv[]) {
+
+  uint64_t batch_size = 6;
+  if (argc >= 2) sscanf(argv[1], "%ld", &batch_size);
+  batch_size = PACKING_SIZE*((batch_size+PACKING_SIZE-1)/PACKING_SIZE);
 
   with_measurements = 1;
   with_info_print = 1;
@@ -350,21 +409,20 @@ int main(int argc, char *argv[]) {
   asymoff_party_data_t **parties = asymoff_protocol_parties_new(NUM_PARTIES);
   asymoff_protocol_parties_set(parties, NULL, NULL);
 
-  //key_gen_protocol_execute(parties);
-  key_gen_protocol_mock_execute(parties);
+  key_gen_protocol_execute(parties);
+  //key_gen_protocol_mock_execute(parties);
+  
   //print_after_keygen(parties);
-
-  uint64_t batch_size = 6;
-  if (argc >= 2) sscanf(argv[1], "%ld", &batch_size);
-  batch_size = PACKING_SIZE*((batch_size+PACKING_SIZE-1)/PACKING_SIZE);
 
   presigning_execute(parties, batch_size);
 
   //print_after_presigning(parties, 1);
-  signing_cmp_mock_execute(parties, 3);
-  signing_aggregate_execute(parties);
-  signing_cmp_mock_execute(parties, 3);
-  signing_aggregate_execute(parties);
+
+  signing_cmp_execute(parties, 6);
+
+  //print_signing_cmp_ouput(parties, 1);
+
+  signing_aggregate_execute(parties, 6);
 
   asymoff_protocol_parties_free_batch(parties);
   asymoff_protocol_parties_free(parties);

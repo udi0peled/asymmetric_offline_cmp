@@ -457,7 +457,11 @@ void asymoff_key_gen_export_data(asymoff_party_data_t **parties, asymoff_key_gen
     memcpy(party->srid, kgd->joint_srid, sizeof(hash_chunk));
     scalar_copy(party->x, kgd->x);
 
-    if (i != 0) scalar_copy(party->W_0, kgd->in_msg_4[0].W_0);
+    if (i == 0) {
+      scalar_copy(party->W_0, kgd->W_0);
+    } else {
+      scalar_copy(party->W_0, kgd->in_msg_4[0].W_0);
+    }
     group_elem_copy(party->Y, parties[0]->Y);
 
     paillier_encryption_copy_keys(party->paillier_priv, NULL, kgd->paillier_priv, NULL);

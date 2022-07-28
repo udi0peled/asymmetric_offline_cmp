@@ -6,6 +6,7 @@
 typedef struct
 {
   uint64_t batch_size;
+  uint64_t packing_size;
 
   ec_group_t ec;
   gr_elem_t g;
@@ -27,11 +28,12 @@ typedef struct
 
 typedef struct
 {
-  
-  scalar_t alpha   [PACKING_SIZE];
-  scalar_t beta    [PACKING_SIZE];
-  scalar_t delta_LB[PACKING_SIZE];
-  scalar_t delta_UA[PACKING_SIZE];
+  uint64_t packing_size;
+
+  scalar_t *alpha;
+  scalar_t *beta;
+  scalar_t *delta_LB;
+  scalar_t *delta_UA;
   scalar_t r;
   scalar_t nu;
 
@@ -48,22 +50,24 @@ typedef struct
 
 typedef struct
 {
+  uint64_t packing_size;
+  
   ec_group_t ec;
 
   scalar_t V;
   scalar_t T;
 
-  gr_elem_t A1[PACKING_SIZE];
-  gr_elem_t A2[PACKING_SIZE];
-  gr_elem_t B1[PACKING_SIZE];
-  gr_elem_t B2[PACKING_SIZE];
+  gr_elem_t *A1;
+  gr_elem_t *A2;
+  gr_elem_t *B1;
+  gr_elem_t *B2;
   
   // end of partial 
 
-  scalar_t z_UA    [PACKING_SIZE];
-  scalar_t z_LB    [PACKING_SIZE];
-  scalar_t sigma_UA[PACKING_SIZE];
-  scalar_t sigma_LB[PACKING_SIZE];
+  scalar_t *z_UA;
+  scalar_t *z_LB;
+  scalar_t *sigma_UA;
+  scalar_t *sigma_LB;
   scalar_t d;
   scalar_t w;
 
@@ -71,7 +75,7 @@ typedef struct
 } zkp_well_formed_signature_proof_t;
 
 zkp_well_formed_signature_proof_t *
-      zkp_well_formed_signature_new   (ec_group_t ec);
+      zkp_well_formed_signature_new   (uint64_t batch_size, uint64_t packing_size, ec_group_t ec);
 void  zkp_well_formed_signature_copy  (zkp_well_formed_signature_proof_t * copy_proof, zkp_well_formed_signature_proof_t * const proof);
 void  zkp_well_formed_signature_free  (zkp_well_formed_signature_proof_t *proof);
 
@@ -82,6 +86,6 @@ int   zkp_well_formed_signature_verify  (const zkp_well_formed_signature_proof_t
 void zkp_well_formed_signature_aggregate_anchors      (zkp_well_formed_signature_proof_t *agg_anchor, zkp_well_formed_signature_proof_t ** const anchors, uint64_t num, const paillier_public_key_t *paillier_pub, const ring_pedersen_public_t *rped_pub);
 void zkp_well_formed_signature_aggregate_local_proofs (zkp_well_formed_signature_proof_t *agg_proof, zkp_well_formed_signature_proof_t ** const local_proofs, uint64_t num, const paillier_public_key_t *paillier_pub);
 
-uint64_t zkp_well_formed_signature_proof_bytelen ();
+uint64_t zkp_well_formed_signature_proof_bytelen (uint64_t packing_size);
 
 #endif

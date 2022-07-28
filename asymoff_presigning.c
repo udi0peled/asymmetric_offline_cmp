@@ -50,7 +50,7 @@ asymoff_presigning_data_t **asymoff_presigning_parties_new(asymoff_party_data_t 
       offline->Paillier_packed_C = new_scalar_array(batch_size/PACKING_SIZE);
 
       offline->phi_Rddh = calloc(num_parties, sizeof(zkp_range_el_gamal_proof_t*));
-      for (uint64_t i = 0; i < num_parties; ++i) offline->phi_Rddh[i] = zkp_range_el_gamal_new(batch_size, ec);
+      for (uint64_t i = 0; i < num_parties; ++i) offline->phi_Rddh[i] = zkp_range_el_gamal_new(batch_size, PACKING_SIZE, ec);
       
       offline->phi_eph = zkp_el_gamal_dlog_new(batch_size, ec);
 
@@ -68,7 +68,7 @@ asymoff_presigning_data_t **asymoff_presigning_parties_new(asymoff_party_data_t 
       online->Paillier_packed_K = new_scalar_array(batch_size/PACKING_SIZE);
 
       online->phi_Rddh = calloc(num_parties, sizeof(zkp_range_el_gamal_proof_t*));
-      for (uint64_t i = 0; i < num_parties; ++i) online->phi_Rddh[i] = zkp_range_el_gamal_new(batch_size, ec);     
+      for (uint64_t i = 0; i < num_parties; ++i) online->phi_Rddh[i] = zkp_range_el_gamal_new(batch_size, PACKING_SIZE, ec);     
     }
 
     party->in_msg_1 = calloc(num_parties, sizeof(asymoff_presigning_msg_round_1_t));
@@ -159,7 +159,7 @@ int asymoff_presigning_execute_round_1(asymoff_presigning_data_t *party) {
 
   for (uint64_t packed_l = 0; packed_l < batch_size/PACKING_SIZE; ++packed_l) {
       paillier_encryption_sample(nu[packed_l],party->paillier_pub[party->i]);
-      pack_plaintexts(packed_k, &online->k[PACKING_SIZE*packed_l], party->paillier_pub[party->i]->N, 1);
+      pack_plaintexts(packed_k, &online->k[PACKING_SIZE*packed_l], PACKING_SIZE, party->paillier_pub[party->i]->N, 1);
       paillier_encryption_encrypt(online->Paillier_packed_K[packed_l], packed_k, nu[packed_l], party->paillier_pub[party->i]);
     }
 
@@ -168,6 +168,7 @@ int asymoff_presigning_execute_round_1(asymoff_presigning_data_t *party) {
     
     zkp_range_el_gamal_public_t phi_Rddh_public;
     phi_Rddh_public.batch_size    = party->batch_size;
+    phi_Rddh_public.packing_size  = PACKING_SIZE;
     phi_Rddh_public.paillier_pub  = party->paillier_pub[party->i];
     phi_Rddh_public.rped_pub      = party->rped_pub[j];
     phi_Rddh_public.A1  = online->B1;
@@ -204,7 +205,7 @@ uint64_t asymoff_presigning_send_msg_1(asymoff_presigning_data_t *sender, asymof
   in_msg_1->Paillier_packed_K = sender->online->Paillier_packed_K;
   in_msg_1->phi_Rddh = sender->online->phi_Rddh[receiver->i];
 
-  return sender->batch_size * (2  + 2 * PAILLIER_MODULUS_BYTES) + zkp_range_el_gamal_proof_bytelen(sender->batch_size);
+  return sender->batch_size * (2  + 2 * PAILLIER_MODULUS_BYTES) + zkp_range_el_gamal_proof_bytelen(sender->batch_size, PACKING_SIZE);
 }
 
 int asymoff_presigning_execute_round_2(asymoff_presigning_data_t *party) {
@@ -222,6 +223,7 @@ int asymoff_presigning_execute_round_2(asymoff_presigning_data_t *party) {
 
     zkp_range_el_gamal_public_t phi_Rddh_public;
     phi_Rddh_public.batch_size    = party->batch_size;
+    phi_Rddh_public.packing_size  = PACKING_SIZE;
     phi_Rddh_public.paillier_pub  = party->paillier_pub[j];
     phi_Rddh_public.rped_pub      = party->rped_pub[party->i];
     phi_Rddh_public.A1  = in_msg_1->B1;
@@ -262,12 +264,11 @@ int asymoff_presigning_execute_round_2(asymoff_presigning_data_t *party) {
 
   for (uint64_t packed_l = 0; packed_l < batch_size/PACKING_SIZE; ++packed_l) {
 
-    pack_plaintexts(temp, &offline->alpha[PACKING_SIZE*packed_l], party->paillier_pub[party->i]->N, 1);
+    pack_plaintexts(temp, &offline->alpha[PACKING_SIZE*packed_l], PACKING_SIZE, party->paillier_pub[party->i]->N, 1);
     paillier_encryption_sample(rho[packed_l], party->paillier_pub[party->i]);
     paillier_encryption_encrypt(offline->Paillier_packed_C[packed_l], temp, rho[packed_l], party->paillier_pub[party->i]);
   }
 
-  // Allocate to be flattened (since not packed in zkp)
   zkp_el_gamal_dlog_public_t phi_eph_public;
   phi_eph_public.batch_size = batch_size;
   phi_eph_public.B1 = offline->A1;
@@ -299,6 +300,7 @@ int asymoff_presigning_execute_round_2(asymoff_presigning_data_t *party) {
     
     zkp_range_el_gamal_public_t phi_Rddh_public;
     phi_Rddh_public.batch_size    = party->batch_size;
+    phi_Rddh_public.packing_size  = PACKING_SIZE;
     phi_Rddh_public.paillier_pub  = party->paillier_pub[party->i];
     phi_Rddh_public.rped_pub      = party->rped_pub[j];
     phi_Rddh_public.A1  = offline->A1;
@@ -338,7 +340,7 @@ uint64_t asymoff_presigning_send_msg_2(asymoff_presigning_data_t *sender, asymof
   in_msg_2->phi_eph   = offline->phi_eph;
   in_msg_2->phi_Rddh  = offline->phi_Rddh[receiver->i];
 
-  return sender->batch_size * (3 * GROUP_ELEMENT_BYTES + 2 * PAILLIER_MODULUS_BYTES) + zkp_el_gamal_dlog_proof_bytelen(sender->batch_size, 1) + zkp_range_el_gamal_proof_bytelen(sender->batch_size);
+  return sender->batch_size * (3 * GROUP_ELEMENT_BYTES + 2 * PAILLIER_MODULUS_BYTES) + zkp_el_gamal_dlog_proof_bytelen(sender->batch_size, 1) + zkp_range_el_gamal_proof_bytelen(sender->batch_size, PACKING_SIZE);
 }
 
 int asymoff_presigning_execute_final(asymoff_presigning_data_t *party) {
@@ -374,6 +376,7 @@ int asymoff_presigning_execute_final(asymoff_presigning_data_t *party) {
 
   zkp_range_el_gamal_public_t phi_Rddh_public;
   phi_Rddh_public.batch_size    = party->batch_size;
+  phi_Rddh_public.packing_size  = PACKING_SIZE;
   phi_Rddh_public.paillier_pub  = party->paillier_pub[party_0_i];
   phi_Rddh_public.rped_pub      = party->rped_pub[party->i];
   phi_Rddh_public.A1  = in_msg_2->A1;

@@ -44,34 +44,6 @@ void zkp_double_el_gamal_free (zkp_double_el_gamal_proof_t *proof)
   free(proof);
 }
 
-/*
-void  zkp_double_el_gamal_update_anchor_hash(zkp_double_el_gamal_proof_t *partial_proof) {
-
-  ec_group_t ec = partial_proof->ec;
-
-  uint8_t *hash_bytes = malloc(GROUP_ELEMENT_BYTES);
-
-  SHA512_CTX anchor_hash_ctx;
-  SHA512_Init(&anchor_hash_ctx);
-
-  group_elem_to_bytes(&hash_bytes, GROUP_ELEMENT_BYTES, partial_proof->U1, ec, 0);
-  SHA512_Update(&anchor_hash_ctx, hash_bytes, GROUP_ELEMENT_BYTES);
-
-  group_elem_to_bytes(&hash_bytes, GROUP_ELEMENT_BYTES, partial_proof->U2, ec, 0);
-  SHA512_Update(&anchor_hash_ctx, hash_bytes, GROUP_ELEMENT_BYTES);
-
-  group_elem_to_bytes(&hash_bytes, GROUP_ELEMENT_BYTES, partial_proof->W1, ec, 0);
-  SHA512_Update(&anchor_hash_ctx, hash_bytes, GROUP_ELEMENT_BYTES);
-
-  group_elem_to_bytes(&hash_bytes, GROUP_ELEMENT_BYTES, partial_proof->W2, ec, 0);
-  SHA512_Update(&anchor_hash_ctx, hash_bytes, GROUP_ELEMENT_BYTES);
-
-  SHA512_Final(partial_proof->anchor_hash, &anchor_hash_ctx);
-
-  free(hash_bytes);
-}
-*/
-
 void  zkp_double_el_gamal_anchor (zkp_double_el_gamal_proof_t *partial_proof, zkp_double_el_gamal_secret_t *partial_secret, const zkp_double_el_gamal_public_t *partial_public)
 {
   ec_group_t ec = partial_public->ec;

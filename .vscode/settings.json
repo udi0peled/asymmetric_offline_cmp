@@ -20,7 +20,10 @@
       "time.h": "c",
       "asymoff_signing.h": "c",
       "stdarg.h": "c",
-      "zkp_double_el_gamal.h": "c"
+      "zkp_double_el_gamal.h": "c",
+      "zkp_operation_group_commitment_range.h": "c",
+      "zkp_el_gamal.h": "c",
+      "asymoff_signing_cmp.h": "c"
     },
     "C_Cpp.intelliSenseEngineFallback": "Disabled"
 }

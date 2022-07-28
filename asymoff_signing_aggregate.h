@@ -67,7 +67,6 @@ typedef struct
 {
   uint64_t i;
   uint64_t num_parties;
-  uint64_t bitlen_plus_1_num_parties; // helper value;
 
   zkp_aux_info_t *aux;
 
