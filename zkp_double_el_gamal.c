@@ -125,7 +125,7 @@ void zkp_double_el_gamal_prove (zkp_double_el_gamal_proof_t *proof, const zkp_do
     scalar_add(proof->w_2, proof->w_2, temp, ec_order);
   }
 
-  free(temp);
+  scalar_free(temp);
   free_scalar_array(e, batch_size);
 }
 

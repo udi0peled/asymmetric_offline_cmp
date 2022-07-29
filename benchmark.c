@@ -10,7 +10,7 @@
 #include "asymoff_signing_cmp.h"
 #include "asymoff_signing_aggregate.h"
 
-#define NUM_PARTIES 3
+#define NUM_PARTIES 2
 
 /*************
  *  Helpers  *
@@ -187,8 +187,6 @@ void presigning_execute(asymoff_party_data_t **parties, uint64_t batch_size) {
     exec_time[2][i] = get_time();
   }
   
-  asymoff_protocol_parties_new_batch(parties, batch_size);
-
   asymoff_presigning_export_data(parties, presign_parties);
   
   asymoff_presigning_parties_free(presign_parties);
@@ -418,10 +416,12 @@ int main(int argc, char *argv[]) {
   asymoff_party_data_t **parties = asymoff_protocol_parties_new(NUM_PARTIES);
   asymoff_protocol_parties_set(parties, NULL, NULL);
 
-  //key_gen_protocol_execute(parties);
-  key_gen_protocol_mock_execute(parties);
+  key_gen_protocol_execute(parties);
+  //key_gen_protocol_mock_execute(parties);
   
   //print_after_keygen(parties);
+
+  asymoff_protocol_parties_new_batch(parties, batch_size);
 
   presigning_execute(parties, batch_size);
 
@@ -429,7 +429,7 @@ int main(int argc, char *argv[]) {
 
   //print_after_presigning(parties, 1);
 
-  //signing_cmp_execute(parties, batch_size);
+  signing_cmp_execute(parties, batch_size);
 
   //signing_cmp_mock_execute(parties, batch_size);
 
@@ -437,7 +437,7 @@ int main(int argc, char *argv[]) {
 
   //print_signing_cmp_ouput(parties, 1);
 
-  //signing_aggregate_execute(parties, batch_size);
+  signing_aggregate_execute(parties, batch_size);
 
   print_measurements(4);
 

@@ -56,20 +56,23 @@ void zkp_range_el_gamal_challenge (scalar_t *e, const zkp_range_el_gamal_proof_t
   uint64_t packing_size = proof->packing_size;
   uint64_t packed_len = batch_size / packing_size;
   
-  uint64_t fs_data_len = aux->info_len + GROUP_ELEMENT_BYTES*(2 + 2*packing_size + 2*public->batch_size) + PAILLIER_MODULUS_BYTES*(3 + 2*packed_len) + RING_PED_MODULUS_BYTES*(2 + packing_size + packed_len);
+  uint64_t fs_data_len = aux->info_len + GROUP_ELEMENT_BYTES*(2 + 2*packing_size + 2*batch_size) + PAILLIER_MODULUS_BYTES*(3 + 2*packed_len) + RING_PED_MODULUS_BYTES*(3 + packing_size + packed_len);
 
   uint8_t *fs_data = malloc(fs_data_len);
+  memset(fs_data, 0x00, fs_data_len);
   uint8_t *data_pos = fs_data;
 
-  memcpy(data_pos, aux->info, aux->info_len);
-  data_pos += aux->info_len;
+  // memcpy(data_pos, aux->info, aux->info_len);
+  // data_pos += aux->info_len;
 
   scalar_to_bytes(&data_pos, PAILLIER_MODULUS_BYTES , public->paillier_pub->N, 1);
   scalar_to_bytes(&data_pos, RING_PED_MODULUS_BYTES , public->rped_pub->N, 1);
   scalar_to_bytes(&data_pos, RING_PED_MODULUS_BYTES , public->rped_pub->t, 1);
+
   for (uint64_t p = 0; p < packing_size; ++p) {
     scalar_to_bytes(&data_pos, RING_PED_MODULUS_BYTES , public->rped_pub->s[p], 1);
   }
+
   group_elem_to_bytes(&data_pos, GROUP_ELEMENT_BYTES, public->g, public->ec, 1);
   group_elem_to_bytes(&data_pos, GROUP_ELEMENT_BYTES, public->Y, public->ec, 1);
   
@@ -91,8 +94,9 @@ void zkp_range_el_gamal_challenge (scalar_t *e, const zkp_range_el_gamal_proof_t
   }
 
   scalar_to_bytes(&data_pos, 2*PAILLIER_MODULUS_BYTES, proof->packed_D, 1);
+  scalar_to_bytes(&data_pos, RING_PED_MODULUS_BYTES, proof->packed_T, 1);
 
-  assert(fs_data + fs_data_len == data_pos);
+  //assert(fs_data + fs_data_len == data_pos);
 
   fiat_shamir_scalars_in_range(e, packed_len, ec_group_order(public->ec), fs_data, fs_data_len);
 

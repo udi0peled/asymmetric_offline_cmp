@@ -503,8 +503,8 @@ void asymoff_key_gen_mock_export_data(asymoff_party_data_t **parties) {
   scalar_sample_in_range(rho, ec_group_order(ec), 0);
   group_operation(Y, NULL, parties[0]->gen, rho, ec);
   
-  //uint8_t bytes[2*PAILLIER_MODULUS_BYTES];
-  //int bytelen;
+  RAND_bytes(srid, sizeof(hash_chunk));
+
   for (uint64_t i = 0; i < num_parties; ++i) {
     
     party = parties[i];

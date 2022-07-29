@@ -132,6 +132,7 @@ void  zkp_well_formed_signature_anchor (zkp_well_formed_signature_proof_t *parti
     group_operation(partial_proof->B2[p], partial_proof->B2[p], partial_public->Y, partial_secret->delta_LB[p], ec);
   }
 
+  scalar_free(packed);
   scalar_free(temp);
   free(rped_s_exps);
 }

@@ -726,6 +726,7 @@ int asymoff_signing_cmp_execute_final(asymoff_sign_cmp_data_t *party) {
     group_operation(party->R[l], NULL, party->Lambda[l], delta_inv, party->ec);
   }
 
+  scalar_free(delta_inv);
   free_scalar_array(joint_delta, num_sigs);
   free_gr_el_array(joint_Delta, num_sigs);
   group_elem_free(H_delta);

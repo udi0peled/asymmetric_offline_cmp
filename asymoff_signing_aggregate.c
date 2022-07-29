@@ -732,6 +732,10 @@ int asymoff_signing_aggregate_execute_round_3(asymoff_sign_agg_data_t *party) {
   zkp_well_formed_signature_aggregate_anchors(party->pi_sig_local_agg_proof, pi_sig_anchors, num_parties-1, party->paillier_pub[0], party->rped_pub[0]);
   zkp_well_formed_signature_prove(party->pi_sig_local_agg_proof, &party->pi_sig_anchor_secret, &party->pi_sig_agg_public, party->aux);
   
+  free(pi_eph_anchors);
+  free(pi_chi_anchors);
+  free(pi_sig_anchors);
+
   return 0;
 }
 
@@ -962,14 +966,14 @@ int asymoff_signing_aggregate_execute_offline (asymoff_sign_agg_data_t *party, s
   }
 
   scalar_t dec_packed_sigma = scalar_new();
+
+  gr_elem_t pubkey_X = group_elem_new(ec);
+  group_operation(pubkey_X, party->online_X, party->X[0], NULL, ec);
   
   for (uint64_t l = 0; l < num_sigs/PACKING_SIZE; ++l) {
     paillier_encryption_decrypt(dec_packed_sigma, msg->packed_Z[l], party->paillier_offline_priv);
     unpack_plaintexts(&party->signature_sigma[PACKING_SIZE*l], PACKING_SIZE, dec_packed_sigma);
   }
-
-  gr_elem_t pubkey_X = group_elem_new(ec);
-  group_operation(pubkey_X, party->online_X, party->X[0], NULL, ec);
 
   for (uint64_t l = 0; l < num_sigs; ++l) {
     scalar_mul(party->signature_sigma[l], party->signature_sigma[l], party->nonce[l], ec_order);
@@ -984,6 +988,7 @@ int asymoff_signing_aggregate_execute_offline (asymoff_sign_agg_data_t *party, s
 
   copy_scalar_array(signature_s, party->signature_sigma, num_sigs);
 
+  group_elem_free(pubkey_X);
   scalar_free(dec_packed_sigma);
   scalar_free(r);
   free_gr_el_array(pi_sig_agg_public.U1, num_sigs);

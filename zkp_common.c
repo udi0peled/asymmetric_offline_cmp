@@ -200,6 +200,7 @@ void unpack_plaintexts(scalar_t *unpacked, uint64_t packing_size, const scalar_t
     curr_bit_shift -= PACKING_SHIFT;
   }
 
+  scalar_free(exp_2);
   scalar_free(shifted);
 }
 
