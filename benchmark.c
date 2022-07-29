@@ -10,7 +10,7 @@
 #include "asymoff_signing_cmp.h"
 #include "asymoff_signing_aggregate.h"
 
-#define NUM_PARTIES 2
+#define NUM_PARTIES 3
 
 /*************
  *  Helpers  *

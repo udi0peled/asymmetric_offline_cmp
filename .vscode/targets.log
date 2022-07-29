@@ -8,7 +8,7 @@ make all --print-data-base --no-builtin-variables --no-builtin-rules --question
 # This program built for i386-apple-darwin11.3.0
  
 
-# Make data base, printed on Mon Jul  4 11:27:46 2022
+# Make data base, printed on Fri Jul 29 17:28:49 2022
 
 # Variables
 
@@ -17,7 +17,10 @@ make all --print-data-base --no-builtin-variables --no-builtin-rules --question
 # automatic
 ?F = $(notdir $?)
 # environment
-VSCODE_LOG_NATIVE = false
+ELECTRON_NO_ATTACH_CONSOLE = 1
+# environment
+ 
+LC_CTYPE = UTF-8
 # automatic
 ?D = $(patsubst %/,%,$(dir $?))
 # automatic
@@ -32,38 +35,28 @@ SHELL = /bin/sh
 VSCODE_NLS_CONFIG = {"locale":"en-us","availableLanguages":{},"_languagePackSupport":true}
 # environment
 _ = /usr/bin/make
-# makefile (from `Makefile', line 3)
+# makefile (from `Makefile', line 1)
 App_C_Flags := -g -O0 -Wall -Wextra -Wvla -Wno-unknown-pragmas -Wno-deprecated-declarations -I. 
 # makefile (from `Makefile', line 1)
 MAKEFILE_LIST :=  Makefile
 # environment
-VSCODE_VERBOSE_LOGGING = true
-# environment
 __CFBundleIdentifier = com.microsoft.VSCode
 # environment
-VSCODE_IPC_HOOK_EXTHOST = /var/folders/hl/2td8sjd175q0q53b_t8dzwbh0000gn/T/vscode-ipc-3db88fca-1c9a-4174-acee-bccbeb919bb2.sock
-# environment
-VSCODE_CWD = /
+VSCODE_CWD = /Users/udipeled/Fireblocks/Dev/asymmetric_offline_cmp
 # environment
 PATH = /usr/local/opt/openssl@3/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/Users/udipeled/.cargo/bin
-# makefile (from `Makefile', line 1)
-Bench_Name := benchmark
 # environment
 LaunchInstanceID = 7FA0D6C7-7E51-4F03-A84E-73C6277B0C5F
-# environment
-VSCODE_LOG_STACK = false
 # environment
 ELECTRON_RUN_AS_NODE = 1
 # default
 .FEATURES := target-specific order-only second-expansion else-if archives jobserver check-symlink
-# makefile (from `Makefile', line 4)
+# makefile (from `Makefile', line 2)
 App_Link_Flags := -g -O0 -Wall -Wextra -Wvla -Wno-unknown-pragmas -Wno-deprecated-declarations -I.  -lssl -lcrypto -pthread -I/usr/local/opt/openssl/include -L/usr/local/opt/openssl/lib
 # environment
 SSH_AUTH_SOCK = /private/tmp/com.apple.launchd.cOEOxsT5C2/Listeners
 # automatic
 %F = $(notdir $%)
-# environment
-VSCODE_PIPE_LOGGING = true
 # environment
 PWD = /Users/udipeled/Fireblocks/Dev/asymmetric_offline_cmp
 # environment
@@ -75,11 +68,13 @@ HOME = /Users/udipeled
 # default
 MAKEFILEPATH = $(shell /usr/bin/xcode-select -print-path 2>/dev/null || echo /Developer)/Makefiles
 # environment
-VSCODE_CODE_CACHE_PATH = /Users/udipeled/Library/Application Support/Code/CachedData/30d9c6cd9483b2cc586687151bcbcd635f373630
+VSCODE_CLI = 1
+# environment
+VSCODE_CODE_CACHE_PATH = /Users/udipeled/Library/Application Support/Code/CachedData/3b889b090b5ad5793f524b5d1d39fda662b96a2a
 # environment
 LOGNAME = udipeled
 # environment
-APPLICATION_INSIGHTS_NO_DIAGNOSTIC_CHANNEL = 1
+APPLICATION_INSIGHTS_NO_DIAGNOSTIC_CHANNEL = true
 # environment
 VSCODE_HANDLES_UNCAUGHT_ERRORS = true
 # automatic
@@ -91,17 +86,23 @@ MAKE = $(MAKE_COMMAND)
 # default
 MAKECMDGOALS := all
 # environment
-SHLVL = 1
+SHLVL = 3
+# makefile (from `Makefile', line 8)
+protocol_phases := asymoff_key_generation.o asymoff_presigning.o asymoff_signing_cmp.o asymoff_signing_aggregate.o
 # default
 MAKE_VERSION := 3.81
 # environment
 USER = udipeled
 # makefile
 .DEFAULT_GOAL := all
+# environment
+TERM_SESSION_ID = E210394E-4FA5-4EC5-B26A-44A08347D5AF
 # automatic
 %D = $(patsubst %/,%,$(dir $%))
 # default
 MAKE_COMMAND := /Library/Developer/CommandLineTools/usr/bin/make
+# environment
+TERM_PROGRAM = Apple_Terminal
 # default
 .VARIABLES := 
 # environment
@@ -109,17 +110,21 @@ TMPDIR = /var/folders/hl/2td8sjd175q0q53b_t8dzwbh0000gn/T/
 # automatic
 *F = $(notdir $*)
 # environment
-VSCODE_IPC_HOOK = /Users/udipeled/Library/Application Support/Code/1.68.1-main.sock
+VSCODE_IPC_HOOK = /Users/udipeled/Library/Application Support/Code/1.69.2-main.sock
+# environment
+MallocNanoZone = 0
 # makefile
 MAKEFLAGS = Rrqp
 # environment
 MFLAGS = -Rrqp
 # automatic
 *D = $(patsubst %/,%,$(dir $*))
-# makefile (from `Makefile', line 75)
-primitives := algebraic_elements.o paillier_cryptosystem.o ring_pedersen_parameters.o  zkp_common.o zkp_paillier_blum_modulus.o zkp_ring_pedersen_param.o zkp_schnorr.o zkp_no_small_factors.o zkp_tight_range.o
 # environment
-XPC_SERVICE_NAME = application.com.microsoft.VSCode.11985875.11985881
+TERM_PROGRAM_VERSION = 445
+# makefile (from `Makefile', line 6)
+primitives := algebraic_elements.o paillier_cryptosystem.o ring_pedersen_parameters.o  zkp_common.o zkp_paillier_blum_modulus.o zkp_ring_pedersen_param.o zkp_schnorr.o zkp_no_small_factors.o zkp_tight_range.o zkp_range_el_gamal_commitment.o zkp_el_gamal_dlog.o zkp_double_el_gamal.o zkp_operation_group_commitment_range.o zkp_well_formed_signature.o
+# environment
+XPC_SERVICE_NAME = application.com.microsoft.VSCode.14815745.14815751.ADB21795-FF7A-4024-AFB1-62581D1C5FE3
 # automatic
 +D = $(patsubst %/,%,$(dir $+))
 # automatic
@@ -147,9 +152,11 @@ MAKELEVEL := 0
 # environment
 LANG = C
 # environment
-VSCODE_PID = 95193
+TERM = xterm-256color
+# environment
+VSCODE_PID = 70804
 # variable set hash-table stats:
-# Load=68/1024=7%, Rehash=0, Collisions=1/100=1%
+# Load=71/1024=7%, Rehash=0, Collisions=1/103=1%
 
 # Pattern-specific Variable Values
 
@@ -157,9 +164,9 @@ VSCODE_PID = 95193
 
 # Directories
 
-# . (device 16777225, inode 11665604): 50 files, no impossibilities.
+# . (device 16777225, inode 11665604): 82 files, no impossibilities.
 
-# 50 files, no impossibilities in 1 directories.
+# 82 files, no impossibilities in 1 directories.
 
 # Implicit Rules
 
@@ -167,88 +174,113 @@ VSCODE_PID = 95193
 
 # Files
 
-zkp_operation_paillier_commitment_range.o: zkp_operation_paillier_commitment_range.c zkp_operation_paillier_commitment_range.h zkp_common.o
-#  Implicit rule search has not been done.
-#  Modification time never checked.
-#  File has not been updated.
-#  commands to execute (from `Makefile', line 68):
-	@$(CC) $(App_C_Flags) -c $< -o $@
-	@echo "CC   <=  $<"
-	
-
 # Not a target:
 algebraic_elements.h:
-#  Implicit rule search has not been done.
-#  Modification time never checked.
-#  File has not been updated.
-
-# Not a target:
-zkp_paillier_blum_modulus.h:
-#  Implicit rule search has not been done.
-#  Modification time never checked.
-#  File has not been updated.
-
-all: tests
-#  Command-line target.
 #  Implicit rule search has been done.
-#  File does not exist.
-#  File has been updated.
-#  Needs to be updated (-q is set).
-# variable set hash-table stats:
-# Load=0/32=0%, Rehash=0, Collisions=0/4=0%
-
-# Not a target:
-zkp_tight_range.c:
-#  Implicit rule search has not been done.
-#  Modification time never checked.
-#  File has not been updated.
-
-common.o: common.c common.h
-#  Implicit rule search has not been done.
-#  Last modified 2022-07-04 07:36:14
+#  Last modified 2022-07-05 12:32:18
 #  File has been updated.
 #  Successfully updated.
 # variable set hash-table stats:
 # Load=0/32=0%, Rehash=0, Collisions=0/0=0%
-#  commands to execute (from `Makefile', line 17):
+
+zkp_range_el_gamal_commitment.o: zkp_range_el_gamal_commitment.c zkp_range_el_gamal_commitment.h zkp_common.o
+#  Implicit rule search has not been done.
+#  Last modified 2022-07-29 17:14:52
+#  File has been updated.
+#  Successfully updated.
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/0=0%
+#  commands to execute (from `Makefile', line 71):
 	@$(CC) $(App_C_Flags) -c $< -o $@
 	@echo "CC   <=  $<"
 	
 
-asymoff_key_generation.o: asymoff_key_generation.c asymoff_key_generation.h
-#  Implicit rule search has not been done.
-#  Implicit/static pattern stem: `'
-#  Last modified 2022-07-04 07:38:38
+# Not a target:
+zkp_paillier_blum_modulus.h:
+#  Implicit rule search has been done.
+#  Last modified 2022-07-05 12:31:27
 #  File has been updated.
-#  Needs to be updated (-q is set).
-# automatic
-# @ := asymoff_key_generation.o
-# automatic
-# % := 
-# automatic
-# * := 
-# automatic
-# + := asymoff_key_generation.c asymoff_key_generation.h
-# automatic
-# | := 
-# automatic
-# < := asymoff_key_generation.c
-# automatic
-# ^ := asymoff_key_generation.c asymoff_key_generation.h
-# automatic
-# ? := asymoff_key_generation.c
+#  Successfully updated.
 # variable set hash-table stats:
-# Load=8/32=25%, Rehash=0, Collisions=1/15=7%
-#  commands to execute (from `Makefile', line 72):
+# Load=0/32=0%, Rehash=0, Collisions=0/0=0%
+
+all: benchmark
+#  Command-line target.
+#  Implicit rule search has been done.
+#  File does not exist.
+#  File has been updated.
+#  Successfully updated.
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/0=0%
+
+# Not a target:
+zkp_tight_range.c:
+#  Implicit rule search has been done.
+#  Last modified 2022-07-28 20:01:36
+#  File has been updated.
+#  Successfully updated.
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/0=0%
+
+common.o: common.c common.h
+#  Implicit rule search has not been done.
+#  Last modified 2022-07-29 16:23:56
+#  File has been updated.
+#  Successfully updated.
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/0=0%
+#  commands to execute (from `Makefile', line 19):
+	@$(CC) $(App_C_Flags) -c $< -o $@
+	@echo "CC   <=  $<"
+	
+
+# Not a target:
+asymoff_signing_cmp.h:
+#  Implicit rule search has been done.
+#  Last modified 2022-07-28 18:48:20
+#  File has been updated.
+#  Successfully updated.
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/0=0%
+
+# Not a target:
+asymoff_protocol.c:
+#  Implicit rule search has been done.
+#  Last modified 2022-07-29 14:58:45
+#  File has been updated.
+#  Successfully updated.
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/0=0%
+
+# Not a target:
+zkp_el_gamal_dlog.c:
+#  Implicit rule search has been done.
+#  Last modified 2022-07-28 21:21:10
+#  File has been updated.
+#  Successfully updated.
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/0=0%
+
+asymoff_key_generation.o: asymoff_key_generation.c asymoff_key_generation.h asymoff_protocol.o algebraic_elements.o paillier_cryptosystem.o ring_pedersen_parameters.o zkp_common.o zkp_paillier_blum_modulus.o zkp_ring_pedersen_param.o zkp_schnorr.o zkp_no_small_factors.o zkp_tight_range.o zkp_range_el_gamal_commitment.o zkp_el_gamal_dlog.o zkp_double_el_gamal.o zkp_operation_group_commitment_range.o zkp_well_formed_signature.o
+#  Implicit rule search has not been done.
+#  Last modified 2022-07-29 17:14:53
+#  File has been updated.
+#  Successfully updated.
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/0=0%
+#  commands to execute (from `Makefile', line 92):
 	@$(CC) $(App_C_Flags) -c $< -o $@
 	@echo "CC   <=  $<"
 	
 
 # Not a target:
 ring_pedersen_parameters.c:
-#  Implicit rule search has not been done.
-#  Modification time never checked.
-#  File has not been updated.
+#  Implicit rule search has been done.
+#  Last modified 2022-07-26 02:23:16
+#  File has been updated.
+#  Successfully updated.
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/0=0%
 
 # Not a target:
 tests.o:
@@ -256,32 +288,48 @@ tests.o:
 #  Modification time never checked.
 #  File has not been updated.
 
-tests: tests.c common.o asymoff_key_generation.o algebraic_elements.o paillier_cryptosystem.o ring_pedersen_parameters.o zkp_common.o zkp_paillier_blum_modulus.o zkp_ring_pedersen_param.o zkp_schnorr.o zkp_no_small_factors.o zkp_tight_range.o
-#  Implicit rule search has not been done.
-#  Last modified 2022-07-04 07:38:38
-#  File has been updated.
-#  Needs to be updated (-q is set).
-# variable set hash-table stats:
-# Load=0/32=0%, Rehash=0, Collisions=0/4=0%
-#  commands to execute (from `Makefile', line 79):
-	@${CC} $^ -o $@ $(App_Link_Flags)
-	@echo "${CC} =>  $@"
-	
-
 paillier_cryptosystem.o: paillier_cryptosystem.c paillier_cryptosystem.h algebraic_elements.o
 #  Implicit rule search has not been done.
-#  Modification time never checked.
-#  File has not been updated.
-#  commands to execute (from `Makefile', line 25):
+ 
+#  Last modified 2022-07-29 16:23:56
+#  File has been updated.
+#  Successfully updated.
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/0=0%
+#  commands to execute (from `Makefile', line 27):
 	@$(CC) $(App_C_Flags) -c $< -o $@
 	@echo "CC   <=  $<"
 	
 
 # Not a target:
+zkp_well_formed_signature.c:
+#  Implicit rule search has been done.
+#  Last modified 2022-07-29 17:10:41
+#  File has been updated.
+#  Successfully updated.
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/0=0%
+
+# Not a target:
 zkp_tight_range.h:
+#  Implicit rule search has been done.
+#  Last modified 2022-07-28 19:52:52
+#  File has been updated.
+#  Successfully updated.
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/0=0%
+
+zkp_double_el_gamal.o: zkp_double_el_gamal.c zkp_double_el_gamal.h zkp_common.o
 #  Implicit rule search has not been done.
-#  Modification time never checked.
-#  File has not been updated.
+#  Last modified 2022-07-29 17:14:52
+#  File has been updated.
+#  Successfully updated.
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/0=0%
+#  commands to execute (from `Makefile', line 79):
+	@$(CC) $(App_C_Flags) -c $< -o $@
+	@echo "CC   <=  $<"
+	
 
 # Not a target:
 .SUFFIXES:
@@ -292,24 +340,56 @@ zkp_tight_range.h:
 # Not a target:
 Makefile:
 #  Implicit rule search has been done.
-#  Last modified 2022-06-30 10:45:55
+#  Last modified 2022-07-28 17:02:03
 #  File has been updated.
 #  Successfully updated.
 # variable set hash-table stats:
 # Load=0/32=0%, Rehash=0, Collisions=0/0=0%
 
 # Not a target:
- 
 zkp_no_small_factors.c:
-#  Implicit rule search has not been done.
-#  Modification time never checked.
-#  File has not been updated.
+#  Implicit rule search has been done.
+#  Last modified 2022-07-28 20:01:36
+#  File has been updated.
+#  Successfully updated.
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/0=0%
+
+# Not a target:
+asymoff_presigning.c:
+#  Implicit rule search has been done.
+#  Last modified 2022-07-29 16:18:24
+#  File has been updated.
+#  Successfully updated.
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/0=0%
 
 # Not a target:
 zkp_common.c:
-#  Implicit rule search has not been done.
-#  Modification time never checked.
-#  File has not been updated.
+#  Implicit rule search has been done.
+#  Last modified 2022-07-29 17:08:51
+#  File has been updated.
+#  Successfully updated.
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/0=0%
+
+# Not a target:
+asymoff_protocol.h:
+#  Implicit rule search has been done.
+#  Last modified 2022-07-28 23:04:39
+#  File has been updated.
+#  Successfully updated.
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/0=0%
+
+# Not a target:
+zkp_el_gamal_dlog.h:
+#  Implicit rule search has been done.
+#  Last modified 2022-07-28 20:27:22
+#  File has been updated.
+#  Successfully updated.
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/0=0%
 
 # Not a target:
 zkp_group_vs_paillier_range.c:
@@ -319,15 +399,27 @@ zkp_group_vs_paillier_range.c:
 
 # Not a target:
 ring_pedersen_parameters.h:
-#  Implicit rule search has not been done.
-#  Modification time never checked.
-#  File has not been updated.
+#  Implicit rule search has been done.
+#  Last modified 2022-07-05 12:32:18
+#  File has been updated.
+#  Successfully updated.
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/0=0%
+
+# Not a target:
+zkp_schnorr.c:
+#  Implicit rule search has been done.
+#  Last modified 2022-07-28 19:54:02
+#  File has been updated.
+#  Successfully updated.
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/0=0%
 
 cmp_protocol.o: cmp_protocol.c cmp_protocol.h common.o primitives
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
-#  commands to execute (from `Makefile', line 13):
+#  commands to execute (from `Makefile', line 15):
 	@$(CC) $(App_C_Flags) -c $< -o $@
 	@echo "CC   <=  $<"
 	
@@ -336,69 +428,114 @@ zkp_encryption_in_range.o: zkp_encryption_in_range.c zkp_encryption_in_range.h z
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
-#  commands to execute (from `Makefile', line 49):
+#  commands to execute (from `Makefile', line 51):
 	@$(CC) $(App_C_Flags) -c $< -o $@
 	@echo "CC   <=  $<"
 	
 
-# Not a target:
-zkp_operation_paillier_commitment_range.c:
+benchmark: benchmark.c common.o asymoff_protocol.o asymoff_key_generation.o asymoff_presigning.o asymoff_signing_cmp.o asymoff_signing_aggregate.o algebraic_elements.o paillier_cryptosystem.o ring_pedersen_parameters.o zkp_common.o zkp_paillier_blum_modulus.o zkp_ring_pedersen_param.o zkp_schnorr.o zkp_no_small_factors.o zkp_tight_range.o zkp_range_el_gamal_commitment.o zkp_el_gamal_dlog.o zkp_double_el_gamal.o zkp_operation_group_commitment_range.o zkp_well_formed_signature.o
 #  Implicit rule search has not been done.
-#  Modification time never checked.
-#  File has not been updated.
-
-benchmark: common.o primitives
-#  Implicit rule search has not been done.
-#  Modification time never checked.
-#  File has not been updated.
-#  commands to execute (from `Makefile', line 83):
+#  Last modified 2022-07-29 17:19:41
+#  File has been updated.
+#  Successfully updated.
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/0=0%
+#  commands to execute (from `Makefile', line 110):
 	@${CC} $^ -o $@ $(App_Link_Flags)
-	@echo "LINK =>  $@"
+	@echo "${CC} =>  $@"
 	
 
 benchmark.o: benchmark.c common.o tests.o primitives
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
-#  commands to execute (from `Makefile', line 9):
+#  commands to execute (from `Makefile', line 11):
 	@$(CC) $(App_C_Flags) -c $< -o $@
 	@echo "CC   <=  $<"
 	
 
 zkp_operation_group_commitment_range.o: zkp_operation_group_commitment_range.c zkp_operation_group_commitment_range.h zkp_common.o
 #  Implicit rule search has not been done.
-#  Modification time never checked.
-#  File has not been updated.
-#  commands to execute (from `Makefile', line 64):
+#  Last modified 2022-07-29 17:14:53
+#  File has been updated.
+#  Successfully updated.
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/0=0%
+#  commands to execute (from `Makefile', line 67):
 	@$(CC) $(App_C_Flags) -c $< -o $@
 	@echo "CC   <=  $<"
 	
 
+# Not a target:
+zkp_range_el_gamal_commitment.c:
+#  Implicit rule search has been done.
+#  Last modified 2022-07-29 16:21:23
+#  File has been updated.
+#  Successfully updated.
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/0=0%
+
+# Not a target:
+zkp_well_formed_signature.h:
+#  Implicit rule search has been done.
+#  Last modified 2022-07-28 20:30:22
+#  File has been updated.
+#  Successfully updated.
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/0=0%
+
+# Not a target:
+asymoff_signing_aggregate.h:
+#  Implicit rule search has been done.
+#  Last modified 2022-07-28 21:22:00
+#  File has been updated.
+#  Successfully updated.
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/0=0%
+
 zkp_ring_pedersen_param.o: zkp_ring_pedersen_param.c zkp_ring_pedersen_param.h zkp_common.o
 #  Implicit rule search has not been done.
-#  Modification time never checked.
-#  File has not been updated.
-#  commands to execute (from `Makefile', line 41):
+#  Last modified 2022-07-29 17:14:51
+#  File has been updated.
+#  Successfully updated.
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/0=0%
+#  commands to execute (from `Makefile', line 43):
 	@$(CC) $(App_C_Flags) -c $< -o $@
 	@echo "CC   <=  $<"
 	
 
 # Not a target:
 zkp_no_small_factors.h:
-#  Implicit rule search has not been done.
-#  Modification time never checked.
-#  File has not been updated.
+#  Implicit rule search has been done.
+#  Last modified 2022-07-28 20:05:33
+#  File has been updated.
+#  Successfully updated.
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/0=0%
+
+# Not a target:
+asymoff_presigning.h:
+#  Implicit rule search has been done.
+#  Last modified 2022-07-27 00:52:42
+#  File has been updated.
+#  Successfully updated.
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/0=0%
 
 # Not a target:
 zkp_common.h:
-#  Implicit rule search has not been done.
-#  Modification time never checked.
-#  File has not been updated.
+#  Implicit rule search has been done.
+#  Last modified 2022-07-28 12:51:29
+#  File has been updated.
+#  Successfully updated.
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/0=0%
 
 # Not a target:
 common.c:
 #  Implicit rule search has been done.
-#  Last modified 2022-06-30 11:59:43
+#  Last modified 2022-07-17 12:13:55
 #  File has been updated.
 #  Successfully updated.
 # variable set hash-table stats:
@@ -412,41 +549,42 @@ zkp_group_vs_paillier_range.h:
 
 zkp_schnorr.o: zkp_schnorr.c zkp_schnorr.h zkp_common.o
 #  Implicit rule search has not been done.
-#  Modification time never checked.
-#  File has not been updated.
-#  commands to execute (from `Makefile', line 45):
+#  Last modified 2022-07-29 17:14:52
+#  File has been updated.
+#  Successfully updated.
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/0=0%
+#  commands to execute (from `Makefile', line 47):
 	@$(CC) $(App_C_Flags) -c $< -o $@
 	@echo "CC   <=  $<"
 	
 
-# Not a target:
-zkp_operation_paillier_commitment_range.h:
-#  Implicit rule search has not been done.
-#  Modification time never checked.
-#  File has not been updated.
-
+ 
 algebraic_elements.o: algebraic_elements.c algebraic_elements.h
 #  Implicit rule search has not been done.
-#  Modification time never checked.
-#  File has not been updated.
-#  commands to execute (from `Makefile', line 21):
+#  Last modified 2022-07-29 16:23:56
+#  File has been updated.
+#  Successfully updated.
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/0=0%
+#  commands to execute (from `Makefile', line 23):
 	@$(CC) $(App_C_Flags) -c $< -o $@
 	@echo "CC   <=  $<"
 	
 
 # Not a target:
-asymoff_key_generation.c:
+asymoff_signing_aggregate.c:
 #  Implicit rule search has been done.
-#  Last modified 2022-07-04 07:39:12
+#  Last modified 2022-07-29 17:14:44
 #  File has been updated.
 #  Successfully updated.
 # variable set hash-table stats:
 # Load=0/32=0%, Rehash=0, Collisions=0/0=0%
 
 # Not a target:
-tests.c:
+zkp_range_el_gamal_commitment.h:
 #  Implicit rule search has been done.
-#  Last modified 2022-07-04 07:25:08
+#  Last modified 2022-07-28 20:07:41
 #  File has been updated.
 #  Successfully updated.
 # variable set hash-table stats:
@@ -454,9 +592,12 @@ tests.c:
 
 # Not a target:
 paillier_cryptosystem.c:
-#  Implicit rule search has not been done.
-#  Modification time never checked.
-#  File has not been updated.
+#  Implicit rule search has been done.
+#  Last modified 2022-06-20 18:08:40
+#  File has been updated.
+#  Successfully updated.
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/0=0%
 
 # Not a target:
 .DEFAULT:
@@ -466,9 +607,12 @@ paillier_cryptosystem.c:
 
 zkp_paillier_blum_modulus.o: zkp_paillier_blum_modulus.c zkp_paillier_blum_modulus.h zkp_common.o
 #  Implicit rule search has not been done.
-#  Modification time never checked.
-#  File has not been updated.
-#  commands to execute (from `Makefile', line 37):
+#  Last modified 2022-07-29 17:14:51
+#  File has been updated.
+#  Successfully updated.
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/0=0%
+#  commands to execute (from `Makefile', line 39):
 	@$(CC) $(App_C_Flags) -c $< -o $@
 	@echo "CC   <=  $<"
 	
@@ -476,17 +620,38 @@ zkp_paillier_blum_modulus.o: zkp_paillier_blum_modulus.c zkp_paillier_blum_modul
 # Not a target:
 common.h:
 #  Implicit rule search has been done.
-#  Last modified 2022-06-27 17:45:02
+#  Last modified 2022-07-10 18:40:31
 #  File has been updated.
 #  Successfully updated.
 # variable set hash-table stats:
 # Load=0/32=0%, Rehash=0, Collisions=0/0=0%
 
+# Not a target:
+zkp_double_el_gamal.c:
+#  Implicit rule search has been done.
+#  Last modified 2022-07-29 17:13:18
+#  File has been updated.
+#  Successfully updated.
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/0=0%
+
+asymoff_signing_cmp.o: asymoff_signing_cmp.c asymoff_signing_cmp.h asymoff_protocol.o algebraic_elements.o paillier_cryptosystem.o ring_pedersen_parameters.o zkp_common.o zkp_paillier_blum_modulus.o zkp_ring_pedersen_param.o zkp_schnorr.o zkp_no_small_factors.o zkp_tight_range.o zkp_range_el_gamal_commitment.o zkp_el_gamal_dlog.o zkp_double_el_gamal.o zkp_operation_group_commitment_range.o zkp_well_formed_signature.o
+#  Implicit rule search has not been done.
+#  Last modified 2022-07-29 17:17:15
+#  File has been updated.
+#  Successfully updated.
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/0=0%
+#  commands to execute (from `Makefile', line 101):
+	@$(CC) $(App_C_Flags) -c $< -o $@ -Wno-unused-parameter
+	@echo "CC   <=  $<"
+	
+
 clean:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
-#  commands to execute (from `Makefile', line 87):
+#  commands to execute (from `Makefile', line 115):
 	@rm -rf $(Bench_Name) *.o tests
 	
 
@@ -504,15 +669,21 @@ zkp_encryption_in_range.c:
 
 # Not a target:
 benchmark.c:
-#  Implicit rule search has not been done.
-#  Modification time never checked.
-#  File has not been updated.
+#  Implicit rule search has been done.
+#  Last modified 2022-07-29 17:19:39
+#  File has been updated.
+#  Successfully updated.
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/0=0%
 
 # Not a target:
 paillier_cryptosystem.h:
-#  Implicit rule search has not been done.
-#  Modification time never checked.
-#  File has not been updated.
+#  Implicit rule search has been done.
+#  Last modified 2022-07-05 12:32:18
+#  File has been updated.
+#  Successfully updated.
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/0=0%
 
 # Not a target:
 primitives:
@@ -522,39 +693,75 @@ primitives:
 
 # Not a target:
 zkp_operation_group_commitment_range.c:
-#  Implicit rule search has not been done.
-#  Modification time never checked.
-#  File has not been updated.
-
-zkp_tight_range.o: zkp_tight_range.c zkp_tight_range.h zkp_common.o
-#  Implicit rule search has not been done.
-#  Modification time never checked.
-#  File has not been updated.
-#  commands to execute (from `Makefile', line 56):
-	@$(CC) $(App_C_Flags) -c $< -o $@
-	@echo "CC   <=  $<"
-	
-
-# Not a target:
-zkp_ring_pedersen_param.c:
-#  Implicit rule search has not been done.
-#  Modification time never checked.
-#  File has not been updated.
-
-# Not a target:
-asymoff_key_generation.h:
 #  Implicit rule search has been done.
-#  Last modified 2022-07-04 07:27:54
+#  Last modified 2022-07-28 20:04:24
 #  File has been updated.
 #  Successfully updated.
 # variable set hash-table stats:
 # Load=0/32=0%, Rehash=0, Collisions=0/0=0%
 
 # Not a target:
-zkp_schnorr.c:
+zkp_double_el_gamal.h:
+#  Implicit rule search has been done.
+#  Last modified 2022-07-28 20:29:24
+#  File has been updated.
+#  Successfully updated.
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/0=0%
+
+zkp_tight_range.o: zkp_tight_range.c zkp_tight_range.h zkp_common.o
 #  Implicit rule search has not been done.
-#  Modification time never checked.
-#  File has not been updated.
+#  Last modified 2022-07-29 17:14:52
+#  File has been updated.
+#  Successfully updated.
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/0=0%
+#  commands to execute (from `Makefile', line 59):
+	@$(CC) $(App_C_Flags) -c $< -o $@
+	@echo "CC   <=  $<"
+	
+
+# Not a target:
+zkp_ring_pedersen_param.c:
+#  Implicit rule search has been done.
+#  Last modified 2022-07-18 18:00:49
+#  File has been updated.
+#  Successfully updated.
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/0=0%
+
+asymoff_protocol.o: asymoff_protocol.c asymoff_protocol.h algebraic_elements.o paillier_cryptosystem.o ring_pedersen_parameters.o zkp_common.o zkp_paillier_blum_modulus.o zkp_ring_pedersen_param.o zkp_schnorr.o zkp_no_small_factors.o zkp_tight_range.o zkp_range_el_gamal_commitment.o zkp_el_gamal_dlog.o zkp_double_el_gamal.o zkp_operation_group_commitment_range.o zkp_well_formed_signature.o
+#  Implicit rule search has not been done.
+#  Last modified 2022-07-29 17:14:53
+#  File has been updated.
+#  Successfully updated.
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/0=0%
+#  commands to execute (from `Makefile', line 88):
+	@$(CC) $(App_C_Flags) -c $< -o $@
+	@echo "CC   <=  $<"
+	
+
+# Not a target:
+asymoff_key_generation.h:
+#  Implicit rule search has been done.
+#  Last modified 2022-07-24 15:11:09
+#  File has been updated.
+#  Successfully updated.
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/0=0%
+
+zkp_el_gamal_dlog.o: zkp_el_gamal_dlog.c zkp_el_gamal_dlog.h zkp_common.o
+#  Implicit rule search has not been done.
+#  Last modified 2022-07-29 17:14:52
+#  File has been updated.
+#  Successfully updated.
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/0=0%
+#  commands to execute (from `Makefile', line 75):
+	@$(CC) $(App_C_Flags) -c $< -o $@
+	@echo "CC   <=  $<"
+	
 
 # Not a target:
 cmp_protocol.h:
@@ -564,9 +771,12 @@ cmp_protocol.h:
 
 ring_pedersen_parameters.o: ring_pedersen_parameters.c ring_pedersen_parameters.h paillier_cryptosystem.o algebraic_elements.o
 #  Implicit rule search has not been done.
-#  Modification time never checked.
-#  File has not been updated.
-#  commands to execute (from `Makefile', line 29):
+#  Last modified 2022-07-29 16:23:56
+#  File has been updated.
+#  Successfully updated.
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/0=0%
+#  commands to execute (from `Makefile', line 31):
 	@$(CC) $(App_C_Flags) -c $< -o $@
 	@echo "CC   <=  $<"
 	
@@ -579,64 +789,139 @@ zkp_encryption_in_range.h:
 
 # Not a target:
 algebraic_elements.c:
-#  Implicit rule search has not been done.
-#  Modification time never checked.
-#  File has not been updated.
+#  Implicit rule search has been done.
+#  Last modified 2022-07-25 15:01:39
+#  File has been updated.
+#  Successfully updated.
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/0=0%
 
 # Not a target:
 zkp_operation_group_commitment_range.h:
+#  Implicit rule search has been done.
+#  Last modified 2022-07-28 20:04:23
+#  File has been updated.
+#  Successfully updated.
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/0=0%
+
+zkp_well_formed_signature.o: zkp_well_formed_signature.c zkp_well_formed_signature.h zkp_common.o
 #  Implicit rule search has not been done.
-#  Modification time never checked.
-#  File has not been updated.
+#  Last modified 2022-07-29 17:14:53
+#  File has been updated.
+#  Successfully updated.
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/0=0%
+#  commands to execute (from `Makefile', line 83):
+	@$(CC) $(App_C_Flags) -c $< -o $@
+	@echo "CC   <=  $<"
+	
+
+ 
+asymoff_signing_aggregate.o: asymoff_signing_aggregate.c asymoff_signing_aggregate.h asymoff_protocol.o algebraic_elements.o paillier_cryptosystem.o ring_pedersen_parameters.o zkp_common.o zkp_paillier_blum_modulus.o zkp_ring_pedersen_param.o zkp_schnorr.o zkp_no_small_factors.o zkp_tight_range.o zkp_range_el_gamal_commitment.o zkp_el_gamal_dlog.o zkp_double_el_gamal.o zkp_operation_group_commitment_range.o zkp_well_formed_signature.o
+#  Implicit rule search has not been done.
+#  Last modified 2022-07-29 17:14:54
+#  File has been updated.
+#  Successfully updated.
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/0=0%
+#  commands to execute (from `Makefile', line 105):
+	@$(CC) $(App_C_Flags) -c $< -o $@ -Wno-unused-parameter
+	@echo "CC   <=  $<"
+	
 
 # Not a target:
 zkp_ring_pedersen_param.h:
- 
-#  Implicit rule search has not been done.
-#  Modification time never checked.
-#  File has not been updated.
+#  Implicit rule search has been done.
+#  Last modified 2022-07-28 20:02:33
+#  File has been updated.
+#  Successfully updated.
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/0=0%
 
 zkp_no_small_factors.o: zkp_no_small_factors.c zkp_no_small_factors.h zkp_common.o
 #  Implicit rule search has not been done.
-#  Modification time never checked.
-#  File has not been updated.
-#  commands to execute (from `Makefile', line 53):
+#  Last modified 2022-07-29 17:14:52
+#  File has been updated.
+#  Successfully updated.
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/0=0%
+#  commands to execute (from `Makefile', line 55):
+	@$(CC) $(App_C_Flags) -c $< -o $@
+	@echo "CC   <=  $<"
+	
+
+asymoff_presigning.o: asymoff_presigning.c asymoff_presigning.h asymoff_protocol.o algebraic_elements.o paillier_cryptosystem.o ring_pedersen_parameters.o zkp_common.o zkp_paillier_blum_modulus.o zkp_ring_pedersen_param.o zkp_schnorr.o zkp_no_small_factors.o zkp_tight_range.o zkp_range_el_gamal_commitment.o zkp_el_gamal_dlog.o zkp_double_el_gamal.o zkp_operation_group_commitment_range.o zkp_well_formed_signature.o
+#  Implicit rule search has not been done.
+#  Last modified 2022-07-29 17:14:53
+#  File has been updated.
+#  Successfully updated.
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/0=0%
+#  commands to execute (from `Makefile', line 96):
 	@$(CC) $(App_C_Flags) -c $< -o $@
 	@echo "CC   <=  $<"
 	
 
 # Not a target:
 zkp_paillier_blum_modulus.c:
-#  Implicit rule search has not been done.
-#  Modification time never checked.
-#  File has not been updated.
+#  Implicit rule search has been done.
+#  Last modified 2022-06-28 16:04:00
+#  File has been updated.
+#  Successfully updated.
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/0=0%
 
 zkp_common.o: zkp_common.c zkp_common.h algebraic_elements.o paillier_cryptosystem.o ring_pedersen_parameters.o
 #  Implicit rule search has not been done.
-#  Modification time never checked.
-#  File has not been updated.
-#  commands to execute (from `Makefile', line 33):
+#  Last modified 2022-07-29 17:14:51
+#  File has been updated.
+#  Successfully updated.
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/0=0%
+#  commands to execute (from `Makefile', line 35):
 	@$(CC) $(App_C_Flags) -c $< -o $@
 	@echo "CC   <=  $<"
 	
 
 # Not a target:
 zkp_schnorr.h:
-#  Implicit rule search has not been done.
-#  Modification time never checked.
-#  File has not been updated.
+#  Implicit rule search has been done.
+#  Last modified 2022-07-28 19:53:55
+#  File has been updated.
+#  Successfully updated.
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/0=0%
 
 zkp_group_vs_paillier_range.o: zkp_group_vs_paillier_range.c zkp_group_vs_paillier_range.h zkp_common.o
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
-#  commands to execute (from `Makefile', line 60):
+#  commands to execute (from `Makefile', line 63):
 	@$(CC) $(App_C_Flags) -c $< -o $@
 	@echo "CC   <=  $<"
 	
 
+# Not a target:
+asymoff_key_generation.c:
+#  Implicit rule search has been done.
+#  Last modified 2022-07-29 16:39:55
+#  File has been updated.
+#  Successfully updated.
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/0=0%
+
+# Not a target:
+asymoff_signing_cmp.c:
+#  Implicit rule search has been done.
+#  Last modified 2022-07-29 17:17:13
+#  File has been updated.
+#  Successfully updated.
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/0=0%
+
 # files hash-table stats:
-# Load=60/1024=6%, Rehash=0, Collisions=3/142=2%
+# Load=79/1024=8%, Rehash=0, Collisions=9/258=3%
 # VPATH Search Paths
 
 # No `vpath' search paths.
@@ -648,6 +933,6 @@ zkp_group_vs_paillier_range.o: zkp_group_vs_paillier_range.c zkp_group_vs_pailli
 # strcache size: total = 4096 / max = 4096 / min = 4096 / avg = 4096
 # strcache free: total = 4087 / max = 4087 / min = 4087 / avg = 4087
 
-# Finished Make data base on Mon Jul  4 11:27:46 2022
+# Finished Make data base on Fri Jul 29 17:28:49 2022
 
  

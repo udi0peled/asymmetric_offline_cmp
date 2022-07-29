@@ -2,8 +2,6 @@ make --dry-run --always-make --keep-going --print-directory
 make: Entering directory `/Users/udipeled/Fireblocks/Dev/asymmetric_offline_cmp'
 cc -g -O0 -Wall -Wextra -Wvla -Wno-unknown-pragmas -Wno-deprecated-declarations -I.  -c common.c -o common.o
 echo "CC   <=  common.c"
-cc -g -O0 -Wall -Wextra -Wvla -Wno-unknown-pragmas -Wno-deprecated-declarations -I.  -c asymoff_key_generation.c -o asymoff_key_generation.o
-echo "CC   <=  asymoff_key_generation.c"
 cc -g -O0 -Wall -Wextra -Wvla -Wno-unknown-pragmas -Wno-deprecated-declarations -I.  -c algebraic_elements.c -o algebraic_elements.o
 echo "CC   <=  algebraic_elements.c"
 cc -g -O0 -Wall -Wextra -Wvla -Wno-unknown-pragmas -Wno-deprecated-declarations -I.  -c paillier_cryptosystem.c -o paillier_cryptosystem.o
@@ -12,17 +10,45 @@ cc -g -O0 -Wall -Wextra -Wvla -Wno-unknown-pragmas -Wno-deprecated-declarations 
 echo "CC   <=  ring_pedersen_parameters.c"
 cc -g -O0 -Wall -Wextra -Wvla -Wno-unknown-pragmas -Wno-deprecated-declarations -I.  -c zkp_common.c -o zkp_common.o
 echo "CC   <=  zkp_common.c"
+ 
 cc -g -O0 -Wall -Wextra -Wvla -Wno-unknown-pragmas -Wno-deprecated-declarations -I.  -c zkp_paillier_blum_modulus.c -o zkp_paillier_blum_modulus.o
 echo "CC   <=  zkp_paillier_blum_modulus.c"
 cc -g -O0 -Wall -Wextra -Wvla -Wno-unknown-pragmas -Wno-deprecated-declarations -I.  -c zkp_ring_pedersen_param.c -o zkp_ring_pedersen_param.o
 echo "CC   <=  zkp_ring_pedersen_param.c"
 cc -g -O0 -Wall -Wextra -Wvla -Wno-unknown-pragmas -Wno-deprecated-declarations -I.  -c zkp_schnorr.c -o zkp_schnorr.o
 echo "CC   <=  zkp_schnorr.c"
+ 
 cc -g -O0 -Wall -Wextra -Wvla -Wno-unknown-pragmas -Wno-deprecated-declarations -I.  -c zkp_no_small_factors.c -o zkp_no_small_factors.o
 echo "CC   <=  zkp_no_small_factors.c"
 cc -g -O0 -Wall -Wextra -Wvla -Wno-unknown-pragmas -Wno-deprecated-declarations -I.  -c zkp_tight_range.c -o zkp_tight_range.o
 echo "CC   <=  zkp_tight_range.c"
-cc tests.c common.o asymoff_key_generation.o algebraic_elements.o paillier_cryptosystem.o ring_pedersen_parameters.o zkp_common.o zkp_paillier_blum_modulus.o zkp_ring_pedersen_param.o zkp_schnorr.o zkp_no_small_factors.o zkp_tight_range.o -o tests -g -O0 -Wall -Wextra -Wvla -Wno-unknown-pragmas -Wno-deprecated-declarations -I.  -lssl -lcrypto -pthread -I/usr/local/opt/openssl/include -L/usr/local/opt/openssl/lib
-echo "cc =>  tests"
+ 
+cc -g -O0 -Wall -Wextra -Wvla -Wno-unknown-pragmas -Wno-deprecated-declarations -I.  -c zkp_range_el_gamal_commitment.c -o zkp_range_el_gamal_commitment.o
+echo "CC   <=  zkp_range_el_gamal_commitment.c"
+ 
+cc -g -O0 -Wall -Wextra -Wvla -Wno-unknown-pragmas -Wno-deprecated-declarations -I.  -c zkp_el_gamal_dlog.c -o zkp_el_gamal_dlog.o
+echo "CC   <=  zkp_el_gamal_dlog.c"
+cc -g -O0 -Wall -Wextra -Wvla -Wno-unknown-pragmas -Wno-deprecated-declarations -I.  -c zkp_double_el_gamal.c -o zkp_double_el_gamal.o
+echo "CC   <=  zkp_double_el_gamal.c"
+ 
+cc -g -O0 -Wall -Wextra -Wvla -Wno-unknown-pragmas -Wno-deprecated-declarations -I.  -c zkp_operation_group_commitment_range.c -o zkp_operation_group_commitment_range.o
+echo "CC   <=  zkp_operation_group_commitment_range.c"
+ 
+cc -g -O0 -Wall -Wextra -Wvla -Wno-unknown-pragmas -Wno-deprecated-declarations -I.  -c zkp_well_formed_signature.c -o zkp_well_formed_signature.o
+echo "CC   <=  zkp_well_formed_signature.c"
+cc -g -O0 -Wall -Wextra -Wvla -Wno-unknown-pragmas -Wno-deprecated-declarations -I.  -c asymoff_protocol.c -o asymoff_protocol.o
+echo "CC   <=  asymoff_protocol.c"
+cc -g -O0 -Wall -Wextra -Wvla -Wno-unknown-pragmas -Wno-deprecated-declarations -I.  -c asymoff_key_generation.c -o asymoff_key_generation.o
+echo "CC   <=  asymoff_key_generation.c"
+cc -g -O0 -Wall -Wextra -Wvla -Wno-unknown-pragmas -Wno-deprecated-declarations -I.  -c asymoff_presigning.c -o asymoff_presigning.o
+echo "CC   <=  asymoff_presigning.c"
+ 
+cc -g -O0 -Wall -Wextra -Wvla -Wno-unknown-pragmas -Wno-deprecated-declarations -I.  -c asymoff_signing_cmp.c -o asymoff_signing_cmp.o -Wno-unused-parameter
+echo "CC   <=  asymoff_signing_cmp.c"
+cc -g -O0 -Wall -Wextra -Wvla -Wno-unknown-pragmas -Wno-deprecated-declarations -I.  -c asymoff_signing_aggregate.c -o asymoff_signing_aggregate.o -Wno-unused-parameter
+echo "CC   <=  asymoff_signing_aggregate.c"
+ 
+cc benchmark.c common.o asymoff_protocol.o asymoff_key_generation.o asymoff_presigning.o asymoff_signing_cmp.o asymoff_signing_aggregate.o algebraic_elements.o paillier_cryptosystem.o ring_pedersen_parameters.o zkp_common.o zkp_paillier_blum_modulus.o zkp_ring_pedersen_param.o zkp_schnorr.o zkp_no_small_factors.o zkp_tight_range.o zkp_range_el_gamal_commitment.o zkp_el_gamal_dlog.o zkp_double_el_gamal.o zkp_operation_group_commitment_range.o zkp_well_formed_signature.o -o benchmark -g -O0 -Wall -Wextra -Wvla -Wno-unknown-pragmas -Wno-deprecated-declarations -I.  -lssl -lcrypto -pthread -I/usr/local/opt/openssl/include -L/usr/local/opt/openssl/lib
+echo "cc =>  benchmark"
 make: Leaving directory `/Users/udipeled/Fireblocks/Dev/asymmetric_offline_cmp'
  
