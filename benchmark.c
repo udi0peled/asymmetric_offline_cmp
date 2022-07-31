@@ -72,7 +72,7 @@ void print_measurements(uint64_t rounds){
   for (uint64_t r = 0; r <= rounds; ++r) {
     printf("\n");
     for (uint64_t i = 0; i < NUM_PARTIES; ++i) {
-      printf("Round %ld, Party %ld, Time: %f\n", r, i, exec_time[r][i]);
+      printf("Round %ld, Party %ld, Time: %f\n", r+1, i, exec_time[r][i]);
     } 
   }
 
@@ -323,7 +323,7 @@ void signing_cmp_execute(asymoff_party_data_t **parties, uint64_t num_sigs) {
     assert(res == 0);
   }
 
-  print_measurements(4);
+  print_measurements(3);
 
   asymoff_signing_cmp_export_data(parties, cmp_parties);
 
@@ -456,7 +456,7 @@ void signing_aggregate_execute(asymoff_party_data_t **parties, uint64_t num_msgs
   exec_time[4][0] = get_time();
   assert(res == 0);
 
-  print_measurements(5);
+  print_measurements(4);
 
   printf("\n_____ All messages signed succesfully! _____\n\n");
 
@@ -472,12 +472,13 @@ int main(int argc, char *argv[]) {
   if (argc >= 2) sscanf(argv[1], "%ld", &batch_size);
   batch_size = PACKING_SIZE*((batch_size+PACKING_SIZE-1)/PACKING_SIZE);
 
-  uint64_t print_flags;
-  if (argc >= 3) {
-    sscanf(argv[2], "%ld", &print_flags);
-    with_info_print   = print_flags & 0x01;
-    with_measurements = print_flags & 0x02;
-  }
+  uint64_t num_sigs = batch_size;
+  if (argc >= 3) sscanf(argv[2], "%ld", &num_sigs);
+
+  uint64_t print_flags = 3;
+  if (argc >= 4) sscanf(argv[3], "%ld", &print_flags);
+  with_info_print   = print_flags & 0x01;
+  with_measurements = print_flags & 0x02;
 
   asymoff_party_data_t **parties = asymoff_protocol_parties_new(NUM_PARTIES);
   asymoff_protocol_parties_set(parties, NULL, NULL);
@@ -493,13 +494,13 @@ int main(int argc, char *argv[]) {
 
   //print_after_presigning(parties, 1);
 
-  signing_cmp_execute(parties, batch_size);
+  signing_cmp_execute(parties, num_sigs);
 
   //signing_cmp_mock_execute(parties, batch_size);
 
   //print_signing_cmp_ouput(parties, 1);
 
-  signing_aggregate_execute(parties, batch_size);
+  signing_aggregate_execute(parties, num_sigs);
 
   asymoff_protocol_parties_free_batch(parties);
   asymoff_protocol_parties_free(parties);
