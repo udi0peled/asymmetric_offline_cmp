@@ -311,7 +311,7 @@ void signing_cmp_execute(asymoff_party_data_t **parties, uint64_t num_sigs) {
   for (uint64_t i = 1; i < NUM_PARTIES; ++i) {
     start_timer();
     res = asymoff_signing_cmp_execute_round_3(cmp_parties[i]);
-    exec_time[1][i] = get_time();
+    exec_time[2][i] = get_time();
     assert(res == 0);
     asymoff_signing_cmp_send_msg_to_all_others(cmp_parties, i, 3);
   }
@@ -319,7 +319,7 @@ void signing_cmp_execute(asymoff_party_data_t **parties, uint64_t num_sigs) {
   for (uint64_t i = 1; i < NUM_PARTIES; ++i) {
     start_timer();
     res = asymoff_signing_cmp_execute_final(cmp_parties[i]);
-    exec_time[1][i] = get_time();
+    exec_time[3][i] = get_time();
     assert(res == 0);
   }
 
