@@ -442,9 +442,11 @@ int main(int argc, char *argv[]) {
   batch_size = PACKING_SIZE*((batch_size+PACKING_SIZE-1)/PACKING_SIZE);
 
   uint64_t print_flags;
-  if (argc >= 3) sscanf(argv[2], "%ld", &print_flags);
-  with_info_print   = print_flags & 0x01;
-  with_measurements = print_flags & 0x02;
+  if (argc >= 3) {
+    sscanf(argv[2], "%ld", &print_flags);
+    with_info_print   = print_flags & 0x01;
+    with_measurements = print_flags & 0x02;
+  }
 
   asymoff_party_data_t **parties = asymoff_protocol_parties_new(NUM_PARTIES);
   asymoff_protocol_parties_set(parties, NULL, NULL);
