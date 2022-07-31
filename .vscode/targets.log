@@ -8,7 +8,7 @@ make all --print-data-base --no-builtin-variables --no-builtin-rules --question
 # This program built for i386-apple-darwin11.3.0
  
 
-# Make data base, printed on Sun Jul 31 11:34:19 2022
+# Make data base, printed on Sun Jul 31 11:37:52 2022
 
 # Variables
 
@@ -16,7 +16,6 @@ make all --print-data-base --no-builtin-variables --no-builtin-rules --question
 <D = $(patsubst %/,%,$(dir $<))
 # automatic
 ?F = $(notdir $?)
- 
 # environment
 ELECTRON_NO_ATTACH_CONSOLE = 1
 # environment
@@ -74,7 +73,7 @@ VSCODE_CODE_CACHE_PATH = /Users/udipeled/Library/Application Support/Code/Cached
 # environment
 LOGNAME = udipeled
 # environment
-APPLICATION_INSIGHTS_NO_DIAGNOSTIC_CHANNEL = 1
+APPLICATION_INSIGHTS_NO_DIAGNOSTIC_CHANNEL = true
 # environment
 VSCODE_HANDLES_UNCAUGHT_ERRORS = true
 # automatic
@@ -122,10 +121,9 @@ MFLAGS = -Rrqp
 # environment
 TERM_PROGRAM_VERSION = 445
 # makefile (from `Makefile', line 6)
- 
 primitives := algebraic_elements.o paillier_cryptosystem.o ring_pedersen_parameters.o  zkp_common.o zkp_paillier_blum_modulus.o zkp_ring_pedersen_param.o zkp_schnorr.o zkp_no_small_factors.o zkp_tight_range.o zkp_range_el_gamal_commitment.o zkp_el_gamal_dlog.o zkp_double_el_gamal.o zkp_operation_group_commitment_range.o zkp_well_formed_signature.o
 # environment
-XPC_SERVICE_NAME = application.com.microsoft.VSCode.14815745.14815751.4DF552C7-29B1-4D82-A7AD-6F50C1C95FB9
+XPC_SERVICE_NAME = application.com.microsoft.VSCode.14815745.14815751.07666F0D-5B06-4376-954D-E752754585BA
 # automatic
 +D = $(patsubst %/,%,$(dir $+))
 # automatic
@@ -155,7 +153,7 @@ LANG = C
 # environment
 TERM = xterm-256color
 # environment
-VSCODE_PID = 76240
+VSCODE_PID = 76667
 # variable set hash-table stats:
 # Load=71/1024=7%, Rehash=0, Collisions=1/103=1%
 
@@ -203,7 +201,6 @@ zkp_paillier_blum_modulus.h:
 #  File has been updated.
 #  Successfully updated.
 # variable set hash-table stats:
- 
 # Load=0/32=0%, Rehash=0, Collisions=0/0=0%
 
 all: benchmark
@@ -244,6 +241,7 @@ asymoff_signing_cmp.h:
 #  Successfully updated.
 # variable set hash-table stats:
 # Load=0/32=0%, Rehash=0, Collisions=0/0=0%
+ 
 
 # Not a target:
 asymoff_protocol.c:
@@ -436,7 +434,7 @@ zkp_encryption_in_range.o: zkp_encryption_in_range.c zkp_encryption_in_range.h z
 
 benchmark: benchmark.c common.o asymoff_protocol.o asymoff_key_generation.o asymoff_presigning.o asymoff_signing_cmp.o asymoff_signing_aggregate.o algebraic_elements.o paillier_cryptosystem.o ring_pedersen_parameters.o zkp_common.o zkp_paillier_blum_modulus.o zkp_ring_pedersen_param.o zkp_schnorr.o zkp_no_small_factors.o zkp_tight_range.o zkp_range_el_gamal_commitment.o zkp_el_gamal_dlog.o zkp_double_el_gamal.o zkp_operation_group_commitment_range.o zkp_well_formed_signature.o
 #  Implicit rule search has not been done.
-#  Last modified 2022-07-31 11:33:49
+#  Last modified 2022-07-31 11:35:40
 #  File has been updated.
 #  Successfully updated.
 # variable set hash-table stats:
@@ -460,7 +458,6 @@ zkp_operation_group_commitment_range.o: zkp_operation_group_commitment_range.c z
 #  Last modified 2022-07-31 11:33:47
 #  File has been updated.
 #  Successfully updated.
- 
 # variable set hash-table stats:
 # Load=0/32=0%, Rehash=0, Collisions=0/0=0%
 #  commands to execute (from `Makefile', line 67):
@@ -487,6 +484,7 @@ zkp_well_formed_signature.h:
 # Load=0/32=0%, Rehash=0, Collisions=0/0=0%
 
 # Not a target:
+ 
 asymoff_signing_aggregate.h:
 #  Implicit rule search has been done.
 #  Last modified 2022-07-28 21:22:00
@@ -671,7 +669,7 @@ zkp_encryption_in_range.c:
 # Not a target:
 benchmark.c:
 #  Implicit rule search has been done.
-#  Last modified 2022-07-31 11:32:52
+#  Last modified 2022-07-31 11:35:36
 #  File has been updated.
 #  Successfully updated.
 # variable set hash-table stats:
@@ -731,10 +729,8 @@ zkp_ring_pedersen_param.c:
 # variable set hash-table stats:
 # Load=0/32=0%, Rehash=0, Collisions=0/0=0%
 
- 
 asymoff_protocol.o: asymoff_protocol.c asymoff_protocol.h algebraic_elements.o paillier_cryptosystem.o ring_pedersen_parameters.o zkp_common.o zkp_paillier_blum_modulus.o zkp_ring_pedersen_param.o zkp_schnorr.o zkp_no_small_factors.o zkp_tight_range.o zkp_range_el_gamal_commitment.o zkp_el_gamal_dlog.o zkp_double_el_gamal.o zkp_operation_group_commitment_range.o zkp_well_formed_signature.o
 #  Implicit rule search has not been done.
- 
 #  Last modified 2022-07-31 11:33:47
 #  File has been updated.
 #  Successfully updated.
@@ -751,6 +747,7 @@ asymoff_key_generation.h:
 #  Last modified 2022-07-24 15:11:09
 #  File has been updated.
 #  Successfully updated.
+ 
 # variable set hash-table stats:
 # Load=0/32=0%, Rehash=0, Collisions=0/0=0%
 
@@ -801,7 +798,6 @@ algebraic_elements.c:
 
 # Not a target:
 zkp_operation_group_commitment_range.h:
- 
 #  Implicit rule search has been done.
 #  Last modified 2022-07-28 20:04:23
 #  File has been updated.
@@ -894,6 +890,7 @@ zkp_schnorr.h:
 #  File has been updated.
 #  Successfully updated.
 # variable set hash-table stats:
+ 
 # Load=0/32=0%, Rehash=0, Collisions=0/0=0%
 
 zkp_group_vs_paillier_range.o: zkp_group_vs_paillier_range.c zkp_group_vs_paillier_range.h zkp_common.o
@@ -930,13 +927,12 @@ asymoff_signing_cmp.c:
 # No `vpath' search paths.
 
 # No general (`VPATH' variable) search path.
- 
 
 # # of strings in strcache: 1
 # # of strcache buffers: 1
 # strcache size: total = 4096 / max = 4096 / min = 4096 / avg = 4096
 # strcache free: total = 4087 / max = 4087 / min = 4087 / avg = 4087
 
-# Finished Make data base on Sun Jul 31 11:34:19 2022
+# Finished Make data base on Sun Jul 31 11:37:52 2022
 
  

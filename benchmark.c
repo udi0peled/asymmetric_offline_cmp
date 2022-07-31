@@ -19,11 +19,13 @@
 int with_info_print = 1;
 int with_measurements = 1;
 
-uint64_t sent_bytelen[5][NUM_PARTIES][NUM_PARTIES];
+#define MAX_PHASE_ROUNDS 6
+
+uint64_t sent_bytelen[MAX_PHASE_ROUNDS][NUM_PARTIES][NUM_PARTIES];
 
 struct timespec time_st;
 clock_t start_time, end_time;
-double exec_time[5][NUM_PARTIES];
+double exec_time[MAX_PHASE_ROUNDS][NUM_PARTIES];
 
 
 void start_timer() {
@@ -42,7 +44,19 @@ double get_time() {
   return 0;
 }
 
+void zero_measurements() {
+
+  for (uint64_t r = 0; r < MAX_PHASE_ROUNDS; ++r) {
+    for (uint64_t i = 0; i < NUM_PARTIES; ++i) {
+      for (uint64_t j = 0; j < NUM_PARTIES; ++j) sent_bytelen[r][i][j] = 0;
+      exec_time[r][i] = 0;
+    } 
+  }
+}
+
 void print_measurements(uint64_t rounds){
+  assert(rounds < MAX_PHASE_ROUNDS);
+
   if (!with_measurements) return;
 
   for (uint64_t r = 0; r < rounds; ++r) {
@@ -91,37 +105,50 @@ void key_gen_protocol_execute(asymoff_party_data_t **parties) {
   printf("\n____ Key Generation _____\n");
 
   int res;
+  zero_measurements();
 
   asymoff_key_gen_data_t **kgd_parties = asymoff_key_gen_parties_new(parties);
 
   for (uint64_t i = 0; i < NUM_PARTIES; ++i) {
+    start_timer();
     res = asymoff_key_gen_execute_round_1(kgd_parties[i]);
+    exec_time[0][i] = get_time();
     assert(res == 0);
     asymoff_key_gen_send_msg_to_all_others(kgd_parties, i, 1);
   }
 
   for (uint64_t i = 0; i < NUM_PARTIES; ++i) {
+    start_timer();
     res = asymoff_key_gen_execute_round_2(kgd_parties[i]);
+    exec_time[1][i] = get_time();
     assert(res == 0);
     asymoff_key_gen_send_msg_to_all_others(kgd_parties, i, 2);
   }
 
   for (uint64_t i = 0; i < NUM_PARTIES; ++i) {
+    start_timer();
     res = asymoff_key_gen_execute_round_3(kgd_parties[i]);
+    exec_time[2][i] = get_time();
     assert(res == 0);
     asymoff_key_gen_send_msg_to_all_others(kgd_parties, i, 3);
   }
 
   for (uint64_t i = 0; i < NUM_PARTIES; ++i) {
+    start_timer();
     res = asymoff_key_gen_execute_round_4(kgd_parties[i]);
+    exec_time[3][i] = get_time();
     assert(res == 0);
     asymoff_key_gen_send_msg_to_all_others(kgd_parties, i, 4);
   }
 
   for (uint64_t i = 0; i < NUM_PARTIES; ++i) {
+    start_timer();
     res = asymoff_key_gen_execute_final(kgd_parties[i]);
+    exec_time[4][i] = get_time();
     assert(res == 0);
   }
+
+  print_measurements(5);
 
   asymoff_key_gen_export_data(parties, kgd_parties);
 
@@ -199,7 +226,7 @@ void presigning_execute(asymoff_party_data_t **parties, uint64_t batch_size) {
     assert(res == 0);
   }
   
-  print_measurements(2);
+  print_measurements(3);
 
   asymoff_presigning_export_data(parties, presign_parties);
   
@@ -259,6 +286,7 @@ void asymoff_signing_cmp_send_msg_to_all_others(asymoff_sign_cmp_data_t **cmp_pa
 void signing_cmp_execute(asymoff_party_data_t **parties, uint64_t num_sigs) {
 
   int res;
+  zero_measurements();
   
   printf("\n_____ Signing CMP %ld msgs ______\n", num_sigs);
 
@@ -381,6 +409,7 @@ void signing_aggregate_execute(asymoff_party_data_t **parties, uint64_t num_msgs
   printf("\n_____ Signing Aggregate %ld msgs _____\n", num_msgs);
   
   int res;
+  zero_measurements();
 
   scalar_t *msgs = new_scalar_array(num_msgs);
   for (uint64_t l = 0; l < num_msgs; ++l) scalar_sample_in_range(msgs[l], ec_group_order(parties[0]->ec), 0);
@@ -406,7 +435,7 @@ void signing_aggregate_execute(asymoff_party_data_t **parties, uint64_t num_msgs
   for (uint64_t i = 1; i < NUM_PARTIES; ++i) {
     start_timer();
     res = asymoff_signing_aggregate_execute_round_3(signing_parties[i]);
-    exec_time[1][i] = get_time();
+    exec_time[2][i] = get_time();
     assert(res == 0);
     asymoff_signing_aggregate_send_msg_to_all_others(signing_parties, i, 3);
   }
@@ -414,18 +443,20 @@ void signing_aggregate_execute(asymoff_party_data_t **parties, uint64_t num_msgs
   for (uint64_t i = 1; i < NUM_PARTIES; ++i) {
     start_timer();
     res = asymoff_signing_aggregate_execute_final(signing_parties[i]);
-    exec_time[1][i] = get_time();
+    exec_time[3][i] = get_time();
     assert(res == 0);
   }
 
   asymoff_signing_aggregate_send_msg_to_all_others(signing_parties, 1, 4);
 
   scalar_t *sigs = new_scalar_array(num_msgs);
-
+  
+  start_timer();
   res = asymoff_signing_aggregate_execute_offline(signing_parties[0], sigs);
+  exec_time[4][0] = get_time();
   assert(res == 0);
 
-  print_measurements(4);
+  print_measurements(5);
 
   printf("\n_____ All messages signed succesfully! _____\n\n");
 
