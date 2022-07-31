@@ -8,7 +8,7 @@ make all --print-data-base --no-builtin-variables --no-builtin-rules --question
 # This program built for i386-apple-darwin11.3.0
  
 
-# Make data base, printed on Fri Jul 29 17:28:49 2022
+# Make data base, printed on Sun Jul 31 11:20:05 2022
 
 # Variables
 
@@ -19,7 +19,6 @@ make all --print-data-base --no-builtin-variables --no-builtin-rules --question
 # environment
 ELECTRON_NO_ATTACH_CONSOLE = 1
 # environment
- 
 LC_CTYPE = UTF-8
 # automatic
 ?D = $(patsubst %/,%,$(dir $?))
@@ -96,7 +95,7 @@ USER = udipeled
 # makefile
 .DEFAULT_GOAL := all
 # environment
-TERM_SESSION_ID = E210394E-4FA5-4EC5-B26A-44A08347D5AF
+TERM_SESSION_ID = 0F49FA29-8691-4E8D-ADDC-27BC722602DA
 # automatic
 %D = $(patsubst %/,%,$(dir $%))
 # default
@@ -124,7 +123,7 @@ TERM_PROGRAM_VERSION = 445
 # makefile (from `Makefile', line 6)
 primitives := algebraic_elements.o paillier_cryptosystem.o ring_pedersen_parameters.o  zkp_common.o zkp_paillier_blum_modulus.o zkp_ring_pedersen_param.o zkp_schnorr.o zkp_no_small_factors.o zkp_tight_range.o zkp_range_el_gamal_commitment.o zkp_el_gamal_dlog.o zkp_double_el_gamal.o zkp_operation_group_commitment_range.o zkp_well_formed_signature.o
 # environment
-XPC_SERVICE_NAME = application.com.microsoft.VSCode.14815745.14815751.ADB21795-FF7A-4024-AFB1-62581D1C5FE3
+XPC_SERVICE_NAME = application.com.microsoft.VSCode.14815745.14815751.B763FC15-C0F7-4CC4-8703-C25A25F0F1CF
 # automatic
 +D = $(patsubst %/,%,$(dir $+))
 # automatic
@@ -154,7 +153,7 @@ LANG = C
 # environment
 TERM = xterm-256color
 # environment
-VSCODE_PID = 70804
+VSCODE_PID = 75202
 # variable set hash-table stats:
 # Load=71/1024=7%, Rehash=0, Collisions=1/103=1%
 
@@ -185,7 +184,7 @@ algebraic_elements.h:
 
 zkp_range_el_gamal_commitment.o: zkp_range_el_gamal_commitment.c zkp_range_el_gamal_commitment.h zkp_common.o
 #  Implicit rule search has not been done.
-#  Last modified 2022-07-29 17:14:52
+#  Last modified 2022-07-31 11:16:29
 #  File has been updated.
 #  Successfully updated.
 # variable set hash-table stats:
@@ -224,7 +223,7 @@ zkp_tight_range.c:
 
 common.o: common.c common.h
 #  Implicit rule search has not been done.
-#  Last modified 2022-07-29 16:23:56
+#  Last modified 2022-07-31 11:16:27
 #  File has been updated.
 #  Successfully updated.
 # variable set hash-table stats:
@@ -251,6 +250,7 @@ asymoff_protocol.c:
 #  Successfully updated.
 # variable set hash-table stats:
 # Load=0/32=0%, Rehash=0, Collisions=0/0=0%
+ 
 
 # Not a target:
 zkp_el_gamal_dlog.c:
@@ -263,7 +263,7 @@ zkp_el_gamal_dlog.c:
 
 asymoff_key_generation.o: asymoff_key_generation.c asymoff_key_generation.h asymoff_protocol.o algebraic_elements.o paillier_cryptosystem.o ring_pedersen_parameters.o zkp_common.o zkp_paillier_blum_modulus.o zkp_ring_pedersen_param.o zkp_schnorr.o zkp_no_small_factors.o zkp_tight_range.o zkp_range_el_gamal_commitment.o zkp_el_gamal_dlog.o zkp_double_el_gamal.o zkp_operation_group_commitment_range.o zkp_well_formed_signature.o
 #  Implicit rule search has not been done.
-#  Last modified 2022-07-29 17:14:53
+#  Last modified 2022-07-31 11:16:30
 #  File has been updated.
 #  Successfully updated.
 # variable set hash-table stats:
@@ -290,8 +290,7 @@ tests.o:
 
 paillier_cryptosystem.o: paillier_cryptosystem.c paillier_cryptosystem.h algebraic_elements.o
 #  Implicit rule search has not been done.
- 
-#  Last modified 2022-07-29 16:23:56
+#  Last modified 2022-07-31 11:16:27
 #  File has been updated.
 #  Successfully updated.
 # variable set hash-table stats:
@@ -321,7 +320,7 @@ zkp_tight_range.h:
 
 zkp_double_el_gamal.o: zkp_double_el_gamal.c zkp_double_el_gamal.h zkp_common.o
 #  Implicit rule search has not been done.
-#  Last modified 2022-07-29 17:14:52
+#  Last modified 2022-07-31 11:16:29
 #  File has been updated.
 #  Successfully updated.
 # variable set hash-table stats:
@@ -435,7 +434,7 @@ zkp_encryption_in_range.o: zkp_encryption_in_range.c zkp_encryption_in_range.h z
 
 benchmark: benchmark.c common.o asymoff_protocol.o asymoff_key_generation.o asymoff_presigning.o asymoff_signing_cmp.o asymoff_signing_aggregate.o algebraic_elements.o paillier_cryptosystem.o ring_pedersen_parameters.o zkp_common.o zkp_paillier_blum_modulus.o zkp_ring_pedersen_param.o zkp_schnorr.o zkp_no_small_factors.o zkp_tight_range.o zkp_range_el_gamal_commitment.o zkp_el_gamal_dlog.o zkp_double_el_gamal.o zkp_operation_group_commitment_range.o zkp_well_formed_signature.o
 #  Implicit rule search has not been done.
-#  Last modified 2022-07-29 17:19:41
+#  Last modified 2022-07-31 11:18:36
 #  File has been updated.
 #  Successfully updated.
 # variable set hash-table stats:
@@ -456,7 +455,7 @@ benchmark.o: benchmark.c common.o tests.o primitives
 
 zkp_operation_group_commitment_range.o: zkp_operation_group_commitment_range.c zkp_operation_group_commitment_range.h zkp_common.o
 #  Implicit rule search has not been done.
-#  Last modified 2022-07-29 17:14:53
+#  Last modified 2022-07-31 11:16:29
 #  File has been updated.
 #  Successfully updated.
 # variable set hash-table stats:
@@ -495,7 +494,7 @@ asymoff_signing_aggregate.h:
 
 zkp_ring_pedersen_param.o: zkp_ring_pedersen_param.c zkp_ring_pedersen_param.h zkp_common.o
 #  Implicit rule search has not been done.
-#  Last modified 2022-07-29 17:14:51
+#  Last modified 2022-07-31 11:16:28
 #  File has been updated.
 #  Successfully updated.
 # variable set hash-table stats:
@@ -506,6 +505,7 @@ zkp_ring_pedersen_param.o: zkp_ring_pedersen_param.c zkp_ring_pedersen_param.h z
 	
 
 # Not a target:
+ 
 zkp_no_small_factors.h:
 #  Implicit rule search has been done.
 #  Last modified 2022-07-28 20:05:33
@@ -549,7 +549,7 @@ zkp_group_vs_paillier_range.h:
 
 zkp_schnorr.o: zkp_schnorr.c zkp_schnorr.h zkp_common.o
 #  Implicit rule search has not been done.
-#  Last modified 2022-07-29 17:14:52
+#  Last modified 2022-07-31 11:16:28
 #  File has been updated.
 #  Successfully updated.
 # variable set hash-table stats:
@@ -559,10 +559,9 @@ zkp_schnorr.o: zkp_schnorr.c zkp_schnorr.h zkp_common.o
 	@echo "CC   <=  $<"
 	
 
- 
 algebraic_elements.o: algebraic_elements.c algebraic_elements.h
 #  Implicit rule search has not been done.
-#  Last modified 2022-07-29 16:23:56
+#  Last modified 2022-07-31 11:16:27
 #  File has been updated.
 #  Successfully updated.
 # variable set hash-table stats:
@@ -607,7 +606,7 @@ paillier_cryptosystem.c:
 
 zkp_paillier_blum_modulus.o: zkp_paillier_blum_modulus.c zkp_paillier_blum_modulus.h zkp_common.o
 #  Implicit rule search has not been done.
-#  Last modified 2022-07-29 17:14:51
+#  Last modified 2022-07-31 11:16:28
 #  File has been updated.
 #  Successfully updated.
 # variable set hash-table stats:
@@ -637,7 +636,7 @@ zkp_double_el_gamal.c:
 
 asymoff_signing_cmp.o: asymoff_signing_cmp.c asymoff_signing_cmp.h asymoff_protocol.o algebraic_elements.o paillier_cryptosystem.o ring_pedersen_parameters.o zkp_common.o zkp_paillier_blum_modulus.o zkp_ring_pedersen_param.o zkp_schnorr.o zkp_no_small_factors.o zkp_tight_range.o zkp_range_el_gamal_commitment.o zkp_el_gamal_dlog.o zkp_double_el_gamal.o zkp_operation_group_commitment_range.o zkp_well_formed_signature.o
 #  Implicit rule search has not been done.
-#  Last modified 2022-07-29 17:17:15
+#  Last modified 2022-07-31 11:16:30
 #  File has been updated.
 #  Successfully updated.
 # variable set hash-table stats:
@@ -670,7 +669,7 @@ zkp_encryption_in_range.c:
 # Not a target:
 benchmark.c:
 #  Implicit rule search has been done.
-#  Last modified 2022-07-29 17:19:39
+#  Last modified 2022-07-31 11:18:29
 #  File has been updated.
 #  Successfully updated.
 # variable set hash-table stats:
@@ -692,6 +691,7 @@ primitives:
 #  File has not been updated.
 
 # Not a target:
+ 
 zkp_operation_group_commitment_range.c:
 #  Implicit rule search has been done.
 #  Last modified 2022-07-28 20:04:24
@@ -711,7 +711,7 @@ zkp_double_el_gamal.h:
 
 zkp_tight_range.o: zkp_tight_range.c zkp_tight_range.h zkp_common.o
 #  Implicit rule search has not been done.
-#  Last modified 2022-07-29 17:14:52
+#  Last modified 2022-07-31 11:16:29
 #  File has been updated.
 #  Successfully updated.
 # variable set hash-table stats:
@@ -732,7 +732,7 @@ zkp_ring_pedersen_param.c:
 
 asymoff_protocol.o: asymoff_protocol.c asymoff_protocol.h algebraic_elements.o paillier_cryptosystem.o ring_pedersen_parameters.o zkp_common.o zkp_paillier_blum_modulus.o zkp_ring_pedersen_param.o zkp_schnorr.o zkp_no_small_factors.o zkp_tight_range.o zkp_range_el_gamal_commitment.o zkp_el_gamal_dlog.o zkp_double_el_gamal.o zkp_operation_group_commitment_range.o zkp_well_formed_signature.o
 #  Implicit rule search has not been done.
-#  Last modified 2022-07-29 17:14:53
+#  Last modified 2022-07-31 11:16:30
 #  File has been updated.
 #  Successfully updated.
 # variable set hash-table stats:
@@ -753,7 +753,7 @@ asymoff_key_generation.h:
 
 zkp_el_gamal_dlog.o: zkp_el_gamal_dlog.c zkp_el_gamal_dlog.h zkp_common.o
 #  Implicit rule search has not been done.
-#  Last modified 2022-07-29 17:14:52
+#  Last modified 2022-07-31 11:16:29
 #  File has been updated.
 #  Successfully updated.
 # variable set hash-table stats:
@@ -771,7 +771,7 @@ cmp_protocol.h:
 
 ring_pedersen_parameters.o: ring_pedersen_parameters.c ring_pedersen_parameters.h paillier_cryptosystem.o algebraic_elements.o
 #  Implicit rule search has not been done.
-#  Last modified 2022-07-29 16:23:56
+#  Last modified 2022-07-31 11:16:28
 #  File has been updated.
 #  Successfully updated.
 # variable set hash-table stats:
@@ -807,7 +807,7 @@ zkp_operation_group_commitment_range.h:
 
 zkp_well_formed_signature.o: zkp_well_formed_signature.c zkp_well_formed_signature.h zkp_common.o
 #  Implicit rule search has not been done.
-#  Last modified 2022-07-29 17:14:53
+#  Last modified 2022-07-31 11:16:29
 #  File has been updated.
 #  Successfully updated.
 # variable set hash-table stats:
@@ -817,10 +817,9 @@ zkp_well_formed_signature.o: zkp_well_formed_signature.c zkp_well_formed_signatu
 	@echo "CC   <=  $<"
 	
 
- 
 asymoff_signing_aggregate.o: asymoff_signing_aggregate.c asymoff_signing_aggregate.h asymoff_protocol.o algebraic_elements.o paillier_cryptosystem.o ring_pedersen_parameters.o zkp_common.o zkp_paillier_blum_modulus.o zkp_ring_pedersen_param.o zkp_schnorr.o zkp_no_small_factors.o zkp_tight_range.o zkp_range_el_gamal_commitment.o zkp_el_gamal_dlog.o zkp_double_el_gamal.o zkp_operation_group_commitment_range.o zkp_well_formed_signature.o
 #  Implicit rule search has not been done.
-#  Last modified 2022-07-29 17:14:54
+#  Last modified 2022-07-31 11:16:30
 #  File has been updated.
 #  Successfully updated.
 # variable set hash-table stats:
@@ -841,7 +840,7 @@ zkp_ring_pedersen_param.h:
 
 zkp_no_small_factors.o: zkp_no_small_factors.c zkp_no_small_factors.h zkp_common.o
 #  Implicit rule search has not been done.
-#  Last modified 2022-07-29 17:14:52
+#  Last modified 2022-07-31 11:16:28
 #  File has been updated.
 #  Successfully updated.
 # variable set hash-table stats:
@@ -853,7 +852,7 @@ zkp_no_small_factors.o: zkp_no_small_factors.c zkp_no_small_factors.h zkp_common
 
 asymoff_presigning.o: asymoff_presigning.c asymoff_presigning.h asymoff_protocol.o algebraic_elements.o paillier_cryptosystem.o ring_pedersen_parameters.o zkp_common.o zkp_paillier_blum_modulus.o zkp_ring_pedersen_param.o zkp_schnorr.o zkp_no_small_factors.o zkp_tight_range.o zkp_range_el_gamal_commitment.o zkp_el_gamal_dlog.o zkp_double_el_gamal.o zkp_operation_group_commitment_range.o zkp_well_formed_signature.o
 #  Implicit rule search has not been done.
-#  Last modified 2022-07-29 17:14:53
+#  Last modified 2022-07-31 11:16:30
 #  File has been updated.
 #  Successfully updated.
 # variable set hash-table stats:
@@ -874,7 +873,7 @@ zkp_paillier_blum_modulus.c:
 
 zkp_common.o: zkp_common.c zkp_common.h algebraic_elements.o paillier_cryptosystem.o ring_pedersen_parameters.o
 #  Implicit rule search has not been done.
-#  Last modified 2022-07-29 17:14:51
+#  Last modified 2022-07-31 11:16:28
 #  File has been updated.
 #  Successfully updated.
 # variable set hash-table stats:
@@ -926,6 +925,7 @@ asymoff_signing_cmp.c:
 
 # No `vpath' search paths.
 
+ 
 # No general (`VPATH' variable) search path.
 
 # # of strings in strcache: 1
@@ -933,6 +933,6 @@ asymoff_signing_cmp.c:
 # strcache size: total = 4096 / max = 4096 / min = 4096 / avg = 4096
 # strcache free: total = 4087 / max = 4087 / min = 4087 / avg = 4087
 
-# Finished Make data base on Fri Jul 29 17:28:49 2022
+# Finished Make data base on Sun Jul 31 11:20:05 2022
 
  
