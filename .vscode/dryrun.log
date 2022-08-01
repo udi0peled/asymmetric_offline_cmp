@@ -20,6 +20,7 @@ cc -O2 -Wall -Wextra -Wvla -Wno-unknown-pragmas -Wno-deprecated-declarations -I.
 echo "CC   <=  zkp_no_small_factors.c"
 cc -O2 -Wall -Wextra -Wvla -Wno-unknown-pragmas -Wno-deprecated-declarations -I.  -c zkp_tight_range.c -o zkp_tight_range.o
 echo "CC   <=  zkp_tight_range.c"
+ 
 cc -O2 -Wall -Wextra -Wvla -Wno-unknown-pragmas -Wno-deprecated-declarations -I.  -c zkp_range_el_gamal_commitment.c -o zkp_range_el_gamal_commitment.o
 echo "CC   <=  zkp_range_el_gamal_commitment.c"
 cc -O2 -Wall -Wextra -Wvla -Wno-unknown-pragmas -Wno-deprecated-declarations -I.  -c zkp_el_gamal_dlog.c -o zkp_el_gamal_dlog.o

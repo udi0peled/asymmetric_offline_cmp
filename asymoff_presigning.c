@@ -398,7 +398,6 @@ int asymoff_presigning_execute_final(asymoff_presigning_data_t *party) {
 }
 
 void asymoff_presigning_export_data(asymoff_party_data_t **parties, asymoff_presigning_data_t ** const presign_parties) {
-  pinfo("Exporting Presigning Data\n");
 
   uint64_t num_parties = presign_parties[0]->num_parties;
   uint64_t batch_size  = presign_parties[0]->batch_size;
