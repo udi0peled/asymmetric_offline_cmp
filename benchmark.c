@@ -16,6 +16,15 @@
  *  Helpers  *
  *************/
 
+void usage(const char prgrm[], uint64_t presign_size, uint64_t num_sig, uint64_t print_flags) {
+  printf("\nUsage: %s <presign_size> <num_sig> <num_parties> <print_flags>\n\n"
+          "presign_size: number of pre-signatures to generate (interactive offline <-> online). default: %ld\n\n"
+          "num_sig: number of signatures to sign out of pre-signatures (interactive online. msg to offline, responds with signature). default: %ld\n\n"
+          "Note: both presign_size and num_sig are forced to be multiples of %ld\n\n"
+          "print_flags: integer. 0x01 bit - print round info, 0x02 bit - print timing (sec) and communication (bytes). defualt: %ld\n\n",
+          prgrm, presign_size, num_sig, PACKING_SIZE, print_flags);
+}
+
 int with_info_print = 1;
 int with_measurements = 1;
 
@@ -195,13 +204,13 @@ void asymoff_presigning_send_msg_to_all_others(asymoff_presigning_data_t **presi
   }
 }
 
-void presigning_execute(asymoff_party_data_t **parties, uint64_t batch_size) {
+void presigning_execute(asymoff_party_data_t **parties, uint64_t presign_size) {
   
-  printf("\n_____ Presigning %ld batch _____\n", batch_size);
+  printf("\n_____ Presigning %ld batch _____\n", presign_size);
   
   int res;
 
-  asymoff_presigning_data_t **presign_parties =  asymoff_presigning_parties_new(parties, batch_size);
+  asymoff_presigning_data_t **presign_parties =  asymoff_presigning_parties_new(parties, presign_size);
 
   for (uint64_t i = 1; i < NUM_PARTIES; ++i) {
     start_timer();
@@ -467,15 +476,20 @@ void signing_aggregate_execute(asymoff_party_data_t **parties, uint64_t num_msgs
 }
 
 int main(int argc, char *argv[]) {
+  
+  uint64_t presign_size = 3;
+  uint64_t num_sigs = presign_size;
+  uint64_t print_flags = 3;
 
-  uint64_t batch_size = 3;
-  if (argc >= 2) sscanf(argv[1], "%ld", &batch_size);
-  batch_size = PACKING_SIZE*((batch_size+PACKING_SIZE-1)/PACKING_SIZE);
 
-  uint64_t num_sigs = batch_size;
+  if ((argc >= 1) || (argc >= 5)) usage(argv[0], presign_size, presign_size, print_flags);
+
+  if (argc >= 2) sscanf(argv[1], "%ld", &presign_size);
+  presign_size = PACKING_SIZE*((presign_size+PACKING_SIZE-1)/PACKING_SIZE);
+
+  num_sigs = presign_size;
   if (argc >= 3) sscanf(argv[2], "%ld", &num_sigs);
 
-  uint64_t print_flags = 3;
   if (argc >= 4) sscanf(argv[3], "%ld", &print_flags);
   with_info_print   = print_flags & 0x01;
   with_measurements = print_flags & 0x02;
@@ -488,15 +502,15 @@ int main(int argc, char *argv[]) {
   
   //print_after_keygen(parties);
 
-  asymoff_protocol_parties_new_batch(parties, batch_size);
+  asymoff_protocol_parties_new_batch(parties, presign_size);
 
-  presigning_execute(parties, batch_size);
+  presigning_execute(parties, presign_size);
 
   //print_after_presigning(parties, 1);
 
   signing_cmp_execute(parties, num_sigs);
 
-  //signing_cmp_mock_execute(parties, batch_size);
+  //signing_cmp_mock_execute(parties, presign_size);
 
   //print_signing_cmp_ouput(parties, 1);
 
