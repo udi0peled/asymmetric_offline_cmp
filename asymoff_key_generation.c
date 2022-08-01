@@ -407,7 +407,7 @@ uint64_t asymoff_key_gen_send_msg_4(asymoff_key_gen_data_t *sender, asymoff_key_
 
 
 int asymoff_key_gen_execute_final(asymoff_key_gen_data_t *party) {
-  pinfo("Player %ld: Executing Finalizationization\n", party->i);
+  pinfo("Player %ld: Executing Finalization\n", party->i);
 
   // Validate data recevied from others
   for (uint64_t j = 0; j < party->num_parties; ++j) {

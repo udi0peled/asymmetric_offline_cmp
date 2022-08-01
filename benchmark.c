@@ -25,6 +25,8 @@ void usage(const char prgrm[], uint64_t presign_size, uint64_t num_sig, uint64_t
           prgrm, presign_size, num_sig, PACKING_SIZE, print_flags);
 }
 
+#define MAKE_PACKING_MULTIPLE(var) var = PACKING_SIZE*((var + PACKING_SIZE-1)/PACKING_SIZE)
+
 int with_info_print = 1;
 int with_measurements = 1;
 
@@ -235,10 +237,10 @@ void presigning_execute(asymoff_party_data_t **parties, uint64_t presign_size) {
     assert(res == 0);
   }
   
-  print_measurements(3);
-
   asymoff_presigning_export_data(parties, presign_parties);
   
+  print_measurements(3);
+
   asymoff_presigning_parties_free(presign_parties);
 }
 
@@ -485,10 +487,12 @@ int main(int argc, char *argv[]) {
   if ((argc >= 1) || (argc >= 5)) usage(argv[0], presign_size, presign_size, print_flags);
 
   if (argc >= 2) sscanf(argv[1], "%ld", &presign_size);
-  presign_size = PACKING_SIZE*((presign_size+PACKING_SIZE-1)/PACKING_SIZE);
+  MAKE_PACKING_MULTIPLE(presign_size);
 
   num_sigs = presign_size;
   if (argc >= 3) sscanf(argv[2], "%ld", &num_sigs);
+  MAKE_PACKING_MULTIPLE(num_sigs);
+
 
   if (argc >= 4) sscanf(argv[3], "%ld", &print_flags);
   with_info_print   = print_flags & 0x01;

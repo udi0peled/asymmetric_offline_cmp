@@ -345,7 +345,7 @@ uint64_t asymoff_presigning_send_msg_2(asymoff_presigning_data_t *sender, asymof
 }
 
 int asymoff_presigning_execute_final(asymoff_presigning_data_t *party) {
-  pinfo("Player %ld: Executing Finalizationization\n", party->i);
+  pinfo("Player %ld: Executing Finalization\n", party->i);
   if (party->i ==0) return 0;
   
   uint64_t batch_size = party->batch_size;
