@@ -21,7 +21,6 @@ asymoff_key_gen_data_t **asymoff_key_gen_parties_new(asymoff_party_data_t ** con
     memset(kgd_parties[i]->aux->info, 0x00, kgd_parties[i]->aux->info_len);
 
     kgd_parties[i]->ec = ec;
-    kgd_parties[i]->gen = parties[i]->gen;
 
     kgd_parties[i]->x = parties[i]->x;
     kgd_parties[i]->X = group_elem_new(ec);
@@ -144,16 +143,19 @@ void asymoff_key_gen_round_1_hash(hash_chunk hash, asymoff_key_gen_msg_round_2_t
 
 int asymoff_key_gen_execute_round_1(asymoff_key_gen_data_t *party) {
 
+  BN_CTX *bn_ctx = BN_CTX_secure_new();
+
+  ec_group_t ec = party->ec;
+
   pinfo("Player %ld: Executing Round 1\n", party->i);
 
-  group_operation(party->X, NULL, party->gen, party->x, party->ec);
+  group_operation(party->X, NULL, party->x, NULL, NULL, ec, bn_ctx);
 
-  scalar_sample_in_range(party->y, ec_group_order(party->ec), 0);
-  group_operation(party->Y, NULL, party->gen, party->y, party->ec);
+  scalar_sample_in_range(party->y, ec_group_order(ec), 0, bn_ctx);
+  group_operation(party->Y, NULL, party->y, NULL, NULL, ec, bn_ctx);
 
   zkp_schnorr_public_t psi_sch_public;
-  psi_sch_public.ec = party->ec;
-  psi_sch_public.g = party->gen;
+  psi_sch_public.ec = ec;
   zkp_schnorr_anchor(party->A, party->tau, &psi_sch_public);
 
   paillier_encryption_generate_private(party->paillier_priv, 4*PAILLIER_MODULUS_BYTES);
@@ -175,7 +177,9 @@ int asymoff_key_gen_execute_round_1(asymoff_key_gen_data_t *party) {
   msg_2.rped_pub = party->rped_pub;
   msg_2.u = &party->u;
 
-  asymoff_key_gen_round_1_hash(party->V, &msg_2, party->i, party->sid, party->ec);
+  asymoff_key_gen_round_1_hash(party->V, &msg_2, party->i, party->sid, ec);
+
+  BN_CTX_free(bn_ctx);
 
   return 0;
 }
@@ -259,11 +263,14 @@ int asymoff_key_gen_execute_round_3(asymoff_key_gen_data_t *party) {
       printf("Ring-Pedersen public modulus too short. Received from party %ld\n", j);
       return 1;
     }
+    
+    BN_CTX *bn_ctx = BN_CTX_secure_new();
 
-    if (scalar_coprime(in_msg_2->rped_pub->N, in_msg_2->rped_pub->t) != 1) {
+    if (scalar_coprime(in_msg_2->rped_pub->N, in_msg_2->rped_pub->t, bn_ctx) != 1) {
       printf("Ring-Pedersen public modulus and t not co-prime. Received from party %ld\n", j);
       return 1;
     }
+    BN_CTX_free(bn_ctx);
 
     // xor srid with all others
     for (uint64_t pos = 0; pos < sizeof(hash_chunk); ++pos) party->joint_srid[pos] ^= (*in_msg_2->srid)[pos];
@@ -280,7 +287,6 @@ int asymoff_key_gen_execute_round_3(asymoff_key_gen_data_t *party) {
 
   zkp_schnorr_public_t psi_sch_public;
   psi_sch_public.ec = party->ec;
-  psi_sch_public.g = party->gen;
   psi_sch_public.X = party->X;
   
   zkp_schnorr_secret_t psi_sch_secret;
@@ -310,7 +316,6 @@ int asymoff_key_gen_execute_round_4(asymoff_key_gen_data_t *party) {
 
   zkp_schnorr_public_t psi_sch_public;
   psi_sch_public.ec = party->ec;
-  psi_sch_public.g = party->gen;
 
   // Validate data recevied from others
   for (uint64_t j = 0; j < party->num_parties; ++j) {
@@ -364,7 +369,6 @@ int asymoff_key_gen_execute_round_4(asymoff_key_gen_data_t *party) {
 
       zkp_tight_range_public_t pi_public;
       pi_public.ec = party->ec;
-      pi_public.g = party->gen;
       pi_public.paillier_pub = party->paillier_pub;
       pi_public.rped_pub =  party->in_msg_2[j].rped_pub;;
       pi_public.W   = party->W_0;
@@ -430,7 +434,6 @@ int asymoff_key_gen_execute_final(asymoff_key_gen_data_t *party) {
 
     zkp_tight_range_public_t pi_public;
     pi_public.ec = party->ec;
-    pi_public.g = party->gen;
     pi_public.paillier_pub = party->in_msg_2[0].paillier_pub;
     pi_public.rped_pub = party->rped_pub;
     pi_public.W   = party->in_msg_4[0].W_0;
@@ -447,11 +450,12 @@ int asymoff_key_gen_execute_final(asymoff_key_gen_data_t *party) {
 
 void asymoff_key_gen_export_data(asymoff_party_data_t **parties, asymoff_key_gen_data_t ** const kgd_parties) {
   uint64_t num_parties = parties[0]->num_parties;
-  
+  BN_CTX *bn_ctx = BN_CTX_secure_new();
+
   // Compute joint Y
   ec_group_t ec = parties[0]->ec;
   for (uint64_t i = 1; i < num_parties; ++i) {
-    group_operation(parties[0]->Y, parties[0]->Y, kgd_parties[0]->in_msg_2[i].Y, NULL, ec);
+    group_operation(parties[0]->Y, parties[0]->Y, NULL, kgd_parties[0]->in_msg_2[i].Y, NULL, ec, bn_ctx);
   }
 
   for (uint64_t i = 0; i < num_parties; ++i) {
@@ -483,9 +487,10 @@ void asymoff_key_gen_export_data(asymoff_party_data_t **parties, asymoff_key_gen
       group_elem_copy(party->X[j], kgd->in_msg_2[j].X);
     }
   }
+
+  BN_CTX_free(bn_ctx);
 }
 
-//#include "mock_data_keygen.c"
 
 void asymoff_key_gen_mock_export_data(asymoff_party_data_t **parties) {
   
@@ -496,12 +501,14 @@ void asymoff_key_gen_mock_export_data(asymoff_party_data_t **parties) {
 
   hash_chunk srid;
   gr_elem_t Y   = group_elem_new(ec);
-  scalar_t *x   = new_scalar_array(num_parties);
+  scalar_t *x   = scalar_array_new(num_parties);
   scalar_t W_0  = scalar_new();
   scalar_t rho  = scalar_new();
   
-  scalar_sample_in_range(rho, ec_group_order(ec), 0);
-  group_operation(Y, NULL, parties[0]->gen, rho, ec);
+  BN_CTX *bn_ctx = BN_CTX_secure_new();
+
+  scalar_sample_in_range(rho, ec_group_order(ec), 0, bn_ctx);
+  group_operation(Y, NULL, rho, NULL, NULL, ec, bn_ctx);
   
   RAND_bytes(srid, sizeof(hash_chunk));
 
@@ -512,9 +519,9 @@ void asymoff_key_gen_mock_export_data(asymoff_party_data_t **parties) {
     group_elem_copy(party->Y, Y);
     memcpy(party->srid, srid, sizeof(hash_chunk));
         
-    scalar_sample_in_range(x[i], ec_group_order(ec), 0);  
+    scalar_sample_in_range(x[i], ec_group_order(ec), 0, bn_ctx);
     scalar_copy(party->x, x[i]);
-    group_operation(party->X[i], NULL, party->gen, x[i], ec);
+    group_operation(party->X[i], NULL, x[i], NULL, NULL, ec, bn_ctx);
 
     paillier_encryption_generate_private(party->paillier_priv, 4*PAILLIER_MODULUS_BYTES);
     paillier_encryption_copy_keys(NULL, party->paillier_pub[i], party->paillier_priv, NULL);
@@ -539,8 +546,10 @@ void asymoff_key_gen_mock_export_data(asymoff_party_data_t **parties) {
       group_elem_copy(party->X[j], parties[j]->X[j]);
     }
   }
+
   group_elem_free(Y);
-  free_scalar_array(x, num_parties);
+  scalar_array_free(x, num_parties);
   scalar_free(W_0);
   scalar_free(rho);
+  BN_CTX_free(bn_ctx);
 }

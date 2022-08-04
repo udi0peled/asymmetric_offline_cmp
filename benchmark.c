@@ -16,28 +16,10 @@
  *  Helpers  *
  *************/
 
-void usage(const char prgrm[], uint64_t presign_size, uint64_t num_sig, uint64_t print_flags) {
-  printf("\nUsage: %s <presign_size> <num_sig> <num_parties> <print_flags>\n\n"
-          "presign_size: number of pre-signatures to generate (interactive offline <-> online). default: %ld\n\n"
-          "num_sig: number of signatures to sign out of pre-signatures (interactive online. msg to offline, responds with signature). default: %ld\n\n"
-          "Note: both presign_size and num_sig are forced to be multiples of %ld\n\n"
-          "print_flags: integer. 0x01 bit - print round info, 0x02 bit - print timing (sec) and communication (bytes). defualt: %ld\n\n",
-          prgrm, presign_size, num_sig, PACKING_SIZE, print_flags);
-}
-
-#define MAKE_PACKING_MULTIPLE(var) var = PACKING_SIZE*((var + PACKING_SIZE-1)/PACKING_SIZE)
-
 int with_info_print = 1;
 int with_measurements = 1;
 
-#define MAX_PHASE_ROUNDS 6
-
-uint64_t sent_bytelen[MAX_PHASE_ROUNDS][NUM_PARTIES][NUM_PARTIES];
-
-struct timespec time_st;
 clock_t start_time, end_time;
-double exec_time[MAX_PHASE_ROUNDS][NUM_PARTIES];
-
 
 void start_timer() {
   if (with_measurements) {
@@ -55,8 +37,23 @@ double get_time() {
   return 0;
 }
 
-void zero_measurements() {
+void usage(const char prgrm[], uint64_t presign_size, uint64_t num_sig, uint64_t print_flags) {
+  printf("\nUsage: %s <presign_size> <num_sig> <num_parties> <print_flags>\n\n"
+          "presign_size: number of pre-signatures to generate (interactive offline <-> online). default: %ld\n\n"
+          "num_sig: number of signatures to sign out of pre-signatures (interactive online. msg to offline, responds with signature). default: %ld\n\n"
+          "Note: both presign_size and num_sig are forced to be multiples of %d\n\n"
+          "print_flags: integer. 0x01 bit - print round info, 0x02 bit - print timing (sec) and communication (bytes). defualt: %ld\n\n",
+          prgrm, presign_size, num_sig, PACKING_SIZE, print_flags);
+}
 
+#define MAKE_PACKING_MULTIPLE(var) var = PACKING_SIZE*((var + PACKING_SIZE-1)/PACKING_SIZE)
+
+#define MAX_PHASE_ROUNDS 6
+
+double   exec_time[MAX_PHASE_ROUNDS][NUM_PARTIES];
+uint64_t sent_bytelen[MAX_PHASE_ROUNDS][NUM_PARTIES][NUM_PARTIES];
+
+void zero_measurements() {
   for (uint64_t r = 0; r < MAX_PHASE_ROUNDS; ++r) {
     for (uint64_t i = 0; i < NUM_PARTIES; ++i) {
       for (uint64_t j = 0; j < NUM_PARTIES; ++j) sent_bytelen[r][i][j] = 0;
@@ -159,7 +156,7 @@ void key_gen_protocol_execute(asymoff_party_data_t **parties) {
     assert(res == 0);
   }
 
-  print_measurements(5);
+  print_measurements(4);
 
   asymoff_key_gen_export_data(parties, kgd_parties);
 
@@ -211,6 +208,8 @@ void presigning_execute(asymoff_party_data_t **parties, uint64_t presign_size) {
   printf("\n_____ Presigning %ld batch _____\n", presign_size);
   
   int res;
+  zero_measurements();
+
 
   asymoff_presigning_data_t **presign_parties =  asymoff_presigning_parties_new(parties, presign_size);
 
@@ -239,7 +238,7 @@ void presigning_execute(asymoff_party_data_t **parties, uint64_t presign_size) {
   
   asymoff_presigning_export_data(parties, presign_parties);
   
-  print_measurements(3);
+  print_measurements(2);
 
   asymoff_presigning_parties_free(presign_parties);
 }
@@ -422,8 +421,8 @@ void signing_aggregate_execute(asymoff_party_data_t **parties, uint64_t num_msgs
   int res;
   zero_measurements();
 
-  scalar_t *msgs = new_scalar_array(num_msgs);
-  for (uint64_t l = 0; l < num_msgs; ++l) scalar_sample_in_range(msgs[l], ec_group_order(parties[0]->ec), 0);
+  scalar_t *msgs = scalar_array_new(num_msgs);
+  for (uint64_t l = 0; l < num_msgs; ++l) BN_rand_range(msgs[l], ec_group_order(parties[0]->ec));
 
   asymoff_sign_agg_data_t **signing_parties = asymoff_signing_aggregate_parties_new(parties, msgs);
   
@@ -460,7 +459,7 @@ void signing_aggregate_execute(asymoff_party_data_t **parties, uint64_t num_msgs
 
   asymoff_signing_aggregate_send_msg_to_all_others(signing_parties, 1, 4);
 
-  scalar_t *sigs = new_scalar_array(num_msgs);
+  scalar_t *sigs = scalar_array_new(num_msgs);
   
   start_timer();
   res = asymoff_signing_aggregate_execute_offline(signing_parties[0], sigs);
@@ -471,10 +470,13 @@ void signing_aggregate_execute(asymoff_party_data_t **parties, uint64_t num_msgs
 
   printf("\n_____ All messages signed succesfully! _____\n\n");
 
-  free_scalar_array(msgs, num_msgs);
-  free_scalar_array(sigs, num_msgs);
+  scalar_array_free(msgs, num_msgs);
+  scalar_array_free(sigs, num_msgs);
 
   asymoff_signing_aggregate_parties_free(signing_parties);
+}
+
+void time_experiment(uint64_t num) {
 }
 
 int main(int argc, char *argv[]) {
@@ -482,7 +484,6 @@ int main(int argc, char *argv[]) {
   uint64_t presign_size = 3;
   uint64_t num_sigs = presign_size;
   uint64_t print_flags = 3;
-
 
   if ((argc >= 1) || (argc >= 5)) usage(argv[0], presign_size, presign_size, print_flags);
 
@@ -493,16 +494,18 @@ int main(int argc, char *argv[]) {
   if (argc >= 3) sscanf(argv[2], "%ld", &num_sigs);
   MAKE_PACKING_MULTIPLE(num_sigs);
 
-
   if (argc >= 4) sscanf(argv[3], "%ld", &print_flags);
   with_info_print   = print_flags & 0x01;
   with_measurements = print_flags & 0x02;
 
+  // time_experiment(presign_size);
+  // return 0;
+
   asymoff_party_data_t **parties = asymoff_protocol_parties_new(NUM_PARTIES);
   asymoff_protocol_parties_set(parties, NULL, NULL);
 
-  key_gen_protocol_execute(parties);
-  //key_gen_protocol_mock_execute(parties);
+  //key_gen_protocol_execute(parties);
+  key_gen_protocol_mock_execute(parties);
   
   //print_after_keygen(parties);
 

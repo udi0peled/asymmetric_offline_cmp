@@ -1,0 +1,24 @@
+Player 0: Executing Round 2
+zkp_range_el_gamal_verify: 1.362706
+zkp_range_el_gamal_verify: 1.381676
+All Paillier encryptions (packed): 2.178185
+zkp_el_gamal_dlog_prove: 1.816923
+zkp_range_el_gamal_prove: 0.468057
+zkp_range_el_gamal_prove: 0.482242
+Player 1: Executing Round 2
+zkp_range_el_gamal_verify: 1.373119
+Player 2: Executing Round 2
+zkp_range_el_gamal_verify: 1.393664
+
+Player 0: Executing Round 2
+zkp_range_el_gamal_verify: 1.417237
+zkp_range_el_gamal_verify: 1.403214
+All Paillier encryptions (packed): 2.224691
+zkp_el_gamal_dlog_anchor: 1.617894
+zkp_el_gamal_dlog_prove: 0.214998
+zkp_range_el_gamal_prove: 0.464802
+zkp_range_el_gamal_prove: 0.460133
+Player 1: Executing Round 2
+zkp_range_el_gamal_verify: 1.412290
+Player 2: Executing Round 2
+zkp_range_el_gamal_verify: 1.420481

@@ -9,7 +9,6 @@ typedef struct
   uint64_t packing_size;
 
   ec_group_t ec;
-  gr_elem_t g;
   gr_elem_t Y;
   scalar_t  W;
 

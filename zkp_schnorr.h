@@ -24,7 +24,6 @@
 typedef struct
 {
   ec_group_t ec;
-  gr_elem_t g;    // GROUP_ELEMENT_BYTES
   gr_elem_t X;    // GROUP_ELEMENT_BYTES
 } zkp_schnorr_public_t;
 

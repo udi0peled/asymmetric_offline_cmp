@@ -28,12 +28,12 @@ void ring_pedersen_private_from_primes (ring_pedersen_private_t *priv, const sca
   BN_add_word(priv->phi_N, 1);
 
   scalar_t r = scalar_new();
-  scalar_sample_in_range(r, priv->N, 1);
+  scalar_sample_in_range(r, priv->N, 1, bn_ctx);
   BN_mod_mul(priv->t, r, r, priv->N, bn_ctx);
   scalar_free(r);
 
   for (uint64_t i = 0; i < RING_PEDERSEN_MULTIPLICITY; ++i) {
-    scalar_sample_in_range(priv->lam[i], priv->phi_N, 0);
+    scalar_sample_in_range(priv->lam[i], priv->phi_N, 0, bn_ctx);
     BN_mod_exp(priv->s[i], priv->t, priv->lam[i], priv->N, bn_ctx);
   }
   

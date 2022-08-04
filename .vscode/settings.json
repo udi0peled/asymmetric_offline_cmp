@@ -23,7 +23,13 @@
       "zkp_double_el_gamal.h": "c",
       "zkp_operation_group_commitment_range.h": "c",
       "zkp_el_gamal.h": "c",
-      "asymoff_signing_cmp.h": "c"
+      "asymoff_signing_cmp.h": "c",
+      "bitset": "c",
+      "functional": "c",
+      "iterator": "c",
+      "memory": "c",
+      "zkp_el_gamal_dlog.h": "c",
+      "complex": "c"
     },
     "C_Cpp.intelliSenseEngineFallback": "Disabled"
 }

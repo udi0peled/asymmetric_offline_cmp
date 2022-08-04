@@ -25,7 +25,6 @@ typedef struct
   ring_pedersen_public_t *rped_pub;
   paillier_public_key_t *paillier_pub;
   ec_group_t ec;
-  gr_elem_t g;    
   gr_elem_t X;       
   scalar_t W;
 } zkp_tight_range_public_t;

@@ -100,36 +100,36 @@ void zkp_oper_group_commit_range_prove (zkp_oper_group_commit_range_proof_t *pro
   scalar_t temp        = scalar_new();
 
   BN_set_bit(alpha_range, 8*public->x_range_bytes + 8*EPS_ZKP_SLACK_PARAMETER_BYTES);
-  scalar_sample_in_range(alpha, alpha_range, 0);
+  scalar_sample_in_range(alpha, alpha_range, 0, bn_ctx);
   scalar_make_signed(alpha, alpha_range);
 
   BN_set_bit(beta_range, 8*public->y_range_bytes + 8*EPS_ZKP_SLACK_PARAMETER_BYTES);
-  scalar_sample_in_range(beta, beta_range, 0);
+  scalar_sample_in_range(beta, beta_range, 0, bn_ctx);
   scalar_make_signed(beta, beta_range);
 
   BN_set_bit(gamma_range, 8*public->x_range_bytes + 8*EPS_ZKP_SLACK_PARAMETER_BYTES);
   BN_mul(gamma_range, gamma_range, public->rped_pub->N, bn_ctx);
-  scalar_sample_in_range(gamma, gamma_range, 0);
+  scalar_sample_in_range(gamma, gamma_range, 0, bn_ctx);
   scalar_make_signed(gamma, gamma_range);
-  scalar_sample_in_range(delta, gamma_range, 0);
+  scalar_sample_in_range(delta, gamma_range, 0, bn_ctx);
   scalar_make_signed(delta, gamma_range);
   
   BN_set_bit(mu_range, 8*public->x_range_bytes);
   BN_mul(mu_range, mu_range, public->rped_pub->N, bn_ctx);
-  scalar_sample_in_range(mu, mu_range, 0);
+  scalar_sample_in_range(mu, mu_range, 0, bn_ctx);
   scalar_make_signed(mu, mu_range);
-  scalar_sample_in_range(m, mu_range, 0);
+  scalar_sample_in_range(m, mu_range, 0, bn_ctx);
   scalar_make_signed(m, mu_range);
   
-  group_operation(proof->B_x, NULL, public->g, alpha, public->G);
+  group_operation(proof->B_x, NULL, NULL, public->g, alpha, public->G, bn_ctx);
 
   paillier_encryption_sample(r_y, public->paillier_pub_1);
   paillier_encryption_encrypt(proof->B_y, beta, r_y, public->paillier_pub_1);
 
   paillier_encryption_sample(r, public->paillier_pub_0);
   paillier_encryption_encrypt(temp, beta, r, public->paillier_pub_0);
-  scalar_exp(proof->A, public->C, alpha, public->paillier_pub_0->N2);
-  scalar_mul(proof->A, proof->A, temp, public->paillier_pub_0->N2);
+  scalar_exp(proof->A, public->C, alpha, public->paillier_pub_0->N2, bn_ctx);
+  scalar_mul(proof->A, proof->A, temp, public->paillier_pub_0->N2, bn_ctx);
 
   ring_pedersen_commit(proof->E, &alpha, 1, gamma, public->rped_pub);
   ring_pedersen_commit(proof->F, &beta, 1, delta, public->rped_pub);
@@ -150,11 +150,11 @@ void zkp_oper_group_commit_range_prove (zkp_oper_group_commit_range_proof_t *pro
   BN_mul(temp, e, mu, bn_ctx);
   BN_add(proof->z_4, delta, temp);
 
-  scalar_exp(temp, secret->rho, e, public->paillier_pub_0->N);
-  scalar_mul(proof->w, r, temp, public->paillier_pub_0->N);
+  scalar_exp(temp, secret->rho, e, public->paillier_pub_0->N, bn_ctx);
+  scalar_mul(proof->w, r, temp, public->paillier_pub_0->N, bn_ctx);
 
-  scalar_exp(temp, secret->rho_y, e, public->paillier_pub_1->N);
-  scalar_mul(proof->w_y, r_y, temp, public->paillier_pub_1->N);
+  scalar_exp(temp, secret->rho_y, e, public->paillier_pub_1->N, bn_ctx);
+  scalar_mul(proof->w_y, r_y, temp, public->paillier_pub_1->N, bn_ctx);
 
   scalar_free(temp);
   scalar_free(e);
@@ -176,6 +176,8 @@ void zkp_oper_group_commit_range_prove (zkp_oper_group_commit_range_proof_t *pro
 
 int zkp_oper_group_commit_range_verify  (const zkp_oper_group_commit_range_proof_t *proof, const zkp_oper_group_commit_range_public_t *public, const zkp_aux_info_t *aux)
 {
+  BN_CTX *bn_ctx = BN_CTX_secure_new();
+
   scalar_t z_1_range = scalar_new();
   scalar_t z_2_range = scalar_new();
   BN_set_bit(z_1_range, 8*public->x_range_bytes + 8*EPS_ZKP_SLACK_PARAMETER_BYTES - 1);          // -1 since comparing signed range
@@ -191,32 +193,32 @@ int zkp_oper_group_commit_range_verify  (const zkp_oper_group_commit_range_proof
   scalar_t temp = scalar_new();
 
   paillier_encryption_encrypt(lhs_value, proof->z_2, proof->w_y, public->paillier_pub_1);
-  scalar_exp(temp, public->Y, e, public->paillier_pub_1->N2);
-  scalar_mul(rhs_value, proof->B_y, temp, public->paillier_pub_1->N2);
+  scalar_exp(temp, public->Y, e, public->paillier_pub_1->N2, bn_ctx);
+  scalar_mul(rhs_value, proof->B_y, temp, public->paillier_pub_1->N2, bn_ctx);
   is_verified &= scalar_equal(lhs_value, rhs_value);
 
   paillier_encryption_encrypt(temp, proof->z_2, proof->w, public->paillier_pub_0);
-  scalar_exp(lhs_value, public->C, proof->z_1, public->paillier_pub_0->N2);
-  scalar_mul(lhs_value, lhs_value, temp, public->paillier_pub_0->N2);
-  scalar_exp(temp, public->D, e, public->paillier_pub_0->N2);
-  scalar_mul(rhs_value, proof->A, temp, public->paillier_pub_0->N2);
+  scalar_exp(lhs_value, public->C, proof->z_1, public->paillier_pub_0->N2, bn_ctx);
+  scalar_mul(lhs_value, lhs_value, temp, public->paillier_pub_0->N2, bn_ctx);
+  scalar_exp(temp, public->D, e, public->paillier_pub_0->N2, bn_ctx);
+  scalar_mul(rhs_value, proof->A, temp, public->paillier_pub_0->N2, bn_ctx);
   is_verified &= scalar_equal(lhs_value, rhs_value);
 
   ring_pedersen_commit(lhs_value, &proof->z_1, 1, proof->z_3, public->rped_pub);
-  scalar_exp(temp, proof->S, e, public->rped_pub->N);
-  scalar_mul(rhs_value, proof->E, temp, public->rped_pub->N);
+  scalar_exp(temp, proof->S, e, public->rped_pub->N, bn_ctx);
+  scalar_mul(rhs_value, proof->E, temp, public->rped_pub->N, bn_ctx);
   is_verified &= scalar_equal(lhs_value, rhs_value);
 
   ring_pedersen_commit(lhs_value, &proof->z_2, 1, proof->z_4, public->rped_pub);
-  scalar_exp(temp, proof->T, e, public->rped_pub->N);
-  scalar_mul(rhs_value, proof->F, temp, public->rped_pub->N);
+  scalar_exp(temp, proof->T, e, public->rped_pub->N, bn_ctx);
+  scalar_mul(rhs_value, proof->F, temp, public->rped_pub->N, bn_ctx);
   is_verified &= scalar_equal(lhs_value, rhs_value);
 
   gr_elem_t lhs_gr_elem = group_elem_new(public->G);
   gr_elem_t rhs_gr_elem = group_elem_new(public->G);
 
-  group_operation(lhs_gr_elem, NULL, public->g, proof->z_1, public->G);
-  group_operation(rhs_gr_elem, proof->B_x, public->X, e, public->G);
+  group_operation(lhs_gr_elem, NULL, NULL, public->g, proof->z_1, public->G, bn_ctx);
+  group_operation(rhs_gr_elem, proof->B_x, NULL, public->X, e, public->G, bn_ctx);
   is_verified &= group_elem_equal(lhs_gr_elem, rhs_gr_elem, public->G);
 
   scalar_free(e);
@@ -227,6 +229,8 @@ int zkp_oper_group_commit_range_verify  (const zkp_oper_group_commit_range_proof
   scalar_free(z_2_range);
   group_elem_free(lhs_gr_elem);
   group_elem_free(rhs_gr_elem);
+  
+  BN_CTX_free(bn_ctx);
 
   return is_verified;
 }

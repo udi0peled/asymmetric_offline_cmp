@@ -9,6 +9,8 @@ asymoff_sign_agg_data_t **asymoff_signing_aggregate_parties_new(asymoff_party_da
   uint64_t num_parties = parties[0]->num_parties;
   uint64_t num_sigs    = parties[0]->num_sigs;
   
+  BN_CTX *bn_ctx = BN_CTX_secure_new();
+
   assert(num_parties >= 2);
   
   asymoff_sign_agg_data_t **signing_parties = calloc(num_parties, sizeof(asymoff_sign_agg_data_t *));
@@ -36,14 +38,13 @@ asymoff_sign_agg_data_t **asymoff_signing_aggregate_parties_new(asymoff_party_da
     party->num_sigs = num_sigs;
 
     party->ec = ec;
-    party->gen = parties[i]->gen;
     party->Y = parties[i]->Y;
     party->X = parties[i]->X;
     party->x = parties[i]->x;
 
     party->online_X = group_elem_new(ec);
-    group_operation(party->online_X, NULL ,NULL, NULL, ec);
-    for (uint64_t i = 1; i < num_parties; ++i) group_operation(party->online_X, party->online_X, party->X[i], NULL, ec);
+    group_operation(party->online_X, NULL , NULL,NULL, NULL, ec, bn_ctx);
+    for (uint64_t i = 1; i < num_parties; ++i) group_operation(party->online_X, party->online_X, NULL, party->X[i], NULL, ec, bn_ctx);
     
     party->paillier_pub = parties[i]->paillier_pub;
     party->rped_pub = parties[i]->rped_pub;
@@ -64,19 +65,19 @@ asymoff_sign_agg_data_t **asymoff_signing_aggregate_parties_new(asymoff_party_da
     party->joint_B1 = &parties[i]->joint_B1[curr_index];
     party->joint_B2 = &parties[i]->joint_B2[curr_index];
 
-    party->joint_V1 = new_gr_el_array(num_sigs, ec);
-    party->joint_V2 = new_gr_el_array(num_sigs, ec);
+    party->joint_V1 = gr_el_array_new(num_sigs, ec);
+    party->joint_V2 = gr_el_array_new(num_sigs, ec);
   
     party->W_0 = parties[i]->W_0;
 
-    party->msgs = new_scalar_array(num_sigs);
-    copy_scalar_array(party->msgs, msgs, num_sigs);
+    party->msgs = scalar_array_new(num_sigs);
+    scalar_array_copy(party->msgs, msgs, num_sigs);
 
     if (i == 0) {
 
       party->in_aggregate_msg_offline = malloc(sizeof(asymoff_sign_agg_msg_offline_t));
 
-      party->signature_sigma = new_scalar_array(num_sigs);
+      party->signature_sigma = scalar_array_new(num_sigs);
       party->paillier_offline_priv = parties[i]->paillier_priv;
 
     } else {
@@ -89,10 +90,10 @@ asymoff_sign_agg_data_t **asymoff_signing_aggregate_parties_new(asymoff_party_da
         party->B2[j] = &parties[i]->B2[j][curr_index];
       }
 
-      party->V1 = new_gr_el_array(num_sigs, ec);
-      party->V2 = new_gr_el_array(num_sigs, ec);
+      party->V1 = gr_el_array_new(num_sigs, ec);
+      party->V2 = gr_el_array_new(num_sigs, ec);
 
-      party->v = new_scalar_array(num_sigs);
+      party->v = scalar_array_new(num_sigs);
 
       party->pi_eph_anchor          = zkp_el_gamal_dlog_new(num_sigs, ec);
       party->pi_eph_local_agg_proof = zkp_el_gamal_dlog_new(num_sigs, ec);
@@ -101,8 +102,8 @@ asymoff_sign_agg_data_t **asymoff_signing_aggregate_parties_new(asymoff_party_da
       // party->pi_eph_agg_public.B1 = new_gr_el_array(num_sigs, party->ec);
       // party->pi_eph_agg_public.B2 = new_gr_el_array(num_sigs, party->ec);
 
-      party->pi_eph_anchor_secret.lambda = new_scalar_array(num_sigs);
-      party->pi_eph_anchor_secret.rho    = new_scalar_array(num_sigs);
+      party->pi_eph_anchor_secret.lambda = scalar_array_new(num_sigs);
+      party->pi_eph_anchor_secret.rho    = scalar_array_new(num_sigs);
 
       // Chi proof related 
 
@@ -125,40 +126,43 @@ asymoff_sign_agg_data_t **asymoff_signing_aggregate_parties_new(asymoff_party_da
       party->pi_sig_local_agg_proof = zkp_well_formed_signature_new(num_sigs, PACKING_SIZE, ec);
       party->pi_sig_agg_proof       = zkp_well_formed_signature_new(num_sigs, PACKING_SIZE, ec);
 
-      party->pi_sig_agg_public.packed_Z = new_scalar_array(num_sigs/PACKING_SIZE);
-      party->pi_sig_agg_public.packed_S = new_scalar_array(num_sigs/PACKING_SIZE);
-      party->pi_sig_agg_public.L1 = new_gr_el_array(num_sigs, ec);
-      party->pi_sig_agg_public.L2 = new_gr_el_array(num_sigs, ec);
-      party->pi_sig_agg_public.U1 = new_gr_el_array(num_sigs, ec);
-      party->pi_sig_agg_public.U2 = new_gr_el_array(num_sigs, ec);
+      party->pi_sig_agg_public.packed_Z = scalar_array_new(num_sigs/PACKING_SIZE);
+      party->pi_sig_agg_public.packed_S = scalar_array_new(num_sigs/PACKING_SIZE);
+      party->pi_sig_agg_public.L1 = gr_el_array_new(num_sigs, ec);
+      party->pi_sig_agg_public.L2 = gr_el_array_new(num_sigs, ec);
+      party->pi_sig_agg_public.U1 = gr_el_array_new(num_sigs, ec);
+      party->pi_sig_agg_public.U2 = gr_el_array_new(num_sigs, ec);
 
-      party->pi_sig_local_public.packed_S = new_scalar_array(num_sigs/PACKING_SIZE);
-      party->pi_sig_local_public.packed_Z = new_scalar_array(num_sigs/PACKING_SIZE);
-      party->pi_sig_local_public.L1 = new_gr_el_array(num_sigs, ec);
-      party->pi_sig_local_public.L2 = new_gr_el_array(num_sigs, ec);
-      party->pi_sig_local_public.U1 = new_gr_el_array(num_sigs, ec);
-      party->pi_sig_local_public.U2 = new_gr_el_array(num_sigs, ec);
+      party->pi_sig_local_public.packed_S = scalar_array_new(num_sigs/PACKING_SIZE);
+      party->pi_sig_local_public.packed_Z = scalar_array_new(num_sigs/PACKING_SIZE);
+      party->pi_sig_local_public.L1 = gr_el_array_new(num_sigs, ec);
+      party->pi_sig_local_public.L2 = gr_el_array_new(num_sigs, ec);
+      party->pi_sig_local_public.U1 = gr_el_array_new(num_sigs, ec);
+      party->pi_sig_local_public.U2 = gr_el_array_new(num_sigs, ec);
 
       party->pi_sig_anchor_secret.r  = scalar_new();
       party->pi_sig_anchor_secret.nu = scalar_new();
-      party->pi_sig_anchor_secret.rho     = new_scalar_array(num_sigs/PACKING_SIZE);
-      party->pi_sig_anchor_secret.lambda  = new_scalar_array(num_sigs/PACKING_SIZE);
-      party->pi_sig_anchor_secret.mu      = new_scalar_array(num_sigs);
-      party->pi_sig_anchor_secret.xi      = new_scalar_array(num_sigs);
-      party->pi_sig_anchor_secret.gamma_LB = new_scalar_array(num_sigs);
-      party->pi_sig_anchor_secret.gamma_UA = new_scalar_array(num_sigs);
+      party->pi_sig_anchor_secret.rho     = scalar_array_new(num_sigs/PACKING_SIZE);
+      party->pi_sig_anchor_secret.lambda  = scalar_array_new(num_sigs/PACKING_SIZE);
+      party->pi_sig_anchor_secret.mu      = scalar_array_new(num_sigs);
+      party->pi_sig_anchor_secret.xi      = scalar_array_new(num_sigs);
+      party->pi_sig_anchor_secret.gamma_LB = scalar_array_new(num_sigs);
+      party->pi_sig_anchor_secret.gamma_UA = scalar_array_new(num_sigs);
       
       party->pi_sig_anchor_secret.packing_size = PACKING_SIZE;
-      party->pi_sig_anchor_secret.alpha    = new_scalar_array(PACKING_SIZE);
-      party->pi_sig_anchor_secret.beta     = new_scalar_array(PACKING_SIZE);
-      party->pi_sig_anchor_secret.delta_LB = new_scalar_array(PACKING_SIZE);
-      party->pi_sig_anchor_secret.delta_UA = new_scalar_array(PACKING_SIZE);
+      party->pi_sig_anchor_secret.alpha    = scalar_array_new(PACKING_SIZE);
+      party->pi_sig_anchor_secret.beta     = scalar_array_new(PACKING_SIZE);
+      party->pi_sig_anchor_secret.delta_LB = scalar_array_new(PACKING_SIZE);
+      party->pi_sig_anchor_secret.delta_UA = scalar_array_new(PACKING_SIZE);
 
       party->in_aggregate_msg_1 = calloc(num_parties, sizeof(asymoff_sign_agg_msg_round_1_t));
       party->in_aggregate_msg_2 = calloc(num_parties, sizeof(asymoff_sign_agg_msg_round_2_t));
       party->in_aggregate_msg_3 = calloc(num_parties, sizeof(asymoff_sign_agg_msg_round_3_t));
     }
   }
+
+  BN_CTX_free(bn_ctx);
+
   return signing_parties;
 }
 
@@ -176,33 +180,33 @@ void asymoff_signing_aggregate_parties_free(asymoff_sign_agg_data_t **signing_pa
     
     group_elem_free(party->online_X);
 
-    free_gr_el_array(party->joint_V1, num_sigs);
-    free_gr_el_array(party->joint_V2, num_sigs);
+    gr_el_array_free(party->joint_V1, num_sigs);
+    gr_el_array_free(party->joint_V2, num_sigs);
     
-    free_scalar_array(party->msgs, num_sigs);
+    scalar_array_free(party->msgs, num_sigs);
 
     if (i == 0) {
 
       free(party->in_aggregate_msg_offline);
 
-      free_scalar_array(party->signature_sigma, num_sigs);
+      scalar_array_free(party->signature_sigma, num_sigs);
 
     } else {
 
       free(party->B1);
       free(party->B2);
 
-      free_gr_el_array(party->V1, num_sigs);
-      free_gr_el_array(party->V2, num_sigs);
+      gr_el_array_free(party->V1, num_sigs);
+      gr_el_array_free(party->V2, num_sigs);
 
-      free_scalar_array(party->v, num_sigs);
+      scalar_array_free(party->v, num_sigs);
 
       zkp_el_gamal_dlog_free(party->pi_eph_anchor         );
       zkp_el_gamal_dlog_free(party->pi_eph_local_agg_proof);
       zkp_el_gamal_dlog_free(party->pi_eph_agg_proof      );
 
-      free_scalar_array(party->pi_eph_anchor_secret.lambda, num_sigs);
-      free_scalar_array(party->pi_eph_anchor_secret.rho   , num_sigs);
+      scalar_array_free(party->pi_eph_anchor_secret.lambda, num_sigs);
+      scalar_array_free(party->pi_eph_anchor_secret.rho   , num_sigs);
 
       // Chi proof related 
 
@@ -221,33 +225,33 @@ void asymoff_signing_aggregate_parties_free(asymoff_sign_agg_data_t **signing_pa
       zkp_well_formed_signature_free(party->pi_sig_local_agg_proof);
       zkp_well_formed_signature_free(party->pi_sig_agg_proof      );
 
-      free_scalar_array(party->pi_sig_agg_public.packed_Z, num_sigs/PACKING_SIZE);
-      free_scalar_array(party->pi_sig_agg_public.packed_S, num_sigs/PACKING_SIZE);
-      free_gr_el_array(party->pi_sig_agg_public.L1, num_sigs);
-      free_gr_el_array(party->pi_sig_agg_public.L2, num_sigs);
-      free_gr_el_array(party->pi_sig_agg_public.U1, num_sigs);
-      free_gr_el_array(party->pi_sig_agg_public.U2, num_sigs);
+      scalar_array_free(party->pi_sig_agg_public.packed_Z, num_sigs/PACKING_SIZE);
+      scalar_array_free(party->pi_sig_agg_public.packed_S, num_sigs/PACKING_SIZE);
+      gr_el_array_free(party->pi_sig_agg_public.L1, num_sigs);
+      gr_el_array_free(party->pi_sig_agg_public.L2, num_sigs);
+      gr_el_array_free(party->pi_sig_agg_public.U1, num_sigs);
+      gr_el_array_free(party->pi_sig_agg_public.U2, num_sigs);
 
-      free_scalar_array(party->pi_sig_local_public.packed_S, num_sigs/PACKING_SIZE);
-      free_scalar_array(party->pi_sig_local_public.packed_Z, num_sigs/PACKING_SIZE);
-      free_gr_el_array(party->pi_sig_local_public.L1, num_sigs);
-      free_gr_el_array(party->pi_sig_local_public.L2, num_sigs);
-      free_gr_el_array(party->pi_sig_local_public.U1, num_sigs);
-      free_gr_el_array(party->pi_sig_local_public.U2, num_sigs);
+      scalar_array_free(party->pi_sig_local_public.packed_S, num_sigs/PACKING_SIZE);
+      scalar_array_free(party->pi_sig_local_public.packed_Z, num_sigs/PACKING_SIZE);
+      gr_el_array_free(party->pi_sig_local_public.L1, num_sigs);
+      gr_el_array_free(party->pi_sig_local_public.L2, num_sigs);
+      gr_el_array_free(party->pi_sig_local_public.U1, num_sigs);
+      gr_el_array_free(party->pi_sig_local_public.U2, num_sigs);
 
       scalar_free(party->pi_sig_anchor_secret.r );
       scalar_free(party->pi_sig_anchor_secret.nu);
-      free_scalar_array(party->pi_sig_anchor_secret.rho     , num_sigs/PACKING_SIZE);
-      free_scalar_array(party->pi_sig_anchor_secret.lambda  , num_sigs/PACKING_SIZE);
-      free_scalar_array(party->pi_sig_anchor_secret.mu      , num_sigs);
-      free_scalar_array(party->pi_sig_anchor_secret.xi      , num_sigs);
-      free_scalar_array(party->pi_sig_anchor_secret.gamma_LB, num_sigs);
-      free_scalar_array(party->pi_sig_anchor_secret.gamma_UA, num_sigs);
+      scalar_array_free(party->pi_sig_anchor_secret.rho     , num_sigs/PACKING_SIZE);
+      scalar_array_free(party->pi_sig_anchor_secret.lambda  , num_sigs/PACKING_SIZE);
+      scalar_array_free(party->pi_sig_anchor_secret.mu      , num_sigs);
+      scalar_array_free(party->pi_sig_anchor_secret.xi      , num_sigs);
+      scalar_array_free(party->pi_sig_anchor_secret.gamma_LB, num_sigs);
+      scalar_array_free(party->pi_sig_anchor_secret.gamma_UA, num_sigs);
       
-      free_scalar_array(party->pi_sig_anchor_secret.alpha   , PACKING_SIZE);
-      free_scalar_array(party->pi_sig_anchor_secret.beta    , PACKING_SIZE);
-      free_scalar_array(party->pi_sig_anchor_secret.delta_LB, PACKING_SIZE);
-      free_scalar_array(party->pi_sig_anchor_secret.delta_UA, PACKING_SIZE);
+      scalar_array_free(party->pi_sig_anchor_secret.alpha   , PACKING_SIZE);
+      scalar_array_free(party->pi_sig_anchor_secret.beta    , PACKING_SIZE);
+      scalar_array_free(party->pi_sig_anchor_secret.delta_LB, PACKING_SIZE);
+      scalar_array_free(party->pi_sig_anchor_secret.delta_UA, PACKING_SIZE);
 
       free(party->in_aggregate_msg_1);
       free(party->in_aggregate_msg_2);
@@ -355,6 +359,8 @@ int asymoff_signing_aggregate_execute_round_1(asymoff_sign_agg_data_t *party) {
   scalar_t ec_order = ec_group_order(party->ec);
 
   pinfo("Player %ld: Executing Aggregate Round 1\n", party->i);
+  
+  BN_CTX *bn_ctx = BN_CTX_secure_new();
 
   uint64_t num_sigs    = party->num_sigs;
 
@@ -362,7 +368,6 @@ int asymoff_signing_aggregate_execute_round_1(asymoff_sign_agg_data_t *party) {
   pi_eph_public.batch_size = num_sigs;
   pi_eph_public.R  = party->R;
   pi_eph_public.ec = party->ec;
-  pi_eph_public.g  = party->gen;
   pi_eph_public.Y  = party->Y;
 
   zkp_el_gamal_dlog_anchor(party->pi_eph_anchor, &party->pi_eph_anchor_secret, &pi_eph_public);
@@ -373,12 +378,10 @@ int asymoff_signing_aggregate_execute_round_1(asymoff_sign_agg_data_t *party) {
 
   for (uint64_t l = 0; l < num_sigs; ++l) {
 
-    scalar_sample_in_range(party->v[l], ec_order, 0); 
+    scalar_sample_in_range(party->v[l], ec_order, 0, bn_ctx); 
 
-    group_operation(party->V1[l], NULL, party->gen, party->v[l], ec);
-
-    group_operation(party->V2[l], NULL, party->gen, party->chi[l], ec);
-    group_operation(party->V2[l], party->V2[l], party->Y, party->v[l], ec);
+    group_operation(party->V1[l], NULL, party->v[l], NULL, NULL, ec, bn_ctx);
+    group_operation(party->V2[l], NULL, party->chi[l], party->Y, party->v[l], ec, bn_ctx);
   }
 
   // Anchor
@@ -386,7 +389,6 @@ int asymoff_signing_aggregate_execute_round_1(asymoff_sign_agg_data_t *party) {
   zkp_double_el_gamal_public_t pi_chi_public;
   pi_chi_public.batch_size  = num_sigs;
   pi_chi_public.ec = party->ec;
-  pi_chi_public.g  = party->gen;
   pi_chi_public.X  = party->online_X;
   pi_chi_public.Y  = party->Y;
   
@@ -395,8 +397,6 @@ int asymoff_signing_aggregate_execute_round_1(asymoff_sign_agg_data_t *party) {
   // --- ZKP Well Formed Signature ---
 
   // Sample and compute
-
-  BN_CTX *bn_ctx = BN_CTX_secure_new();
 
   scalar_t r      = scalar_new();
   scalar_t eta    = scalar_new();
@@ -407,7 +407,7 @@ int asymoff_signing_aggregate_execute_round_1(asymoff_sign_agg_data_t *party) {
   for (uint64_t l = 0; l < num_sigs; ++l) {
 
     scalar_set_power_of_2(temp, 256+64); // TODO: Fix all EPS and ELL
-    scalar_sample_in_range(eta, temp, 0);
+    scalar_sample_in_range(eta, temp, 0, bn_ctx);
     scalar_make_signed(eta, eta);
 
     group_elem_get_x(r, party->R[l], party->ec, ec_order);
@@ -427,21 +427,21 @@ int asymoff_signing_aggregate_execute_round_1(asymoff_sign_agg_data_t *party) {
     BN_mod_mul(party->pi_sig_anchor_secret.gamma_UA[l], party->msgs[l], party->b[l], ec_order, bn_ctx);
     BN_mod_add(party->pi_sig_anchor_secret.gamma_UA[l], party->pi_sig_anchor_secret.gamma_UA[l], temp, ec_order, bn_ctx);
 
-    group_operation(party->pi_sig_local_public.L1[l], NULL, party->B1[party->i][l], r, ec); 
+    group_operation(party->pi_sig_local_public.L1[l], NULL, NULL, party->B1[party->i][l], r, ec, bn_ctx); 
 
-    group_operation(party->pi_sig_local_public.L2[l], NULL, party->B2[party->i][l], r, ec); 
+    group_operation(party->pi_sig_local_public.L2[l], NULL, NULL, party->B2[party->i][l], r, ec, bn_ctx); 
 
-    group_operation(party->pi_sig_local_public.U1[l], NULL, party->V1[l], r, ec); 
-    group_operation(party->pi_sig_local_public.U1[l], party->pi_sig_local_public.U1[l], party->B1[party->i][l], party->msgs[l], ec); 
+    group_operation(party->pi_sig_local_public.U1[l], NULL, NULL, party->V1[l], r, ec, bn_ctx); 
+    group_operation(party->pi_sig_local_public.U1[l], party->pi_sig_local_public.U1[l], NULL, party->B1[party->i][l], party->msgs[l], ec, bn_ctx); 
   
-    group_operation(party->pi_sig_local_public.U2[l], NULL, party->V2[l], r, ec);   
-    group_operation(party->pi_sig_local_public.U2[l], party->pi_sig_local_public.U2[l], party->B2[party->i][l], party->msgs[l], ec); 
+    group_operation(party->pi_sig_local_public.U2[l], NULL, NULL, party->V2[l], r, ec, bn_ctx);   
+    group_operation(party->pi_sig_local_public.U2[l], party->pi_sig_local_public.U2[l], NULL, party->B2[party->i][l], party->msgs[l], ec, bn_ctx); 
   }
 
   for (uint64_t l = 0; l < num_sigs/PACKING_SIZE; ++l) {
 
     BN_lshift(temp, party->rped_pub[0]->N, 256); // TODO: replaace 256
-    scalar_sample_in_range(party->pi_sig_anchor_secret.lambda[l], temp, 0);
+    scalar_sample_in_range(party->pi_sig_anchor_secret.lambda[l], temp, 0, bn_ctx);
     
     for (uint64_t p = 0; p < PACKING_SIZE; ++p) {
       rped_s_exps[p]                = party->pi_sig_anchor_secret.mu[PACKING_SIZE*l + p];
@@ -466,7 +466,6 @@ int asymoff_signing_aggregate_execute_round_1(asymoff_sign_agg_data_t *party) {
   pi_sig_public.batch_size   = num_sigs;
   pi_sig_public.packing_size = PACKING_SIZE;
   pi_sig_public.ec = party->ec;
-  pi_sig_public.g  = party->gen;
   pi_sig_public.W  = party->W_0;
   pi_sig_public.Y  = party->Y;
   
@@ -570,6 +569,8 @@ int asymoff_signing_aggregate_execute_round_3(asymoff_sign_agg_data_t *party) {
   
   pinfo("Player %ld: Executing Aggregate Round 3\n", party->i);
 
+  BN_CTX *bn_ctx = BN_CTX_secure_new();
+
   hash_chunk computed_T;
 
   for (uint64_t j = 1; j < num_parties; ++j) {
@@ -609,7 +610,6 @@ int asymoff_signing_aggregate_execute_round_3(asymoff_sign_agg_data_t *party) {
 
   party->pi_eph_agg_public.batch_size = num_sigs;
   party->pi_eph_agg_public.ec = party->ec;
-  party->pi_eph_agg_public.g  = party->gen;
   party->pi_eph_agg_public.R  = party->R;
   party->pi_eph_agg_public.Y  = party->Y;
   party->pi_eph_agg_public.H  = party->H;
@@ -634,12 +634,12 @@ int asymoff_signing_aggregate_execute_round_3(asymoff_sign_agg_data_t *party) {
 
   for (uint64_t l = 0; l < party->num_sigs; ++l) {
 
-    group_operation(party->joint_V1[l], NULL, NULL, NULL, party->ec);
-    group_operation(party->joint_V2[l], NULL, NULL, NULL, party->ec);
+    group_operation(party->joint_V1[l], NULL, NULL, NULL, NULL, party->ec, bn_ctx);
+    group_operation(party->joint_V2[l], NULL, NULL, NULL, NULL, party->ec, bn_ctx);
 
     for (uint64_t j = 1; j < party->num_parties; ++j) {
-      group_operation(party->joint_V1[l], party->joint_V1[l], party->in_aggregate_msg_2[j].V1[l], NULL, party->ec);
-      group_operation(party->joint_V2[l], party->joint_V2[l], party->in_aggregate_msg_2[j].V2[l], NULL, party->ec);
+      group_operation(party->joint_V1[l], party->joint_V1[l], NULL, party->in_aggregate_msg_2[j].V1[l], NULL, party->ec, bn_ctx);
+      group_operation(party->joint_V2[l], party->joint_V2[l], NULL, party->in_aggregate_msg_2[j].V2[l], NULL, party->ec, bn_ctx);
     }
   }
 
@@ -647,7 +647,6 @@ int asymoff_signing_aggregate_execute_round_3(asymoff_sign_agg_data_t *party) {
 
   party->pi_chi_agg_public.batch_size = num_sigs;
   party->pi_chi_agg_public.ec = party->ec;
-  party->pi_chi_agg_public.g  = party->gen;
   party->pi_chi_agg_public.X  = party->online_X;
   party->pi_chi_agg_public.Y  = party->Y;
   party->pi_chi_agg_public.B1 = party->joint_B1;
@@ -692,23 +691,23 @@ int asymoff_signing_aggregate_execute_round_3(asymoff_sign_agg_data_t *party) {
      for (uint64_t j = 1; j < num_parties; ++j) {
 
       paillier_encryption_homomorphic(party->pi_sig_agg_public.packed_Z[l], party->pi_sig_agg_public.packed_Z[l], NULL, party->in_aggregate_msg_2[j].packed_Z[l], party->paillier_pub[0]);
-      scalar_mul(party->pi_sig_agg_public.packed_S[l], party->pi_sig_agg_public.packed_S[l], party->in_aggregate_msg_2[j].packed_S[l], party->rped_pub[0]->N);
+      scalar_mul(party->pi_sig_agg_public.packed_S[l], party->pi_sig_agg_public.packed_S[l], party->in_aggregate_msg_2[j].packed_S[l], party->rped_pub[0]->N, bn_ctx);
      }
   }
 
   for (uint64_t l = 0; l < num_sigs; ++l) {
 
-    group_operation(party->pi_sig_agg_public.L1[l], NULL, NULL, NULL, party->ec);
-    group_operation(party->pi_sig_agg_public.L2[l], NULL, NULL, NULL, party->ec);
-    group_operation(party->pi_sig_agg_public.U1[l], NULL, NULL, NULL, party->ec);
-    group_operation(party->pi_sig_agg_public.U2[l], NULL, NULL, NULL, party->ec);
+    group_operation(party->pi_sig_agg_public.L1[l], NULL, NULL, NULL, NULL, party->ec, bn_ctx);
+    group_operation(party->pi_sig_agg_public.L2[l], NULL, NULL, NULL, NULL, party->ec, bn_ctx);
+    group_operation(party->pi_sig_agg_public.U1[l], NULL, NULL, NULL, NULL, party->ec, bn_ctx);
+    group_operation(party->pi_sig_agg_public.U2[l], NULL, NULL, NULL, NULL, party->ec, bn_ctx);
     
     for (uint64_t j = 1; j < num_parties; ++j) {
 
-      group_operation(party->pi_sig_agg_public.L1[l], party->pi_sig_agg_public.L1[l], party->in_aggregate_msg_2[j].L1[l], NULL, party->ec);
-      group_operation(party->pi_sig_agg_public.L2[l], party->pi_sig_agg_public.L2[l], party->in_aggregate_msg_2[j].L2[l], NULL, party->ec);
-      group_operation(party->pi_sig_agg_public.U1[l], party->pi_sig_agg_public.U1[l], party->in_aggregate_msg_2[j].U1[l], NULL, party->ec);
-      group_operation(party->pi_sig_agg_public.U2[l], party->pi_sig_agg_public.U2[l], party->in_aggregate_msg_2[j].U2[l], NULL, party->ec);
+      group_operation(party->pi_sig_agg_public.L1[l], party->pi_sig_agg_public.L1[l], NULL, party->in_aggregate_msg_2[j].L1[l], NULL, party->ec, bn_ctx);
+      group_operation(party->pi_sig_agg_public.L2[l], party->pi_sig_agg_public.L2[l], NULL, party->in_aggregate_msg_2[j].L2[l], NULL, party->ec, bn_ctx);
+      group_operation(party->pi_sig_agg_public.U1[l], party->pi_sig_agg_public.U1[l], NULL, party->in_aggregate_msg_2[j].U1[l], NULL, party->ec, bn_ctx);
+      group_operation(party->pi_sig_agg_public.U2[l], party->pi_sig_agg_public.U2[l], NULL, party->in_aggregate_msg_2[j].U2[l], NULL, party->ec, bn_ctx);
     }
   }
 
@@ -719,7 +718,6 @@ int asymoff_signing_aggregate_execute_round_3(asymoff_sign_agg_data_t *party) {
   party->pi_sig_agg_public.paillier_pub = party->paillier_pub[0];
   party->pi_sig_agg_public.rped_pub = party->rped_pub[0];
   party->pi_sig_agg_public.ec = party->ec;
-  party->pi_sig_agg_public.g  = party->gen;
   party->pi_sig_agg_public.Y  = party->Y;
   party->pi_sig_agg_public.W  = party->W_0;
 
@@ -735,6 +733,7 @@ int asymoff_signing_aggregate_execute_round_3(asymoff_sign_agg_data_t *party) {
   free(pi_eph_anchors);
   free(pi_chi_anchors);
   free(pi_sig_anchors);
+  BN_CTX_free(bn_ctx);
 
   return 0;
 }
@@ -844,12 +843,13 @@ int verify_ecdsa_signature(const scalar_t r, const scalar_t s, const scalar_t ms
 
   gr_elem_t result = group_elem_new(ec);
 
-  scalar_t s_inv = scalar_new();
-  scalar_inv(s_inv, s, ec_order);
+  BN_CTX *bn_ctx = BN_CTX_secure_new();
 
-  group_operation(result, NULL, ec_gen, msg, ec);
-  group_operation(result, result, pubkey, r, ec);
-  group_operation(result, NULL, result, s_inv, ec);
+  scalar_t s_inv = scalar_new();
+  scalar_inv(s_inv, s, ec_order, bn_ctx);
+
+  group_operation(result, NULL, msg, pubkey, r, ec, bn_ctx);
+  group_operation(result, NULL, NULL, result, s_inv, ec, bn_ctx);
 
   scalar_t project_x = scalar_new();
   group_elem_get_x(project_x, result, ec, ec_order);
@@ -860,6 +860,8 @@ int verify_ecdsa_signature(const scalar_t r, const scalar_t s, const scalar_t ms
   scalar_free(s_inv);
   scalar_free(project_x);
 
+  BN_CTX_free(bn_ctx);
+
   return is_valid;
 }
 
@@ -867,6 +869,8 @@ int asymoff_signing_aggregate_execute_offline (asymoff_sign_agg_data_t *party, s
   if (party->i != 0) return 1;
   
   pinfo("Player %ld: Executing Offline Round\n", party->i);
+
+  BN_CTX *bn_ctx = BN_CTX_secure_new();
 
   uint64_t num_parties = party->num_parties;
   uint64_t num_sigs = party->num_sigs;
@@ -897,7 +901,6 @@ int asymoff_signing_aggregate_execute_offline (asymoff_sign_agg_data_t *party, s
 
   pi_eph_agg_public.batch_size = num_sigs;
   pi_eph_agg_public.ec = party->ec;
-  pi_eph_agg_public.g  = party->gen;
   pi_eph_agg_public.R  = msg->R;
   pi_eph_agg_public.Y  = party->Y;
   pi_eph_agg_public.H  = party->H;
@@ -913,7 +916,6 @@ int asymoff_signing_aggregate_execute_offline (asymoff_sign_agg_data_t *party, s
 
   pi_chi_agg_public.batch_size = num_sigs;
   pi_chi_agg_public.ec = party->ec;
-  pi_chi_agg_public.g  = party->gen;
   pi_chi_agg_public.X  = party->online_X;
   pi_chi_agg_public.Y  = party->Y;
   pi_chi_agg_public.B1 = party->joint_B1;
@@ -933,31 +935,30 @@ int asymoff_signing_aggregate_execute_offline (asymoff_sign_agg_data_t *party, s
   pi_sig_agg_public.paillier_pub = party->paillier_pub[0];
   pi_sig_agg_public.rped_pub = party->rped_pub[0];
   pi_sig_agg_public.ec = party->ec;
-  pi_sig_agg_public.g  = party->gen;
   pi_sig_agg_public.Y  = party->Y;
   pi_sig_agg_public.W  = party->W_0;
 
   pi_sig_agg_public.packed_S = msg->packed_S;
   pi_sig_agg_public.packed_Z = msg->packed_Z;
 
-  pi_sig_agg_public.U1 = new_gr_el_array(num_sigs, ec);
-  pi_sig_agg_public.U2 = new_gr_el_array(num_sigs, ec);
-  pi_sig_agg_public.L1 = new_gr_el_array(num_sigs, ec);
-  pi_sig_agg_public.L2 = new_gr_el_array(num_sigs, ec);
+  pi_sig_agg_public.U1 = gr_el_array_new(num_sigs, ec);
+  pi_sig_agg_public.U2 = gr_el_array_new(num_sigs, ec);
+  pi_sig_agg_public.L1 = gr_el_array_new(num_sigs, ec);
+  pi_sig_agg_public.L2 = gr_el_array_new(num_sigs, ec);
 
   scalar_t r = scalar_new();
 
   for (uint64_t l = 0; l < num_sigs; ++l) {
     group_elem_get_x(r, msg->R[l], ec, ec_order);
-    group_operation(pi_sig_agg_public.L1[l], NULL, party->joint_B1[l], r, ec);
+    group_operation(pi_sig_agg_public.L1[l], NULL, NULL, party->joint_B1[l], r, ec, bn_ctx);
     
-    group_operation(pi_sig_agg_public.L2[l], NULL, party->joint_B2[l], r, ec);
+    group_operation(pi_sig_agg_public.L2[l], NULL, NULL, party->joint_B2[l], r, ec, bn_ctx);
     
-    group_operation(pi_sig_agg_public.U1[l], NULL, party->joint_B1[l], party->msgs[l], ec);
-    group_operation(pi_sig_agg_public.U1[l], pi_sig_agg_public.U1[l], msg->joint_V1[l], r, ec);
+    group_operation(pi_sig_agg_public.U1[l], NULL, NULL, party->joint_B1[l], party->msgs[l], ec, bn_ctx);
+    group_operation(pi_sig_agg_public.U1[l], pi_sig_agg_public.U1[l], NULL, msg->joint_V1[l], r, ec, bn_ctx);
     
-    group_operation(pi_sig_agg_public.U2[l], NULL, party->joint_B2[l], party->msgs[l], ec);
-    group_operation(pi_sig_agg_public.U2[l], pi_sig_agg_public.U2[l], msg->joint_V2[l], r, ec);
+    group_operation(pi_sig_agg_public.U2[l], NULL, NULL, party->joint_B2[l], party->msgs[l], ec, bn_ctx);
+    group_operation(pi_sig_agg_public.U2[l], pi_sig_agg_public.U2[l], NULL, msg->joint_V2[l], r, ec, bn_ctx);
   }
 
   if (zkp_well_formed_signature_verify(msg->pi_sig_agg_proof, &pi_sig_agg_public, party->aux, bitlen_plus_1_num_parties) != 1) {
@@ -966,9 +967,10 @@ int asymoff_signing_aggregate_execute_offline (asymoff_sign_agg_data_t *party, s
   }
 
   scalar_t dec_packed_sigma = scalar_new();
+  scalar_t temp = scalar_new();
 
   gr_elem_t pubkey_X = group_elem_new(ec);
-  group_operation(pubkey_X, party->online_X, party->X[0], NULL, ec);
+  group_operation(pubkey_X, party->online_X, NULL, party->X[0], NULL, ec, bn_ctx);
   
   for (uint64_t l = 0; l < num_sigs/PACKING_SIZE; ++l) {
     paillier_encryption_decrypt(dec_packed_sigma, msg->packed_Z[l], party->paillier_offline_priv);
@@ -976,25 +978,28 @@ int asymoff_signing_aggregate_execute_offline (asymoff_sign_agg_data_t *party, s
   }
 
   for (uint64_t l = 0; l < num_sigs; ++l) {
-    scalar_mul(party->signature_sigma[l], party->signature_sigma[l], party->nonce[l], ec_order);
+    scalar_inv(temp, party->nonce[l], ec_order, bn_ctx);
+    scalar_mul(party->signature_sigma[l], party->signature_sigma[l], temp, ec_order, bn_ctx);
     
     group_elem_get_x(r, msg->R[l], ec, ec_order);
 
-    if (verify_ecdsa_signature(r, party->signature_sigma[l], party->msgs[l], pubkey_X, ec, party->gen) != 1) {
+    if (verify_ecdsa_signature(r, party->signature_sigma[l], party->msgs[l], pubkey_X, ec, ec_group_generator(ec)) != 1) {
       printf("Invalid signature #%ld\n", l);
       return 1;
     }
   }
 
-  copy_scalar_array(signature_s, party->signature_sigma, num_sigs);
+  scalar_array_copy(signature_s, party->signature_sigma, num_sigs);
 
   group_elem_free(pubkey_X);
   scalar_free(dec_packed_sigma);
+  scalar_free(temp);
   scalar_free(r);
-  free_gr_el_array(pi_sig_agg_public.U1, num_sigs);
-  free_gr_el_array(pi_sig_agg_public.U2, num_sigs);
-  free_gr_el_array(pi_sig_agg_public.L1, num_sigs);
-  free_gr_el_array(pi_sig_agg_public.L2, num_sigs);
+  gr_el_array_free(pi_sig_agg_public.U1, num_sigs);
+  gr_el_array_free(pi_sig_agg_public.U2, num_sigs);
+  gr_el_array_free(pi_sig_agg_public.L1, num_sigs);
+  gr_el_array_free(pi_sig_agg_public.L2, num_sigs);
+  BN_CTX_free(bn_ctx);
 
   return 0;
 }

@@ -60,7 +60,6 @@ typedef struct
   zkp_aux_info_t *aux;
 
   ec_group_t ec;
-  gr_elem_t gen;
 
   scalar_t  x;
   gr_elem_t X;

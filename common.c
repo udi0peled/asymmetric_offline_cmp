@@ -1,5 +1,7 @@
 #include "common.h"
 
+extern int with_info_print;
+
 void printHexBytes(const char * prefix, const uint8_t *src, unsigned len, const char * suffix, int print_len)
 {
   if (len == 0) {

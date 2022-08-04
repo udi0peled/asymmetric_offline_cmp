@@ -65,7 +65,7 @@ void zkp_tight_range_challenge (scalar_t e, const zkp_tight_range_proof_t *proof
   scalar_to_bytes(&data_pos, RING_PED_MODULUS_BYTES , public->rped_pub->N, 1);
   scalar_to_bytes(&data_pos, RING_PED_MODULUS_BYTES , public->rped_pub->t, 1);
   scalar_to_bytes(&data_pos, RING_PED_MODULUS_BYTES , public->rped_pub->s[0], 1);
-  group_elem_to_bytes(&data_pos, GROUP_ELEMENT_BYTES, public->g, public->ec, 1);
+  group_elem_to_bytes(&data_pos, GROUP_ELEMENT_BYTES, ec_group_generator(public->ec), public->ec, 1);
   group_elem_to_bytes(&data_pos, GROUP_ELEMENT_BYTES, public->X, public->ec, 1);
   scalar_to_bytes(&data_pos, 2*PAILLIER_MODULUS_BYTES, public->W, 1);
   
@@ -234,10 +234,10 @@ void zkp_tight_range_prove (zkp_tight_range_proof_t *proof, const zkp_tight_rang
 
   BN_lshift(temp_range, public->rped_pub->N, SOUNDNESS_ELL);
 
-  scalar_sample_in_range(mu, temp_range, 0);
-  scalar_sample_in_range(lambda_1, temp_range, 0);
-  scalar_sample_in_range(lambda_2, temp_range, 0);
-  scalar_sample_in_range(lambda_3, temp_range, 0);
+  scalar_sample_in_range(mu, temp_range, 0, bn_ctx);
+  scalar_sample_in_range(lambda_1, temp_range, 0, bn_ctx);
+  scalar_sample_in_range(lambda_2, temp_range, 0, bn_ctx);
+  scalar_sample_in_range(lambda_3, temp_range, 0, bn_ctx);
   
   scalar_make_signed(mu, temp_range);
   scalar_make_signed(lambda_1, temp_range);
@@ -246,10 +246,10 @@ void zkp_tight_range_prove (zkp_tight_range_proof_t *proof, const zkp_tight_rang
 
   scalar_set_power_of_2(temp_range, SOUNDNESS_ELL + SLACKNESS_EPS);
 
-  scalar_sample_in_range(gamma, temp_range, 0);
-  scalar_sample_in_range(y_1, temp_range, 0);
-  scalar_sample_in_range(y_2, temp_range, 0);
-  scalar_sample_in_range(y_3, temp_range, 0);
+  scalar_sample_in_range(gamma, temp_range, 0, bn_ctx);
+  scalar_sample_in_range(y_1, temp_range, 0, bn_ctx);
+  scalar_sample_in_range(y_2, temp_range, 0, bn_ctx);
+  scalar_sample_in_range(y_3, temp_range, 0, bn_ctx);
 
   scalar_make_signed(gamma, temp_range);
   scalar_make_signed(y_1, temp_range);
@@ -258,10 +258,10 @@ void zkp_tight_range_prove (zkp_tight_range_proof_t *proof, const zkp_tight_rang
 
   BN_lshift(temp_range, public->rped_pub->N, SOUNDNESS_ELL + SLACKNESS_EPS);
   
-  scalar_sample_in_range(omega, temp_range, 0);
-  scalar_sample_in_range(v_1, temp_range, 0);
-  scalar_sample_in_range(v_2, temp_range, 0);
-  scalar_sample_in_range(v_3, temp_range, 0);
+  scalar_sample_in_range(omega, temp_range, 0, bn_ctx);
+  scalar_sample_in_range(v_1, temp_range, 0, bn_ctx);
+  scalar_sample_in_range(v_2, temp_range, 0, bn_ctx);
+  scalar_sample_in_range(v_3, temp_range, 0, bn_ctx);
 
   scalar_make_signed(omega, temp_range);
   scalar_make_signed(v_1, temp_range);
@@ -270,10 +270,10 @@ void zkp_tight_range_prove (zkp_tight_range_proof_t *proof, const zkp_tight_rang
 
   BN_lshift(temp_range, public->rped_pub->N, 2*SOUNDNESS_ELL + SLACKNESS_EPS);
 
-  scalar_sample_in_range(beta, temp_range, 0);
+  scalar_sample_in_range(beta, temp_range, 0, bn_ctx);
   scalar_make_signed(beta, temp_range);
 
-  scalar_sample_in_range(r, public->paillier_pub->N, 1);
+  scalar_sample_in_range(r, public->paillier_pub->N, 1, bn_ctx);
 
   // Start computing anchors
 
@@ -282,7 +282,7 @@ void zkp_tight_range_prove (zkp_tight_range_proof_t *proof, const zkp_tight_rang
   ring_pedersen_commit(proof->T_2, &secret->splitting->alpha_2, 1, lambda_2, public->rped_pub);
   ring_pedersen_commit(proof->T_3, &secret->splitting->alpha_3, 1, lambda_3, public->rped_pub);
 
-  group_operation(Y, NULL, public->g, gamma, public->ec);
+  group_operation(Y, NULL, NULL, ec_group_generator(public->ec), gamma, public->ec, bn_ctx);
 
   ring_pedersen_commit(U, &gamma, 1, omega, public->rped_pub);
   ring_pedersen_commit(V_1, &y_1, 1, v_1, public->rped_pub);
@@ -295,17 +295,17 @@ void zkp_tight_range_prove (zkp_tight_range_proof_t *proof, const zkp_tight_rang
   ring_pedersen_commit(C, &temp, 1, beta, public->rped_pub);
   BN_mod_inverse(C, C, public->rped_pub->N, bn_ctx);
 
-  scalar_exp(temp, proof->S, gamma, public->rped_pub->N);
-  scalar_mul(C, C, temp, public->rped_pub->N);
+  scalar_exp(temp, proof->S, gamma, public->rped_pub->N, bn_ctx);
+  scalar_mul(C, C, temp, public->rped_pub->N, bn_ctx);
 
-  scalar_exp(temp, proof->T_1, y_1, public->rped_pub->N);
-  scalar_mul(C, C, temp, public->rped_pub->N);
+  scalar_exp(temp, proof->T_1, y_1, public->rped_pub->N, bn_ctx);
+  scalar_mul(C, C, temp, public->rped_pub->N, bn_ctx);
 
-  scalar_exp(temp, proof->T_2, y_2, public->rped_pub->N);
-  scalar_mul(C, C, temp, public->rped_pub->N);
+  scalar_exp(temp, proof->T_2, y_2, public->rped_pub->N, bn_ctx);
+  scalar_mul(C, C, temp, public->rped_pub->N, bn_ctx);
 
-  scalar_exp(temp, proof->T_3, y_3, public->rped_pub->N);
-  scalar_mul(C, C, temp, public->rped_pub->N);
+  scalar_exp(temp, proof->T_3, y_3, public->rped_pub->N, bn_ctx);
+  scalar_mul(C, C, temp, public->rped_pub->N, bn_ctx);
 
   uint8_t *hash_bytes = malloc(2*PAILLIER_MODULUS_BYTES);
   
@@ -376,9 +376,9 @@ void zkp_tight_range_prove (zkp_tight_range_proof_t *proof, const zkp_tight_rang
   BN_add(proof->delta, beta, proof->delta);
 
   BN_set_word(temp, 4);
-  scalar_exp(proof->eta, secret->rho, e, public->paillier_pub->N);
-  scalar_exp(proof->eta, proof->eta, temp, public->paillier_pub->N);
-  scalar_mul(proof->eta, r, proof->eta, public->paillier_pub->N);
+  scalar_exp(proof->eta, secret->rho, e, public->paillier_pub->N, bn_ctx);
+  scalar_exp(proof->eta, proof->eta, temp, public->paillier_pub->N, bn_ctx);
+  scalar_mul(proof->eta, r, proof->eta, public->paillier_pub->N, bn_ctx);
   
   scalar_free(temp_range);
   scalar_free(temp);
@@ -436,23 +436,23 @@ int   zkp_tight_range_verify (const zkp_tight_range_proof_t *proof, const zkp_ti
   BN_copy(minus_4e, minus_e);
   BN_mul_word(minus_4e, 4);
 
-  group_operation(Y, NULL, public->g, proof->sigma, public->ec);
-  group_operation(Y, Y, public->X, minus_4e, public->ec);
+  group_operation(Y, NULL, NULL, ec_group_generator(public->ec), proof->sigma, public->ec, bn_ctx);
+  group_operation(Y, Y, NULL, public->X, minus_4e, public->ec, bn_ctx);
 
   ring_pedersen_commit(U, &proof->sigma, 1, proof->tau, public->rped_pub);
-  scalar_exp(temp, proof->S, minus_4e, public->rped_pub->N);
+  scalar_exp(temp, proof->S, minus_4e, public->rped_pub->N, bn_ctx);
   BN_mod_mul(U, U, temp, public->rped_pub->N, bn_ctx);
  
   ring_pedersen_commit(V_1, &proof->z_1, 1, proof->w_1, public->rped_pub);
-  scalar_exp(temp, proof->T_1, minus_e, public->rped_pub->N);
+  scalar_exp(temp, proof->T_1, minus_e, public->rped_pub->N, bn_ctx);
   BN_mod_mul(V_1, V_1, temp, public->rped_pub->N, bn_ctx);
 
   ring_pedersen_commit(V_2, &proof->z_2, 1, proof->w_2, public->rped_pub);
-  scalar_exp(temp, proof->T_2, minus_e, public->rped_pub->N);
+  scalar_exp(temp, proof->T_2, minus_e, public->rped_pub->N, bn_ctx);
   BN_mod_mul(V_2, V_2, temp, public->rped_pub->N, bn_ctx);
 
   ring_pedersen_commit(V_3, &proof->z_3, 1, proof->w_3, public->rped_pub);
-  scalar_exp(temp, proof->T_3, minus_e, public->rped_pub->N);
+  scalar_exp(temp, proof->T_3, minus_e, public->rped_pub->N, bn_ctx);
   BN_mod_mul(V_3, V_3, temp, public->rped_pub->N, bn_ctx);
 
   paillier_encryption_encrypt(D, proof->sigma, proof->eta, public->paillier_pub);
@@ -463,18 +463,18 @@ int   zkp_tight_range_verify (const zkp_tight_range_proof_t *proof, const zkp_ti
 
   scalar_set_power_of_2(temp, SOUNDNESS_ELL);
   scalar_negate(temp, temp);
-  scalar_exp(temp, public->rped_pub->s[0], temp, public->rped_pub->N);
-  scalar_mul(temp, temp, proof->S, public->rped_pub->N);
-  scalar_exp(temp, temp, proof->sigma, public->rped_pub->N);
-  scalar_mul(C, C, temp, public->rped_pub->N);
+  scalar_exp(temp, public->rped_pub->s[0], temp, public->rped_pub->N, bn_ctx);
+  scalar_mul(temp, temp, proof->S, public->rped_pub->N, bn_ctx);
+  scalar_exp(temp, temp, proof->sigma, public->rped_pub->N, bn_ctx);
+  scalar_mul(C, C, temp, public->rped_pub->N, bn_ctx);
 
-  scalar_exp(temp, proof->T_1, proof->z_1, public->rped_pub->N);
+  scalar_exp(temp, proof->T_1, proof->z_1, public->rped_pub->N, bn_ctx);
   BN_mod_mul(C, C, temp, public->rped_pub->N, bn_ctx);
 
-  scalar_exp(temp, proof->T_2, proof->z_2, public->rped_pub->N);
+  scalar_exp(temp, proof->T_2, proof->z_2, public->rped_pub->N, bn_ctx);
   BN_mod_mul(C, C, temp, public->rped_pub->N, bn_ctx);
 
-  scalar_exp(temp, proof->T_3, proof->z_3, public->rped_pub->N);
+  scalar_exp(temp, proof->T_3, proof->z_3, public->rped_pub->N, bn_ctx);
   BN_mod_mul(C, C, temp, public->rped_pub->N, bn_ctx);
 
   uint8_t *hash_bytes = malloc(2*PAILLIER_MODULUS_BYTES);

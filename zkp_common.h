@@ -62,13 +62,4 @@ void fiat_shamir_scalars_in_range (scalar_t *results, uint64_t num_res, const sc
 void pack_plaintexts(scalar_t packed, const scalar_t *plaintexts, uint64_t packing_size, scalar_t domain, int test_decoding);
 void unpack_plaintexts(scalar_t *unpacked, uint64_t packing_size, const scalar_t packed_plaintext);
 
-scalar_t  *new_scalar_array(uint64_t len);
-gr_elem_t *new_gr_el_array(uint64_t len, ec_group_t ec);
-
-void free_scalar_array(scalar_t *scalars, uint64_t len);
-void free_gr_el_array(gr_elem_t *grels, uint64_t len);
-
-void copy_scalar_array(scalar_t *copy, scalar_t *source, uint64_t len);
-void copy_gr_el_array(gr_elem_t *copy, gr_elem_t *source, uint64_t len);
-
 #endif

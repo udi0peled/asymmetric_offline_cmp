@@ -20,8 +20,10 @@ void zkp_schnorr_free (zkp_schnorr_proof_t *proof)
 
 void  zkp_schnorr_anchor (gr_elem_t commited_A, scalar_t alpha, const zkp_schnorr_public_t *public)
 {
-  scalar_sample_in_range(alpha, ec_group_order(public->ec), 0);
-  group_operation(commited_A, NULL, public->g, alpha, public->ec);
+  BN_CTX *bn_ctx = BN_CTX_secure_new();
+  scalar_sample_in_range(alpha, ec_group_order(public->ec), 0, bn_ctx);
+  group_operation(commited_A, NULL, NULL, ec_group_generator(public->ec), alpha, public->ec, bn_ctx);
+  BN_CTX_free(bn_ctx);
 }
 
 void zkp_schnoor_challenge(scalar_t e, const zkp_schnorr_proof_t *proof, const zkp_schnorr_public_t *public, const zkp_aux_info_t *aux)
@@ -32,7 +34,7 @@ void zkp_schnoor_challenge(scalar_t e, const zkp_schnorr_proof_t *proof, const z
 
   memcpy(data_pos, aux->info, aux->info_len);
   data_pos += aux->info_len;
-  group_elem_to_bytes(&data_pos, GROUP_ELEMENT_BYTES, public->g, public->ec, 1);
+  group_elem_to_bytes(&data_pos, GROUP_ELEMENT_BYTES, ec_group_generator(public->ec), public->ec, 1);
   group_elem_to_bytes(&data_pos, GROUP_ELEMENT_BYTES, public->X, public->ec, 1);
   group_elem_to_bytes(&data_pos, GROUP_ELEMENT_BYTES, proof->A, public->ec, 1);
 
@@ -48,7 +50,7 @@ void  zkp_schnorr_prove (zkp_schnorr_proof_t *proof, const scalar_t alpha, const
   BN_CTX *bn_ctx = BN_CTX_secure_new();
   scalar_t e = scalar_new();
 
-  group_operation(proof->A, NULL, public->g, alpha, public->ec);
+  group_operation(proof->A, NULL, NULL, ec_group_generator(public->ec), alpha, public->ec, bn_ctx);
 
   zkp_schnoor_challenge(e, proof, public, aux);
 
@@ -61,19 +63,23 @@ void  zkp_schnorr_prove (zkp_schnorr_proof_t *proof, const scalar_t alpha, const
 
 int   zkp_schnorr_verify (const zkp_schnorr_proof_t *proof, const zkp_schnorr_public_t *public, const zkp_aux_info_t *aux)
 {
+  BN_CTX *bn_ctx = BN_CTX_secure_new();
+
   scalar_t e = scalar_new();
   zkp_schnoor_challenge(e, proof, public, aux);
 
   gr_elem_t lhs_value = group_elem_new(public->ec);
   gr_elem_t rhs_value = group_elem_new(public->ec);
 
-  group_operation(lhs_value, NULL, public->g, proof->z, public->ec);
-  group_operation(rhs_value, proof->A, public->X, e, public->ec);
+  group_operation(lhs_value, NULL, NULL, ec_group_generator(public->ec), proof->z, public->ec, bn_ctx);
+  group_operation(rhs_value, proof->A, NULL, public->X, e, public->ec, bn_ctx);
   int is_verified = group_elem_equal(lhs_value, rhs_value, public->ec);
 
   scalar_free(e);
   group_elem_free(lhs_value);
   group_elem_free(rhs_value);
+
+  BN_CTX_free(bn_ctx);
 
   return is_verified;
 }

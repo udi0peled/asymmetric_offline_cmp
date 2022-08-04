@@ -6,6 +6,8 @@
 
 asymoff_sign_cmp_data_t **asymoff_signing_cmp_parties_new(asymoff_party_data_t ** parties, uint64_t num_sigs) {
 
+  BN_CTX *bn_ctx = BN_CTX_secure_new();
+
   uint64_t num_parties = parties[0]->num_parties;
   
   assert(num_parties >= 2);
@@ -46,14 +48,13 @@ asymoff_sign_cmp_data_t **asymoff_signing_cmp_parties_new(asymoff_party_data_t *
     party->num_sigs = num_sigs;
 
     party->ec = ec;
-    party->gen = parties[i]->gen;
     party->Y = parties[i]->Y;
     party->X = parties[i]->X;
     party->x = parties[i]->x;
 
     party->online_X = group_elem_new(ec);
-    group_operation(party->online_X, NULL ,NULL, NULL, ec);
-    for (uint64_t i = 1; i < num_parties; ++i) group_operation(party->online_X, party->online_X, party->X[i], NULL, ec);
+    group_operation(party->online_X, NULL , NULL,NULL, NULL, ec, bn_ctx);
+    for (uint64_t i = 1; i < num_parties; ++i) group_operation(party->online_X, party->online_X, NULL, party->X[i], NULL, ec, bn_ctx);
     
     party->paillier_priv  = parties[i]->paillier_priv;
     party->paillier_pub   = parties[i]->paillier_pub;
@@ -66,8 +67,8 @@ asymoff_sign_cmp_data_t **asymoff_signing_cmp_parties_new(asymoff_party_data_t *
     zkp_aux_info_update_move(party->aux, &aux_pos, parties[i]->srid, sizeof(hash_chunk));
     assert(party->aux->info_len == aux_pos);
 
-    party->R      = new_gr_el_array(num_sigs, ec);
-    party->chi    = new_scalar_array(num_sigs);
+    party->R      = gr_el_array_new(num_sigs, ec);
+    party->chi    = scalar_array_new(num_sigs);
     
     party->nonce  = &parties[i]->nonce[curr_index];
     party->b      = &parties[i]->b[curr_index];
@@ -81,19 +82,19 @@ asymoff_sign_cmp_data_t **asymoff_signing_cmp_parties_new(asymoff_party_data_t *
       party->B2[j] = &parties[i]->B2[j][curr_index];
     }
 
-    party->G      = new_scalar_array(num_sigs);
-    party->K      = new_scalar_array(num_sigs);
-    party->rho    = new_scalar_array(num_sigs);
-    party->nu     = new_scalar_array(num_sigs);
-    party->z      = new_scalar_array(num_sigs);
-    party->delta  = new_scalar_array(num_sigs);
-    party->gamma  = new_scalar_array(num_sigs);
+    party->G      = scalar_array_new(num_sigs);
+    party->K      = scalar_array_new(num_sigs);
+    party->rho    = scalar_array_new(num_sigs);
+    party->nu     = scalar_array_new(num_sigs);
+    party->z      = scalar_array_new(num_sigs);
+    party->delta  = scalar_array_new(num_sigs);
+    party->gamma  = scalar_array_new(num_sigs);
 
-    party->H_gamma  = new_gr_el_array(num_sigs, ec);
-    party->Delta    = new_gr_el_array(num_sigs, ec);
-    party->Gamma1   = new_gr_el_array(num_sigs, ec);
-    party->Gamma2   = new_gr_el_array(num_sigs, ec);
-    party->Lambda   = new_gr_el_array(num_sigs, ec);
+    party->H_gamma  = gr_el_array_new(num_sigs, ec);
+    party->Delta    = gr_el_array_new(num_sigs, ec);
+    party->Gamma1   = gr_el_array_new(num_sigs, ec);
+    party->Gamma2   = gr_el_array_new(num_sigs, ec);
+    party->Lambda   = gr_el_array_new(num_sigs, ec);
 
     party->beta       = calloc(num_parties, sizeof(gr_elem_t*));
     party->D          = calloc(num_parties, sizeof(gr_elem_t*));
@@ -104,12 +105,12 @@ asymoff_sign_cmp_data_t **asymoff_signing_cmp_parties_new(asymoff_party_data_t *
 
     for (uint64_t j = 1; j < num_parties; ++j) {
 
-      party->beta[j]     = new_scalar_array(num_sigs);
-      party->D[j]        = new_scalar_array(num_sigs);
-      party->F[j]        = new_scalar_array(num_sigs);
-      party->beta_hat[j] = new_scalar_array(num_sigs);
-      party->D_hat[j]    = new_scalar_array(num_sigs);
-      party->F_hat[j]    = new_scalar_array(num_sigs);
+      party->beta[j]     = scalar_array_new(num_sigs);
+      party->D[j]        = scalar_array_new(num_sigs);
+      party->F[j]        = scalar_array_new(num_sigs);
+      party->beta_hat[j] = scalar_array_new(num_sigs);
+      party->D_hat[j]    = scalar_array_new(num_sigs);
+      party->F_hat[j]    = scalar_array_new(num_sigs);
     }
 
     party->phi_ddh_H_Gamma  = zkp_el_gamal_dlog_new(num_sigs, ec);
@@ -137,6 +138,8 @@ asymoff_sign_cmp_data_t **asymoff_signing_cmp_parties_new(asymoff_party_data_t *
     party->in_cmp_msg_2 = calloc(num_parties, sizeof(asymoff_sign_cmp_msg_round_2_t));
     party->in_cmp_msg_3 = calloc(num_parties, sizeof(asymoff_sign_cmp_msg_round_3_t));
   }
+
+  BN_CTX_free(bn_ctx);
   
   return cmp_parties;
 }
@@ -155,34 +158,34 @@ void asymoff_signing_cmp_parties_free(asymoff_sign_cmp_data_t **cmp_parties) {
 
     group_elem_free(party->online_X);
 
-    free_gr_el_array(party->R   , num_sigs);
-    free_scalar_array(party->chi, num_sigs);
+    gr_el_array_free(party->R   , num_sigs);
+    scalar_array_free(party->chi, num_sigs);
     
     free(party->B1);
     free(party->B2);
 
-    free_scalar_array(party->G    , num_sigs);
-    free_scalar_array(party->K    , num_sigs);
-    free_scalar_array(party->rho  , num_sigs);
-    free_scalar_array(party->nu   , num_sigs);
-    free_scalar_array(party->z    , num_sigs);
-    free_scalar_array(party->delta, num_sigs);
-    free_scalar_array(party->gamma, num_sigs);
+    scalar_array_free(party->G    , num_sigs);
+    scalar_array_free(party->K    , num_sigs);
+    scalar_array_free(party->rho  , num_sigs);
+    scalar_array_free(party->nu   , num_sigs);
+    scalar_array_free(party->z    , num_sigs);
+    scalar_array_free(party->delta, num_sigs);
+    scalar_array_free(party->gamma, num_sigs);
 
-    free_gr_el_array(party->H_gamma, num_sigs);
-    free_gr_el_array(party->Delta  , num_sigs);
-    free_gr_el_array(party->Gamma1 , num_sigs);
-    free_gr_el_array(party->Gamma2 , num_sigs);
-    free_gr_el_array(party->Lambda , num_sigs);
+    gr_el_array_free(party->H_gamma, num_sigs);
+    gr_el_array_free(party->Delta  , num_sigs);
+    gr_el_array_free(party->Gamma1 , num_sigs);
+    gr_el_array_free(party->Gamma2 , num_sigs);
+    gr_el_array_free(party->Lambda , num_sigs);
 
     for (uint64_t j = 1; j < num_parties; ++j) {
 
-      free_scalar_array(party->beta[j]    , num_sigs);
-      free_scalar_array(party->D[j]       , num_sigs);
-      free_scalar_array(party->F[j]       , num_sigs);
-      free_scalar_array(party->beta_hat[j], num_sigs);
-      free_scalar_array(party->D_hat[j]   , num_sigs);
-      free_scalar_array(party->F_hat[j]   , num_sigs);
+      scalar_array_free(party->beta[j]    , num_sigs);
+      scalar_array_free(party->D[j]       , num_sigs);
+      scalar_array_free(party->F[j]       , num_sigs);
+      scalar_array_free(party->beta_hat[j], num_sigs);
+      scalar_array_free(party->D_hat[j]   , num_sigs);
+      scalar_array_free(party->F_hat[j]   , num_sigs);
     }
 
 
@@ -235,6 +238,8 @@ int asymoff_signing_cmp_execute_round_1(asymoff_sign_cmp_data_t *party) {
   ec_group_t ec = party->ec;
   scalar_t ec_order = ec_group_order(ec);
 
+  BN_CTX *bn_ctx = BN_CTX_secure_new();
+
   paillier_public_key_t *my_paillier_pub = party->paillier_pub[party->i];
 
   for (uint64_t l = 0; l < num_sigs; ++l) {
@@ -242,18 +247,16 @@ int asymoff_signing_cmp_execute_round_1(asymoff_sign_cmp_data_t *party) {
     paillier_encryption_sample(party->rho[l], my_paillier_pub);
     paillier_encryption_encrypt(party->K[l], party->nonce[l], party->rho[l], my_paillier_pub);
 
-    scalar_sample_in_range(party->gamma[l], ec_order, 0);
-    group_operation(party->H_gamma[l], NULL, party->H[l], party->gamma[l], party->ec);
+    scalar_sample_in_range(party->gamma[l], ec_order, 0, bn_ctx);
+    group_operation(party->H_gamma[l], NULL, NULL, party->H[l], party->gamma[l], party->ec, bn_ctx);
 
     paillier_encryption_sample(party->nu[l], my_paillier_pub);
     paillier_encryption_encrypt(party->G[l], party->gamma[l], party->nu[l], my_paillier_pub);
 
-    scalar_sample_in_range(party->z[l], ec_order, 0);
+    scalar_sample_in_range(party->z[l], ec_order, 0, bn_ctx);
 
-    group_operation(party->Gamma1[l], NULL, party->gen, party->z[l], ec);
-
-    group_operation(party->Gamma2[l], NULL, party->gen, party->gamma[l], ec);
-    group_operation(party->Gamma2[l], party->Gamma2[l], party->Y, party->z[l], ec);
+    group_operation(party->Gamma1[l], NULL, party->z[l], NULL, NULL, ec, bn_ctx);
+    group_operation(party->Gamma2[l], NULL, party->gamma[l], party->Y, party->z[l], ec, bn_ctx);
   }
 
   zkp_aux_info_update(party->aux, sizeof(hash_chunk), &party->i, sizeof(uint64_t));
@@ -270,7 +273,6 @@ int asymoff_signing_cmp_execute_round_1(asymoff_sign_cmp_data_t *party) {
     theta_Rddh_public.rped_pub      = party->rped_pub[j];
     theta_Rddh_public.Y             = party->Y;
     theta_Rddh_public.ec            = party->ec;
-    theta_Rddh_public.g             = party->gen;
 
     // theta proof for K
 
@@ -296,6 +298,8 @@ int asymoff_signing_cmp_execute_round_1(asymoff_sign_cmp_data_t *party) {
 
     zkp_range_el_gamal_prove(party->theta_Rddh_G[j], &theta_Rddh_secret, &theta_Rddh_public, party->aux);
   }
+
+  BN_CTX_free(bn_ctx);
 
   // TODO: no broadcast of K,G?
 
@@ -323,6 +327,8 @@ int asymoff_signing_cmp_execute_round_2(asymoff_sign_cmp_data_t *party) {
 
   pinfo("Player %ld: Executing Round 2\n", party->i);
 
+  BN_CTX *bn_ctx = BN_CTX_secure_new();
+
   uint64_t num_parties = party->num_parties;
   uint64_t num_sigs    = party->num_sigs;
 
@@ -343,7 +349,6 @@ int asymoff_signing_cmp_execute_round_2(asymoff_sign_cmp_data_t *party) {
     theta_Rddh_public.rped_pub      = party->rped_pub[party->i];
     theta_Rddh_public.Y             = party->Y;
     theta_Rddh_public.ec            = party->ec;
-    theta_Rddh_public.g             = party->gen;
 
     // Verify K proof
 
@@ -379,20 +384,19 @@ int asymoff_signing_cmp_execute_round_2(asymoff_sign_cmp_data_t *party) {
   phi_eph_public.H  = party->H_gamma;
   phi_eph_public.R  = party->H;
   phi_eph_public.ec = party->ec;
-  phi_eph_public.g  = party->gen;
   phi_eph_public.Y  = party->Y;
 
   zkp_el_gamal_dlog_secret_t phi_eph_secret;
-  phi_eph_secret.lambda = new_scalar_array(num_sigs);
-  phi_eph_secret.rho    = new_scalar_array(num_sigs);
+  phi_eph_secret.lambda = scalar_array_new(num_sigs);
+  phi_eph_secret.rho    = scalar_array_new(num_sigs);
   phi_eph_secret.k      = party->gamma;
   phi_eph_secret.b      = party->z;
   
   zkp_el_gamal_dlog_anchor(party->phi_ddh_H_Gamma, &phi_eph_secret, &phi_eph_public);
   zkp_el_gamal_dlog_prove(party->phi_ddh_H_Gamma, &phi_eph_secret, &phi_eph_public, party->aux, 1);
 
-  free_scalar_array(phi_eph_secret.lambda, num_sigs);
-  free_scalar_array(phi_eph_secret.rho, num_sigs);
+  scalar_array_free(phi_eph_secret.lambda, num_sigs);
+  scalar_array_free(phi_eph_secret.rho, num_sigs);
 
   // Executing MtA with corresponding ZKP
 
@@ -424,7 +428,7 @@ int asymoff_signing_cmp_execute_round_2(asymoff_sign_cmp_data_t *party) {
 
       // Mta - part 1: compute
 
-      scalar_sample_in_range(party->beta[j][l], beta_range, 0);
+      scalar_sample_in_range(party->beta[j][l], beta_range, 0, bn_ctx);
       scalar_make_signed(party->beta[j][l], beta_range);
 
       paillier_encryption_sample(r, party->paillier_pub[party->i]);
@@ -440,7 +444,7 @@ int asymoff_signing_cmp_execute_round_2(asymoff_sign_cmp_data_t *party) {
       phi_affg_public.C = in_cmp_msg_1->K[l];
       phi_affg_public.D = party->D[j][l];
       phi_affg_public.Y = party->F[j][l];
-      phi_affg_public.g = party->gen;
+      phi_affg_public.g = ec_group_generator(party->ec);
 
       phi_affg_secret.rho_y = r;
       phi_affg_secret.rho = s;
@@ -451,7 +455,7 @@ int asymoff_signing_cmp_execute_round_2(asymoff_sign_cmp_data_t *party) {
 
       // Mta - part 2: compute
 
-      scalar_sample_in_range(party->beta_hat[j][l], beta_range, 0);
+      scalar_sample_in_range(party->beta_hat[j][l], beta_range, 0, bn_ctx);
       scalar_make_signed(party->beta_hat[j][l], beta_range);
       paillier_encryption_sample(r, party->paillier_pub[party->i]);
       paillier_encryption_encrypt(party->F_hat[j][l], party->beta_hat[j][l], r, party->paillier_pub[party->i]);
@@ -481,7 +485,7 @@ int asymoff_signing_cmp_execute_round_2(asymoff_sign_cmp_data_t *party) {
   scalar_free(temp_enc);
   scalar_free(r);
   scalar_free(s);
-
+  BN_CTX_free(bn_ctx);
 
   return 0;
 }
@@ -511,6 +515,8 @@ int asymoff_signing_cmp_execute_round_3(asymoff_sign_cmp_data_t *party) {
 
   pinfo("Player %ld: Executing Round 3\n", party->i);
 
+  BN_CTX *bn_ctx = BN_CTX_secure_new();
+
   uint64_t num_parties = party->num_parties;
   uint64_t num_sigs    = party->num_sigs;
 
@@ -528,7 +534,6 @@ int asymoff_signing_cmp_execute_round_3(asymoff_sign_cmp_data_t *party) {
   phi_eph_public.batch_size = num_sigs;
   phi_eph_public.R  = party->H;
   phi_eph_public.ec = party->ec;
-  phi_eph_public.g  = party->gen;
   phi_eph_public.Y  = party->Y;
 
   for (uint64_t j = 1; j < num_parties; ++j) {
@@ -558,7 +563,7 @@ int asymoff_signing_cmp_execute_round_3(asymoff_sign_cmp_data_t *party) {
       phi_affg_public.C = party->K[l];
       phi_affg_public.D = in_cmp_msg_2->D[l];
       phi_affg_public.Y = in_cmp_msg_2->F[l];
-      phi_affg_public.g = party->gen;
+      phi_affg_public.g = ec_group_generator(party->ec);
 
       if (zkp_oper_group_commit_range_verify(in_cmp_msg_2->phi_affg_X[l], &phi_affg_public, party->aux) != 1) {
         printf("X ZKP Affine Operation vs Group Commitment in Range verification failed. Received from party %ld\n", j);
@@ -587,8 +592,8 @@ int asymoff_signing_cmp_execute_round_3(asymoff_sign_cmp_data_t *party) {
      // Initalize delta, chi, Lambda
 
     group_elem_copy(party->Lambda[l], party->H_gamma[l]);
-    scalar_mul(party->chi[l], party->x, party->nonce[l], ec_order);
-    scalar_mul(party->delta[l], party->gamma[l], party->nonce[l], ec_order);
+    scalar_mul(party->chi[l], party->x, party->nonce[l], ec_order, bn_ctx);
+    scalar_mul(party->delta[l], party->gamma[l], party->nonce[l], ec_order, bn_ctx);
 
     for (uint64_t j = 1; j < num_parties; ++j) {
       if (party->i == j) continue;
@@ -598,25 +603,25 @@ int asymoff_signing_cmp_execute_round_3(asymoff_sign_cmp_data_t *party) {
 
       // Aggregate Lambda
 
-      group_operation(party->Lambda[l], party->Lambda[l], in_cmp_msg_2->H_gamma[l], NULL, party->ec);
+      group_operation(party->Lambda[l], party->Lambda[l], NULL, in_cmp_msg_2->H_gamma[l], NULL, party->ec, bn_ctx);
       
       // Compute chi_i
 
       paillier_encryption_decrypt(alpha, in_cmp_msg_2->D[l], party->paillier_priv);
       scalar_make_signed(alpha, party->paillier_pub[party->i]->N);
-      scalar_add(party->chi[l], party->chi[l], alpha, ec_order);
-      scalar_sub(party->chi[l], party->chi[l], party->beta[j][l], ec_order);
+      scalar_add(party->chi[l], party->chi[l], alpha, ec_order, bn_ctx);
+      scalar_sub(party->chi[l], party->chi[l], party->beta[j][l], ec_order, bn_ctx);
 
        // Compute delta_i
 
       paillier_encryption_decrypt(alpha, in_cmp_msg_2->D_hat[l], party->paillier_priv);
       scalar_make_signed(alpha, party->paillier_pub[party->i]->N);
-      scalar_add(party->delta[l], party->delta[l], alpha, ec_order);
-      scalar_sub(party->delta[l], party->delta[l], party->beta_hat[j][l], ec_order);
+      scalar_add(party->delta[l], party->delta[l], alpha, ec_order, bn_ctx);
+      scalar_sub(party->delta[l], party->delta[l], party->beta_hat[j][l], ec_order, bn_ctx);
 
     }
 
-    group_operation(party->Delta[l], NULL, party->Lambda[l], party->nonce[l], party->ec);
+    group_operation(party->Delta[l], NULL, NULL, party->Lambda[l], party->nonce[l], party->ec, bn_ctx);
   }
 
   scalar_free(alpha);
@@ -632,21 +637,21 @@ int asymoff_signing_cmp_execute_round_3(asymoff_sign_cmp_data_t *party) {
   psi_ddh_public.H  = party->Delta;
   psi_ddh_public.R  = party->Lambda;
   psi_ddh_public.ec = party->ec;
-  psi_ddh_public.g  = party->gen;
   psi_ddh_public.Y  = party->Y;
 
   zkp_el_gamal_dlog_secret_t psi_ddh_secret;
-  psi_ddh_secret.lambda = new_scalar_array(num_sigs);
-  psi_ddh_secret.rho    = new_scalar_array(num_sigs);
+  psi_ddh_secret.lambda = scalar_array_new(num_sigs);
+  psi_ddh_secret.rho    = scalar_array_new(num_sigs);
   psi_ddh_secret.k      = party->nonce;
   psi_ddh_secret.b      = party->b;
   
   zkp_el_gamal_dlog_anchor(party->psi_ddh_Delta, &psi_ddh_secret, &psi_ddh_public);
   zkp_el_gamal_dlog_prove(party->psi_ddh_Delta, &psi_ddh_secret, &psi_ddh_public, party->aux, 1);
 
-  free_scalar_array(psi_ddh_secret.lambda, num_sigs);
-  free_scalar_array(psi_ddh_secret.rho, num_sigs);
+  scalar_array_free(psi_ddh_secret.lambda, num_sigs);
+  scalar_array_free(psi_ddh_secret.rho, num_sigs);
 
+  BN_CTX_free(bn_ctx);
   return 0;
 }
 
@@ -668,15 +673,17 @@ int asymoff_signing_cmp_execute_final(asymoff_sign_cmp_data_t *party) {
 
   pinfo("Player %ld: Executing Finalization\n", party->i);
 
+  BN_CTX *bn_ctx = BN_CTX_secure_new();
+
   uint64_t num_parties = party->num_parties;
   uint64_t num_sigs    = party->num_sigs;
 
 
-  scalar_t *joint_delta = new_scalar_array(num_sigs);
-  gr_elem_t *joint_Delta = new_gr_el_array(num_sigs, party->ec);
+  scalar_t *joint_delta = scalar_array_new(num_sigs);
+  gr_elem_t *joint_Delta = gr_el_array_new(num_sigs, party->ec);
 
-  copy_scalar_array(joint_delta, party->delta, num_sigs);
-  copy_gr_el_array(joint_Delta, party->Delta, num_sigs);
+  scalar_array_copy(joint_delta, party->delta, num_sigs);
+  gr_el_array_copy(joint_Delta, party->Delta, num_sigs);
 
   asymoff_sign_cmp_msg_round_3_t *in_cmp_msg_3;
 
@@ -684,7 +691,6 @@ int asymoff_signing_cmp_execute_final(asymoff_sign_cmp_data_t *party) {
   psi_ddh_public.batch_size = num_sigs;
   psi_ddh_public.R  = party->Lambda;
   psi_ddh_public.ec = party->ec;
-  psi_ddh_public.g  = party->gen;
   psi_ddh_public.Y  = party->Y;
 
   for (uint64_t j = 1; j < num_parties; ++j) {
@@ -704,8 +710,8 @@ int asymoff_signing_cmp_execute_final(asymoff_sign_cmp_data_t *party) {
     }
 
     for (uint64_t l = 0; l < num_sigs; ++l) {
-      scalar_add(joint_delta[l], joint_delta[l], in_cmp_msg_3->delta[l], ec_group_order(party->ec));
-      group_operation(joint_Delta[l], joint_Delta[l], in_cmp_msg_3->Delta[l], NULL, party->ec);
+      scalar_add(joint_delta[l], joint_delta[l], in_cmp_msg_3->delta[l], ec_group_order(party->ec), bn_ctx);
+      group_operation(joint_Delta[l], joint_Delta[l], NULL, in_cmp_msg_3->Delta[l], NULL, party->ec, bn_ctx);
     }
   }
 
@@ -715,21 +721,22 @@ int asymoff_signing_cmp_execute_final(asymoff_sign_cmp_data_t *party) {
 
   for (uint64_t l = 0; l < num_sigs; ++l) {
 
-    group_operation(H_delta, NULL, party->H[l], joint_delta[l], party->ec);
+    group_operation(H_delta, NULL, NULL, party->H[l], joint_delta[l], party->ec, bn_ctx);
     
     if (group_elem_equal(H_delta, joint_Delta[l], party->ec) != 1) {
       printf("Invalid H^{delta}, not same as joint Delta, for signature %ld in batch.\n", l);
       return 1;
     }
 
-    scalar_inv(delta_inv, joint_delta[l], ec_group_order(party->ec));
-    group_operation(party->R[l], NULL, party->Lambda[l], delta_inv, party->ec);
+    scalar_inv(delta_inv, joint_delta[l], ec_group_order(party->ec), bn_ctx);
+    group_operation(party->R[l], NULL, NULL, party->Lambda[l], delta_inv, party->ec, bn_ctx);
   }
 
   scalar_free(delta_inv);
-  free_scalar_array(joint_delta, num_sigs);
-  free_gr_el_array(joint_Delta, num_sigs);
+  scalar_array_free(joint_delta, num_sigs);
+  gr_el_array_free(joint_Delta, num_sigs);
   group_elem_free(H_delta);
+  BN_CTX_free(bn_ctx);
 
   return 0;
 }
@@ -741,8 +748,8 @@ void asymoff_signing_cmp_export_data(asymoff_party_data_t **parties, asymoff_sig
 
     uint64_t num_sigs = cmp_parties[j]->num_sigs;
 
-    copy_gr_el_array(&parties[j]->R[parties[j]->curr_index], cmp_parties[j]->R, num_sigs);
-    copy_scalar_array(&parties[j]->chi[parties[j]->curr_index], cmp_parties[j]->chi, num_sigs);
+    gr_el_array_copy(&parties[j]->R[parties[j]->curr_index], cmp_parties[j]->R, num_sigs);
+    scalar_array_copy(&parties[j]->chi[parties[j]->curr_index], cmp_parties[j]->chi, num_sigs);
   }
 }
 
@@ -755,41 +762,44 @@ int asymoff_signing_cmp_execute_mock_export_data (asymoff_party_data_t **parties
   uint64_t curr_index   = parties[1]->curr_index;
   ec_group_t ec         = parties[1]->ec;
 
+  BN_CTX *bn_ctx = BN_CTX_secure_new();
+
   scalar_t x          = scalar_new();
   scalar_t curr_k     = scalar_new();
   scalar_t curr_k_inv = scalar_new();
 
   scalar_set_ul(x, 0);
   for (uint64_t i = 1; i < num_parties; ++i) {
-    scalar_add(x, x, parties[i]->x, ec_group_order(ec));
+    scalar_add(x, x, parties[i]->x, ec_group_order(ec), bn_ctx);
   }
   
   for (uint64_t l = curr_index; l < curr_index + num_sigs; ++l) {
     
     scalar_set_ul(curr_k, 0);
     for (uint64_t i = 1; i < num_parties; ++i) {
-      scalar_add(curr_k, curr_k, parties[i]->nonce[l], ec_group_order(ec));
+      scalar_add(curr_k, curr_k, parties[i]->nonce[l], ec_group_order(ec), bn_ctx);
     }
 
-    scalar_inv(curr_k_inv, curr_k, ec_group_order(ec));
+    scalar_inv(curr_k_inv, curr_k, ec_group_order(ec), bn_ctx);
 
     for (uint64_t i = 1; i < num_parties; ++i) {
-      group_operation(parties[i]->R[l], NULL, parties[i]->H[l], curr_k_inv, ec);
+      group_operation(parties[i]->R[l], NULL, NULL, parties[i]->H[l], curr_k_inv, ec, bn_ctx);
     }
 
-    scalar_mul(parties[1]->chi[l], x, curr_k, ec_group_order(ec));
+    scalar_mul(parties[1]->chi[l], x, curr_k, ec_group_order(ec), bn_ctx);
 
     for (uint64_t i = 2; i < num_parties; ++i) {
 
-      scalar_sample_in_range(parties[i]->chi[l], ec_group_order(ec), 0);
+      scalar_sample_in_range(parties[i]->chi[l], ec_group_order(ec), 0, bn_ctx);
 
-      scalar_sub(parties[1]->chi[l], parties[1]->chi[l], parties[i]->chi[l], ec_group_order(ec));
+      scalar_sub(parties[1]->chi[l], parties[1]->chi[l], parties[i]->chi[l], ec_group_order(ec), bn_ctx);
     }
   }
 
   scalar_free(x);
   scalar_free(curr_k);
   scalar_free(curr_k_inv);
+  BN_CTX_free(bn_ctx);
 
   return 0;
 }

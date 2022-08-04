@@ -203,36 +203,3 @@ void unpack_plaintexts(scalar_t *unpacked, uint64_t packing_size, const scalar_t
   scalar_free(exp_2);
   scalar_free(shifted);
 }
-
-
-scalar_t *new_scalar_array(uint64_t len) {
-  if (!len) return NULL;
-  scalar_t *scalars = calloc(len, sizeof(scalar_t));
-  for (uint64_t i = 0; i < len; ++i) scalars[i] = scalar_new();
-  return scalars;
-}
-
-gr_elem_t *new_gr_el_array(uint64_t len, ec_group_t ec) {
-   if (!len) return NULL;
-  gr_elem_t *grels = calloc(len, sizeof(gr_elem_t));
-  for (uint64_t i = 0; i < len; ++i) grels[i] = group_elem_new(ec);
-  return grels;
-}
-
-void free_scalar_array(scalar_t * scalars, uint64_t len) {
-  for (uint64_t i = 0; i < len; ++i) scalar_free(scalars[i]);
-  free(scalars);
-}
-
-void free_gr_el_array(gr_elem_t * grels, uint64_t len) {
-  for (uint64_t i = 0; i < len; ++i) group_elem_free(grels[i]);
-  free(grels);
-}
-
-void copy_scalar_array(scalar_t *copy, scalar_t *source, uint64_t len) {
-  for (uint64_t i = 0; i < len; ++i) scalar_copy(copy[i], source[i]);
-}
-
-void copy_gr_el_array(gr_elem_t *copy, gr_elem_t *source, uint64_t len) {
-  for (uint64_t i = 0; i < len; ++i) group_elem_copy(copy[i], source[i]);
-}

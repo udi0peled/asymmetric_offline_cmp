@@ -70,7 +70,7 @@ void  zkp_ring_pedersen_param_prove (zkp_ring_pedersen_param_proof_t *proof, con
 
   for (uint64_t i = 0; i < STATISTICAL_SECURITY; ++i)
   {
-    scalar_sample_in_range(proof->z[i], private->phi_N, 0);
+    scalar_sample_in_range(proof->z[i], private->phi_N, 0, bn_ctx);
     BN_mod_exp(curr_A, private->t, proof->z[i], private->N, bn_ctx);
     scalar_to_bytes(&curr_A_bytes, RING_PED_MODULUS_BYTES, curr_A, 0);
     SHA512_Update(&A_hash_ctx, curr_A_bytes, RING_PED_MODULUS_BYTES);

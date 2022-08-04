@@ -13,7 +13,6 @@ asymoff_party_data_t **asymoff_protocol_parties_new(uint64_t num_parties) {
 
     ec_group_t ec = ec_group_new();
     parties[i]->ec = ec;
-    parties[i]->gen = ec_group_generator(ec);
 
     parties[i]->x = scalar_new();
     parties[i]->X = calloc(num_parties, sizeof(gr_elem_t));
@@ -72,6 +71,8 @@ void asymoff_protocol_parties_set(asymoff_party_data_t **parties, hash_chunk sid
   ec_group_t ec = parties[0]->ec;
   hash_chunk sid_init;
 
+  BN_CTX *bn_ctx = BN_CTX_secure_new();
+
   if (sid) {
     memcpy(sid_init, sid, sizeof(hash_chunk));
   } else {
@@ -85,9 +86,11 @@ void asymoff_protocol_parties_set(asymoff_party_data_t **parties, hash_chunk sid
     if (private_x) {
       scalar_copy(parties[i]->x, private_x[i]);
     } else {
-      scalar_sample_in_range(parties[i]->x, ec_group_order(ec) , 0);
+      scalar_sample_in_range(parties[i]->x, ec_group_order(ec) , 0, bn_ctx);
     }
   }
+
+  BN_CTX_free(bn_ctx);
 }
 
 void asymoff_protocol_parties_new_batch(asymoff_party_data_t **parties, uint64_t batch_size) {
@@ -101,25 +104,25 @@ void asymoff_protocol_parties_new_batch(asymoff_party_data_t **parties, uint64_t
     parties[i]->curr_index = 0;
     parties[i]->next_index = 0;
     
-    parties[i]->R        = new_gr_el_array(batch_size, ec);
-    parties[i]->H        = new_gr_el_array(batch_size, ec);
+    parties[i]->R        = gr_el_array_new(batch_size, ec);
+    parties[i]->H        = gr_el_array_new(batch_size, ec);
 
-    parties[i]->b        = new_scalar_array(batch_size);
-    parties[i]->nonce    = new_scalar_array(batch_size);
-    parties[i]->chi      = new_scalar_array(batch_size);
+    parties[i]->b        = scalar_array_new(batch_size);
+    parties[i]->nonce    = scalar_array_new(batch_size);
+    parties[i]->chi      = scalar_array_new(batch_size);
 
-    parties[i]->joint_B1 = new_gr_el_array(batch_size, ec);
-    parties[i]->joint_B2 = new_gr_el_array(batch_size, ec);
-    parties[i]->joint_V1 = new_gr_el_array(batch_size, ec);
-    parties[i]->joint_V2 = new_gr_el_array(batch_size, ec);
+    parties[i]->joint_B1 = gr_el_array_new(batch_size, ec);
+    parties[i]->joint_B2 = gr_el_array_new(batch_size, ec);
+    parties[i]->joint_V1 = gr_el_array_new(batch_size, ec);
+    parties[i]->joint_V2 = gr_el_array_new(batch_size, ec);
 
     if (i != 0) {
       parties[i]->B1 = calloc(num_parties, sizeof(gr_elem_t*));
       parties[i]->B2 = calloc(num_parties, sizeof(gr_elem_t*));
 
       for (uint64_t j = 1; j < num_parties; ++j) {
-        parties[i]->B1[j] = new_gr_el_array(batch_size, ec);
-        parties[i]->B2[j] = new_gr_el_array(batch_size, ec);
+        parties[i]->B1[j] = gr_el_array_new(batch_size, ec);
+        parties[i]->B2[j] = gr_el_array_new(batch_size, ec);
       }
     }
   }
@@ -132,25 +135,25 @@ void asymoff_protocol_parties_free_batch(asymoff_party_data_t **parties) {
 
   for (uint64_t i = 0; i < num_parties; ++i) {
     
-    free_gr_el_array(parties[i]->H, batch_size);
-    free_gr_el_array(parties[i]->R, batch_size);
+    gr_el_array_free(parties[i]->H, batch_size);
+    gr_el_array_free(parties[i]->R, batch_size);
     
-    free_scalar_array(parties[i]->b, batch_size);
-    free_scalar_array(parties[i]->nonce, batch_size);
-    free_scalar_array(parties[i]->chi, batch_size);
+    scalar_array_free(parties[i]->b, batch_size);
+    scalar_array_free(parties[i]->nonce, batch_size);
+    scalar_array_free(parties[i]->chi, batch_size);
     
     if (i != 0) {
       for (uint64_t j = 1; j < num_parties; ++j) {
-        free_gr_el_array(parties[i]->B1[j], batch_size);
-        free_gr_el_array(parties[i]->B2[j], batch_size);
+        gr_el_array_free(parties[i]->B1[j], batch_size);
+        gr_el_array_free(parties[i]->B2[j], batch_size);
       }
       free(parties[i]->B1);
       free(parties[i]->B2);
     }
 
-    free_gr_el_array(parties[i]->joint_B1, batch_size);
-    free_gr_el_array(parties[i]->joint_B2, batch_size);
-    free_gr_el_array(parties[i]->joint_V1, batch_size);
-    free_gr_el_array(parties[i]->joint_V2, batch_size);
+    gr_el_array_free(parties[i]->joint_B1, batch_size);
+    gr_el_array_free(parties[i]->joint_B2, batch_size);
+    gr_el_array_free(parties[i]->joint_V1, batch_size);
+    gr_el_array_free(parties[i]->joint_V2, batch_size);
   }
 }

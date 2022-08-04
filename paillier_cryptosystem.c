@@ -118,7 +118,10 @@ void paillier_encryption_free_keys (paillier_private_key_t *priv, paillier_publi
 
 void paillier_encryption_sample (scalar_t rho, const paillier_public_key_t *pub)
 {
-  scalar_sample_in_range(rho, pub->N, 1);
+  BN_CTX *bn_ctx = BN_CTX_secure_new(); 
+  scalar_sample_in_range(rho, pub->N, 1, bn_ctx);
+  BN_CTX_free(bn_ctx);
+
 }
 
 
@@ -130,7 +133,7 @@ void paillier_encryption_encrypt (scalar_t ciphertext, const scalar_t plaintext,
   
   BN_mod_mul(first_factor, pub->N, plaintext, pub->N2, bn_ctx);
   BN_add_word(first_factor, 1);
-  scalar_exp(res_ciphertext, rho, pub->N, pub->N2);
+  scalar_exp(res_ciphertext, rho, pub->N, pub->N2, bn_ctx);
   BN_mod_mul(res_ciphertext, first_factor, res_ciphertext, pub->N2, bn_ctx);
   BN_copy(ciphertext, res_ciphertext);
 

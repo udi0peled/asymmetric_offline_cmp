@@ -92,29 +92,29 @@ void zkp_no_small_factors_prove (zkp_no_small_factors_t *proof, const paillier_p
 
   scalar_set_power_of_2(temp_range, SOUNDNESS_ELL + SLACKNESS_EPS + 4*PAILLIER_MODULUS_BYTES);
   
-  scalar_sample_in_range(alpha, temp_range, 0);
-  scalar_sample_in_range(beta, temp_range, 0);
+  scalar_sample_in_range(alpha, temp_range, 0, bn_ctx);
+  scalar_sample_in_range(beta, temp_range, 0, bn_ctx);
 
   scalar_make_signed(alpha, temp_range);
   scalar_make_signed(beta, temp_range);
 
   BN_lshift(temp_range, rped_pub->N, SOUNDNESS_ELL);
   
-  scalar_sample_in_range(mu, temp_range, 0);
-  scalar_sample_in_range(sigma, temp_range, 0);
+  scalar_sample_in_range(mu, temp_range, 0, bn_ctx);
+  scalar_sample_in_range(sigma, temp_range, 0, bn_ctx);
 
   scalar_make_signed(mu, temp_range);
   scalar_make_signed(sigma, temp_range);
   
   BN_lshift(temp_range, rped_pub->N, SOUNDNESS_ELL + SLACKNESS_EPS + 1 + 4*PAILLIER_MODULUS_BYTES);
   
-  scalar_sample_in_range(r, temp_range, 0);
+  scalar_sample_in_range(r, temp_range, 0, bn_ctx);
   scalar_make_signed(r, temp_range);
   
   BN_lshift(temp_range, rped_pub->N, SOUNDNESS_ELL + SLACKNESS_EPS);
   
-  scalar_sample_in_range(x, temp_range, 0);
-  scalar_sample_in_range(y, temp_range, 0);
+  scalar_sample_in_range(x, temp_range, 0, bn_ctx);
+  scalar_sample_in_range(y, temp_range, 0, bn_ctx);
 
   scalar_make_signed(x, temp_range);
   scalar_make_signed(y, temp_range);
@@ -124,8 +124,8 @@ void zkp_no_small_factors_prove (zkp_no_small_factors_t *proof, const paillier_p
   ring_pedersen_commit(proof->A, &alpha, 1, x, rped_pub);
   ring_pedersen_commit(proof->B, &beta, 1, y, rped_pub);
 
-  scalar_exp(proof->T, proof->Q, alpha, rped_pub->N);
-  scalar_exp(temp_range, rped_pub->t, r, rped_pub->N);
+  scalar_exp(proof->T, proof->Q, alpha, rped_pub->N, bn_ctx);
+  scalar_exp(temp_range, rped_pub->t, r, rped_pub->N, bn_ctx);
   BN_mod_mul(proof->T, proof->T, temp_range, rped_pub->N, bn_ctx);
 
   paillier_public_key_t *paillier_pub = paillier_encryption_public_new();
@@ -165,6 +165,8 @@ void zkp_no_small_factors_prove (zkp_no_small_factors_t *proof, const paillier_p
 
 int  zkp_no_small_factors_verify (zkp_no_small_factors_t *proof, const paillier_public_key_t *paillier_pub, const ring_pedersen_public_t *rped_pub, const zkp_aux_info_t *aux)
 {
+  BN_CTX *bn_ctx = BN_CTX_secure_new();
+
   scalar_t temp = scalar_new();
 
   int is_verified = 1;
@@ -179,28 +181,30 @@ int  zkp_no_small_factors_verify (zkp_no_small_factors_t *proof, const paillier_
   scalar_t rhs_value = scalar_new();
 
   ring_pedersen_commit(lhs_value, &proof->z_1, 1, proof->w_1, rped_pub);
-  scalar_exp(rhs_value, proof->P, e, rped_pub->N);
-  scalar_mul(rhs_value, rhs_value, proof->A, rped_pub->N);
+  scalar_exp(rhs_value, proof->P, e, rped_pub->N, bn_ctx);
+  scalar_mul(rhs_value, rhs_value, proof->A, rped_pub->N, bn_ctx);
   is_verified &= scalar_equal(lhs_value, rhs_value);
 
   ring_pedersen_commit(lhs_value, &proof->z_2, 1, proof->w_2, rped_pub);
-  scalar_exp(rhs_value, proof->Q, e, rped_pub->N);
-  scalar_mul(rhs_value, rhs_value, proof->B, rped_pub->N);
+  scalar_exp(rhs_value, proof->Q, e, rped_pub->N, bn_ctx);
+  scalar_mul(rhs_value, rhs_value, proof->B, rped_pub->N, bn_ctx);
   is_verified &= scalar_equal(lhs_value, rhs_value);
 
-  scalar_exp(lhs_value, proof->Q, proof->z_1, rped_pub->N);
-  scalar_exp(temp, rped_pub->t, proof->v, rped_pub->N);
-  scalar_mul(lhs_value, lhs_value, temp, rped_pub->N);
+  scalar_exp(lhs_value, proof->Q, proof->z_1, rped_pub->N, bn_ctx);
+  scalar_exp(temp, rped_pub->t, proof->v, rped_pub->N, bn_ctx);
+  scalar_mul(lhs_value, lhs_value, temp, rped_pub->N, bn_ctx);
 
-  scalar_exp(rhs_value, rped_pub->s[0], paillier_pub->N, rped_pub->N);
-  scalar_exp(rhs_value, rhs_value, e, rped_pub->N);
-  scalar_mul(rhs_value, proof->T, rhs_value, rped_pub->N);
+  scalar_exp(rhs_value, rped_pub->s[0], paillier_pub->N, rped_pub->N, bn_ctx);
+  scalar_exp(rhs_value, rhs_value, e, rped_pub->N, bn_ctx);
+  scalar_mul(rhs_value, proof->T, rhs_value, rped_pub->N, bn_ctx);
   is_verified &= scalar_equal(lhs_value, rhs_value);
   
   scalar_free(e);
   scalar_free(temp);
   scalar_free(lhs_value);
   scalar_free(rhs_value);
+  
+  BN_CTX_free(bn_ctx);
 
   return is_verified;
 }

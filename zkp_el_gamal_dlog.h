@@ -11,7 +11,6 @@ typedef struct
   uint64_t batch_size;
 
   ec_group_t ec;
-  gr_elem_t g;
   gr_elem_t *R;
   gr_elem_t Y;
 

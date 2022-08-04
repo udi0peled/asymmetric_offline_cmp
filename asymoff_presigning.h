@@ -26,11 +26,9 @@ typedef struct
 typedef struct
 {
   scalar_t *packed_C;
-  gr_elem_t *A1;
-  gr_elem_t *A2;
   gr_elem_t *H;
 
-  zkp_el_gamal_dlog_proof_t *phi_eph;
+  // zkp_el_gamal_dlog_proof_t *phi_eph;
   zkp_range_el_gamal_proof_t *phi_Rddh;
 
 } asymoff_presigning_msg_round_2_t;
@@ -38,14 +36,11 @@ typedef struct
 typedef struct {
 
   scalar_t *alpha;
-  
   gr_elem_t *H;
-  gr_elem_t *A1;
-  gr_elem_t *A2;
 
   scalar_t *Paillier_packed_C;
 
-  zkp_el_gamal_dlog_proof_t *phi_eph;
+  // zkp_el_gamal_dlog_proof_t *phi_eph;
   zkp_range_el_gamal_proof_t **phi_Rddh;
 
 } asymoff_presigning_data_offline_t;
@@ -73,7 +68,6 @@ typedef struct
   zkp_aux_info_t *aux;
 
   ec_group_t ec;
-  gr_elem_t gen;
   gr_elem_t Y;
 
   paillier_public_key_t **paillier_pub;
