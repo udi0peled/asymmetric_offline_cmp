@@ -4,11 +4,11 @@
 // TIME
 #include <time.h>
 clock_t zkp_eg_start_time, zkp_eg_end_time;
-inline void start_timer() {
+static void start_timer() {
   zkp_eg_start_time = clock();
 }
 
-inline double get_time(const char* str) {
+static double get_time(const char* str) {
   zkp_eg_end_time = clock();
   double diff_time = ((double)(zkp_eg_end_time - zkp_eg_start_time)) /CLOCKS_PER_SEC;
   if (str) {

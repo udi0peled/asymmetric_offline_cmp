@@ -9,11 +9,11 @@
 
 clock_t presigning_start_time, presigning_end_time;
 
-inline void start_timer() {
+static void start_timer() {
   presigning_start_time = clock();
 }
 
-inline double get_time(const char* str) {
+static double get_time(const char* str) {
   presigning_end_time = clock();
   double diff_time = ((double)(presigning_end_time - presigning_start_time)) /CLOCKS_PER_SEC;
   if (str) {
@@ -206,11 +206,14 @@ int asymoff_presigning_aggregate_execute_round_1(asymoff_presigning_data_t *part
   
     scalar_sample_in_range(online->k[l], ec_group_order(party->ec), 0, bn_ctx);
     scalar_sample_in_range(online->b[l], ec_group_order(party->ec), 0, bn_ctx);
+  }
+  get_time("Sampling k,b: ");
 
+  for (uint64_t l = 0; l < batch_size; ++l) {
     group_operation(online->B1[l], NULL, online->b[l], NULL, NULL, ec, bn_ctx);
     group_operation(online->B2[l], NULL, online->k[l], party->Y, online->b[l], ec, bn_ctx);
   }
-  get_time("computing all B: ");
+  get_time("computing all B1/2: ");
 
   zkp_el_gamal_public_t pi_ddh_public;
   pi_ddh_public.batch_size  = batch_size;
@@ -318,21 +321,21 @@ int asymoff_presigning_aggregate_execute_round_3(asymoff_presigning_data_t *part
     }
   }
 
-  // For convinience
-  party->in_msg_2[party->i].B1 = online->B1;
-  party->in_msg_2[party->i].B2 = online->B2;
-
+  start_timer();
   for (uint64_t l = 0; l < batch_size; ++l)
   {
-    group_operation(online->joint_B1[l], NULL, NULL, NULL, NULL, party->ec, bn_ctx);
-    group_operation(online->joint_B2[l], NULL, NULL, NULL, NULL, party->ec, bn_ctx);
-
+    EC_POINT_copy(online->joint_B1[l], online->B1[l]);
+    EC_POINT_copy(online->joint_B2[l], online->B2[l]);
+    
     for (uint64_t j = 1; j < num_parties; ++j)
     {
-      group_operation(online->joint_B1[l], online->joint_B1[l], NULL, party->in_msg_2[j].B1[l], NULL, party->ec, bn_ctx);
-      group_operation(online->joint_B2[l], online->joint_B2[l], NULL, party->in_msg_2[j].B2[l], NULL, party->ec, bn_ctx);
+      if (party->i == j) continue;
+      
+      EC_POINT_add(party->ec, online->joint_B1[l], online->joint_B1[l], party->in_msg_2[j].B1[l], bn_ctx);
+      EC_POINT_add(party->ec, online->joint_B2[l], online->joint_B2[l], party->in_msg_2[j].B2[l], bn_ctx);
     }
   }
+  get_time("Computinf joint B1/2: ");
 
   // Aggregate Proofs
 
@@ -552,6 +555,10 @@ int asymoff_presigning_export_data(asymoff_party_data_t **parties, asymoff_presi
     scalar_array_copy(parties[i]->b, presign_parties[i]->online->b, party->batch_size);
     scalar_array_copy(parties[i]->nonce, presign_parties[i]->online->k, party->batch_size);
     gr_el_array_copy (parties[i]->H, party->msg_from_offline->H, party->batch_size);
+    
+  // // For convinience
+  party->in_msg_2[party->i].B1 = party->online->B1;
+  party->in_msg_2[party->i].B2 = party->online->B2;
 
     for (uint64_t j = 1; j < num_parties; ++j) {
       gr_el_array_copy(parties[i]->B1[j], party->in_msg_2[j].B1, party->batch_size);

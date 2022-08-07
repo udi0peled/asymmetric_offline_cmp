@@ -21,7 +21,7 @@ int with_measurements = 1;
 
 clock_t start_time, end_time;
 
-void start_timer() {
+static void start_timer() {
   if (with_measurements) {
     start_time = clock();
   } else {
@@ -29,7 +29,7 @@ void start_timer() {
   }
 }
 
-double get_time() {
+static double get_time() {
   if (with_measurements) {
     end_time = clock();
     return ((double)(end_time-start_time)) /CLOCKS_PER_SEC;
@@ -497,6 +497,23 @@ void signing_aggregate_execute(asymoff_party_data_t **parties, uint64_t num_msgs
 }
 
 void time_experiment(uint64_t num) {
+  ec_group_t ec = ec_group_new();
+  gr_elem_t A = group_elem_new(ec);
+  gr_elem_t B = group_elem_new(ec);
+  gr_elem_t C = group_elem_new(ec);
+
+  BN_CTX *bn_ctx = BN_CTX_new();
+  EC_POINT_mul(ec, A, BN_value_one(), NULL, NULL, bn_ctx);
+  EC_POINT_mul(ec, B, NULL, A, BN_value_one(), bn_ctx);
+  EC_POINT_mul(ec, C, NULL, A, NULL, bn_ctx);
+
+  printECPOINT("A = ", A, ec, "\n", 1);
+  printECPOINT("B = ", B, ec, "\n", 1);
+  printECPOINT("C = ", C, ec, "\n", 1);
+
+  assert(EC_POINT_cmp(ec, A, B, bn_ctx) == 0);
+  assert(EC_POINT_cmp(ec, A, C, bn_ctx) == 0);
+
 }
 
 int main(int argc, char *argv[]) {
