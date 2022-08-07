@@ -2,8 +2,6 @@
 #include "common.h"
 #include "zkp_el_gamal.h"
 
-ENABLE_TIME(el_gamal)
-
 zkp_el_gamal_proof_t *zkp_el_gamal_new (ec_group_t ec)
 {
   zkp_el_gamal_proof_t *proof = malloc(sizeof(zkp_el_gamal_proof_t));
@@ -38,7 +36,6 @@ void  zkp_el_gamal_anchor (zkp_el_gamal_proof_t *partial_proof, zkp_el_gamal_sec
   
   BN_CTX *bn_ctx = BN_CTX_secure_new();
 
-  start_timer();
   scalar_sample_in_range(partial_secret->lambda, ec_group_order(ec), 0, bn_ctx);
   scalar_sample_in_range(partial_secret->alpha, ec_group_order(ec), 0, bn_ctx);
 

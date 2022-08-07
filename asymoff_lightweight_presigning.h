@@ -1,6 +1,6 @@
 
 #ifndef __ASYMOFF_LIGHTWEIGHT_PRESIGNING_H__
-#define __ASYMOFF_LIGHTWEIGHT__PRESIGNING_H__
+#define __ASYMOFF_LIGHTWEIGHT_PRESIGNING_H__
 
 #include "algebraic_elements.h"
 #include "paillier_cryptosystem.h"
