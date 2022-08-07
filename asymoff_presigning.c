@@ -370,31 +370,28 @@ void asymoff_presigning_export_data(asymoff_party_data_t **parties, asymoff_pres
   ec_group_t ec        = presign_parties[0]->ec;
   
   for (uint64_t i = 0; i < num_parties; ++i) {
+
     parties[i]->batch_size = batch_size;
     parties[i]->next_index = 0;
+    parties[i]->curr_index = 0;
     
     asymoff_presigning_msg_round_1_t *in_msg_1 = presign_parties[i]->in_msg_1;
-      
-    // For copy conviniene
-    if (i != 0) {
+
+    // For convinience
+    if (i!= 0) {
       in_msg_1[i].B1 = presign_parties[i]->online->B1;
       in_msg_1[i].B2 = presign_parties[i]->online->B2;
     }
-
-    gr_elem_t curr_B1;
-    gr_elem_t curr_B2;
-
+    
     for (uint64_t l = 0; l < batch_size; ++l) {
-      curr_B1 = parties[i]->joint_B1[l];
-      curr_B2 = parties[i]->joint_B2[l];
 
-      group_operation(curr_B1, NULL, NULL, NULL, NULL, ec, bn_ctx);
-      group_operation(curr_B2, NULL, NULL, NULL, NULL, ec, bn_ctx);
+      EC_POINT_set_to_infinity(ec, parties[i]->joint_B1[l]);
+      EC_POINT_set_to_infinity(ec, parties[i]->joint_B2[l]);
 
       for (uint64_t j = 1; j < num_parties; ++j) {
 
-        group_operation(curr_B1, curr_B1, NULL, in_msg_1[j].B1[l], NULL, ec, bn_ctx);
-        group_operation(curr_B2, curr_B2, NULL, in_msg_1[j].B2[l], NULL, ec, bn_ctx);
+        EC_POINT_add(ec, parties[i]->joint_B1[l], parties[i]->joint_B1[l], in_msg_1[j].B1[l], bn_ctx);
+        EC_POINT_add(ec, parties[i]->joint_B2[l], parties[i]->joint_B2[l], in_msg_1[j].B2[l], bn_ctx);
       }
     }
 
@@ -411,12 +408,10 @@ void asymoff_presigning_export_data(asymoff_party_data_t **parties, asymoff_pres
       scalar_array_copy(parties[i]->b, presign_parties[i]->online->b, batch_size);
       scalar_array_copy(parties[i]->nonce, presign_parties[i]->online->k, batch_size);
       gr_el_array_copy(parties[i]->H, in_msg_2[0].H, batch_size);
-
-      for (uint64_t l = 0; l < batch_size; ++l) {
-        for (uint64_t j = 1; j < num_parties; ++j) {
-        group_elem_copy(parties[i]->B1[j][l], in_msg_1[j].B1[l]);
-        group_elem_copy(parties[i]->B2[j][l], in_msg_1[j].B2[l]);
-        }
+      
+      for (uint64_t j = 1; j < num_parties; ++j) {
+        gr_el_array_copy(parties[i]->B1[j], presign_parties[i]->in_msg_1[j].B1, batch_size);
+        gr_el_array_copy(parties[i]->B2[j], presign_parties[i]->in_msg_1[j].B2, batch_size);
       }
     }
   }

@@ -325,11 +325,6 @@ void full_presigning_execute(asymoff_party_data_t **parties, uint64_t presign_si
 
 // General
 
-void presigning_execute(asymoff_party_data_t **parties, uint64_t presign_size, int lightweight_presigning) {
-  if (lightweight_presigning) lightweight_presigning_execute(parties, presign_size);
-  else full_presigning_execute(parties, presign_size);
-}
-
 void print_after_presigning(asymoff_party_data_t **parties, uint64_t num_print) {
 
   printf("Data After Pre-Signing\n");
@@ -601,20 +596,27 @@ int main(int argc, char *argv[]) {
   with_info_print   = print_flags & 0x01;
   with_measurements = print_flags & 0x02;
 
+  int mock_keygen = 0;
+  int run_lightweight = 0;
+
+  for (int i = 1; i < argc; ++i) if (argv[i][0] == 'm') mock_keygen = 1;
+  for (int i = 1; i < argc; ++i) if (argv[i][0] == 'l') run_lightweight = 1;
+
   // time_experiment(presign_size);
   // return 0;
 
   asymoff_party_data_t **parties = asymoff_protocol_parties_new(NUM_PARTIES);
   asymoff_protocol_parties_set(parties, NULL, NULL);
 
-  //key_gen_protocol_execute(parties);
-  key_gen_protocol_mock_execute(parties);
+  if (mock_keygen) key_gen_protocol_mock_execute(parties);
+  else key_gen_protocol_execute(parties);
   
   //print_after_keygen(parties);
 
   asymoff_protocol_parties_new_batch(parties, presign_size);
 
-  presigning_execute(parties, presign_size, 1);
+  if (run_lightweight) lightweight_presigning_execute(parties, presign_size);
+  else full_presigning_execute(parties, presign_size);
 
   //print_after_presigning(parties, 1);
 
