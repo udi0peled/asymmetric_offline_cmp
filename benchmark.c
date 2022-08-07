@@ -552,13 +552,13 @@ int main(int argc, char *argv[]) {
 
   //print_after_presigning(parties, 1);
 
-  signing_cmp_execute(parties, num_sigs);
+  // signing_cmp_execute(parties, num_sigs);
 
   //signing_cmp_mock_execute(parties, presign_size);
 
   //print_signing_cmp_ouput(parties, 1);
 
-  signing_aggregate_execute(parties, num_sigs);
+  // signing_aggregate_execute(parties, num_sigs);
 
   asymoff_protocol_parties_free_batch(parties);
   asymoff_protocol_parties_free(parties);

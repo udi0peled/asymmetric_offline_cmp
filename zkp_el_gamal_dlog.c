@@ -1,8 +1,25 @@
 #include <openssl/sha.h>
-#include "common.h"
 #include "zkp_el_gamal_dlog.h"
 
-ENABLE_TIME(el_gamal_dlog)
+// TIME
+#include <time.h>
+clock_t zkp_egd_start_time, zkp_egd_end_time;
+
+static void start_timer() {
+  zkp_egd_start_time = clock();
+}
+
+static double get_time(const char* str) {
+  zkp_egd_end_time = clock();
+  double diff_time = ((double)(zkp_egd_end_time - zkp_egd_start_time)) /CLOCKS_PER_SEC;
+  if (str) {
+    printf(str);
+    printf("%f\n", diff_time);
+  }
+
+  return diff_time;
+}
+
 
 zkp_el_gamal_dlog_proof_t *zkp_el_gamal_dlog_new (uint64_t batch_size, ec_group_t ec)
 {
@@ -211,15 +228,15 @@ void zkp_el_gamal_dlog_aggregate_anchors (zkp_el_gamal_dlog_proof_t *agg_anchor,
 
   for (uint64_t l = 0; l < batch_size; ++l) {
     
-    EC_POINT_set_to_infinity(ec, agg_anchor->V[l]);
-    EC_POINT_set_to_infinity(ec, agg_anchor->W1[l]);
-    EC_POINT_set_to_infinity(ec, agg_anchor->W2[l]);
+    group_operation(agg_anchor->V[l], NULL, NULL, NULL, NULL, ec, bn_ctx);
+    group_operation(agg_anchor->W1[l], NULL, NULL, NULL, NULL, ec, bn_ctx);
+    group_operation(agg_anchor->W2[l], NULL, NULL, NULL, NULL, ec, bn_ctx);
   
     for (uint64_t i = 0; i < num; ++i) {
       
-      EC_POINT_add(ec, agg_anchor->V[l], agg_anchor->V[l],   anchors[i]->V[l],  bn_ctx);
-      EC_POINT_add(ec, agg_anchor->W1[l], agg_anchor->W1[l], anchors[i]->W1[l], bn_ctx);
-      EC_POINT_add(ec, agg_anchor->W2[l], agg_anchor->W2[l], anchors[i]->W2[l], bn_ctx);
+      group_operation(agg_anchor->V[l], agg_anchor->V[l], NULL, anchors[i]->V[l], NULL, ec, bn_ctx);
+      group_operation(agg_anchor->W1[l], agg_anchor->W1[l], NULL, anchors[i]->W1[l], NULL, ec, bn_ctx);
+      group_operation(agg_anchor->W2[l], agg_anchor->W2[l], NULL, anchors[i]->W2[l], NULL, ec, bn_ctx);
     }   
   }
 

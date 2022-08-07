@@ -357,10 +357,10 @@ void zkp_well_formed_signature_aggregate_anchors (zkp_well_formed_signature_proo
   scalar_set_ul(agg_anchor->T, 1);
 
   for (uint64_t p = 0; p < packing_size; ++p) {
-    EC_POINT_set_to_infinity(ec, agg_anchor->A1[p]);
-    EC_POINT_set_to_infinity(ec, agg_anchor->A2[p]);
-    EC_POINT_set_to_infinity(ec, agg_anchor->B1[p]);
-    EC_POINT_set_to_infinity(ec, agg_anchor->B2[p]);
+    group_operation(agg_anchor->A1[p], NULL, NULL, NULL, NULL, ec, bn_ctx);
+    group_operation(agg_anchor->A2[p], NULL, NULL, NULL, NULL, ec, bn_ctx);
+    group_operation(agg_anchor->B1[p], NULL, NULL, NULL, NULL, ec, bn_ctx);
+    group_operation(agg_anchor->B2[p], NULL, NULL, NULL, NULL, ec, bn_ctx);
   }
 
   for (uint64_t i = 0; i < num; ++i) {
@@ -372,10 +372,10 @@ void zkp_well_formed_signature_aggregate_anchors (zkp_well_formed_signature_proo
 
     for (uint64_t p = 0; p < packing_size; ++p) {
 
-      EC_POINT_add(ec, agg_anchor->A1[p], agg_anchor->A1[p], anchors[i]->A1[p], bn_ctx);
-      EC_POINT_add(ec, agg_anchor->A2[p], agg_anchor->A2[p], anchors[i]->A2[p], bn_ctx);
-      EC_POINT_add(ec, agg_anchor->B1[p], agg_anchor->B1[p], anchors[i]->B1[p], bn_ctx);
-      EC_POINT_add(ec, agg_anchor->B2[p], agg_anchor->B2[p], anchors[i]->B2[p], bn_ctx);
+      group_operation(agg_anchor->A1[p], agg_anchor->A1[p], NULL, anchors[i]->A1[p], NULL, ec, bn_ctx);
+      group_operation(agg_anchor->A2[p], agg_anchor->A2[p], NULL, anchors[i]->A2[p], NULL, ec, bn_ctx);
+      group_operation(agg_anchor->B1[p], agg_anchor->B1[p], NULL, anchors[i]->B1[p], NULL, ec, bn_ctx);
+      group_operation(agg_anchor->B2[p], agg_anchor->B2[p], NULL, anchors[i]->B2[p], NULL, ec, bn_ctx);
     }
   }  
 

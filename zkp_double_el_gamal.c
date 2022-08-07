@@ -180,17 +180,17 @@ void zkp_double_el_gamal_aggregate_anchors (zkp_double_el_gamal_proof_t *agg_anc
 
   ec_group_t ec = agg_anchor->ec;
 
-  EC_POINT_set_to_infinity(ec, agg_anchor->U1);
-  EC_POINT_set_to_infinity(ec, agg_anchor->U2);
-  EC_POINT_set_to_infinity(ec, agg_anchor->W1);
-  EC_POINT_set_to_infinity(ec, agg_anchor->W2);
+  group_operation(agg_anchor->U1, NULL, NULL, NULL, NULL, ec, bn_ctx);
+  group_operation(agg_anchor->U2, NULL, NULL, NULL, NULL, ec, bn_ctx);
+  group_operation(agg_anchor->W1, NULL, NULL, NULL, NULL, ec, bn_ctx);
+  group_operation(agg_anchor->W2, NULL, NULL, NULL, NULL, ec, bn_ctx);
 
   for (uint64_t i = 0; i < num; ++i) {
     
-    EC_POINT_add(ec, agg_anchor->U1, agg_anchor->U1, anchors[i]->U1, bn_ctx);
-    EC_POINT_add(ec, agg_anchor->U2, agg_anchor->U2, anchors[i]->U2, bn_ctx);
-    EC_POINT_add(ec, agg_anchor->W1, agg_anchor->W1, anchors[i]->W1, bn_ctx);
-    EC_POINT_add(ec, agg_anchor->W2, agg_anchor->W2, anchors[i]->W2, bn_ctx);
+    group_operation(agg_anchor->U1, agg_anchor->U1, NULL, anchors[i]->U1, NULL, ec, bn_ctx);
+    group_operation(agg_anchor->U2, agg_anchor->U2, NULL, anchors[i]->U2, NULL, ec, bn_ctx);
+    group_operation(agg_anchor->W1, agg_anchor->W1, NULL, anchors[i]->W1, NULL, ec, bn_ctx);
+    group_operation(agg_anchor->W2, agg_anchor->W2, NULL, anchors[i]->W2, NULL, ec, bn_ctx);
   }   
   
   BN_CTX_free(bn_ctx);

@@ -16,17 +16,6 @@
 #include <openssl/bn.h>
 #include <openssl/ec.h>
 #include <stdarg.h>
-#include <time.h>
-
-#define ENABLE_TIME(tag) \
-clock_t start_time_##tag, end_time_##tag; \
-static void start_timer() { start_time_##tag = clock(); } \
-static double get_time(const char* str) { \
-  end_time_##tag = clock(); \
-  double diff_time = ((double)(end_time_##tag - start_time_##tag)) /CLOCKS_PER_SEC; \
-  if (str) { printf(str); printf("%f\n", diff_time); } \
-  return diff_time; } \
-   
 
 void printHexBytes(const char * prefix, const uint8_t *src, unsigned len, const char * suffix, int print_len);
 void printBIGNUM(const char * prefix, const BIGNUM *bn, const char * suffix);
