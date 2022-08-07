@@ -35,16 +35,13 @@ zkp_el_gamal_dlog_proof_t *zkp_el_gamal_dlog_new (uint64_t batch_size, ec_group_
   return proof;
 }
 
-void zkp_el_gamal_dlog_copy (zkp_el_gamal_dlog_proof_t * copy_proof, zkp_el_gamal_dlog_proof_t * const proof)
+void zkp_el_gamal_dlog_copy_anchor (zkp_el_gamal_dlog_proof_t * copy_anchor, zkp_el_gamal_dlog_proof_t * const anchor)
 {
-  gr_el_array_copy(copy_proof->V, proof->V, proof->batch_size);
-  gr_el_array_copy(copy_proof->W1, proof->W1, proof->batch_size);
-  gr_el_array_copy(copy_proof->W2, proof->W2, proof->batch_size);
+  gr_el_array_copy(copy_anchor->V, anchor->V, anchor->batch_size);
+  gr_el_array_copy(copy_anchor->W1, anchor->W1, anchor->batch_size);
+  gr_el_array_copy(copy_anchor->W2, anchor->W2, anchor->batch_size);
   
-  memcpy(copy_proof->anchor_hash, proof->anchor_hash, sizeof(hash_chunk));
-
-  scalar_array_copy(copy_proof->z, proof->z, proof->batch_size);
-  scalar_array_copy(copy_proof->w, proof->w, proof->batch_size);
+  memcpy(copy_anchor->anchor_hash, anchor->anchor_hash, sizeof(hash_chunk));
 }
 
 void zkp_el_gamal_dlog_free (zkp_el_gamal_dlog_proof_t *proof)

@@ -75,7 +75,7 @@ typedef struct
 
 zkp_well_formed_signature_proof_t *
       zkp_well_formed_signature_new   (uint64_t batch_size, uint64_t packing_size, ec_group_t ec);
-void  zkp_well_formed_signature_copy  (zkp_well_formed_signature_proof_t * copy_proof, zkp_well_formed_signature_proof_t * const proof);
+void  zkp_well_formed_signature_copy_anchor  (zkp_well_formed_signature_proof_t * copy_proof, zkp_well_formed_signature_proof_t * const proof);
 void  zkp_well_formed_signature_free  (zkp_well_formed_signature_proof_t *proof);
 
 void  zkp_well_formed_signature_anchor  (zkp_well_formed_signature_proof_t *partial_proof, zkp_well_formed_signature_secret_t *partial_secret, const zkp_well_formed_signature_public_t *partial_public);

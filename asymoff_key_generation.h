@@ -25,7 +25,7 @@ typedef struct
   hash_chunk *srid;
   gr_elem_t X;
   gr_elem_t Y;
-  gr_elem_t A;
+  zkp_schnorr_proof_t *psi_sch_anchor;
   paillier_public_key_t *paillier_pub;
   ring_pedersen_public_t *rped_pub;
   hash_chunk *u;
@@ -34,7 +34,7 @@ typedef struct
 
 typedef struct
 {
-  zkp_schnorr_proof_t *psi_sch;
+  zkp_schnorr_proof_t *psi_sch_proof;
   zkp_paillier_blum_modulus_proof_t *psi_paillier;
   zkp_ring_pedersen_param_proof_t *psi_rped;
 
@@ -66,9 +66,6 @@ typedef struct
 
   scalar_t y;
   gr_elem_t Y;
-  
-  scalar_t tau;
-  gr_elem_t A;
 
   hash_chunk srid;
 
@@ -84,7 +81,10 @@ typedef struct
 
   hash_chunk joint_srid;
 
-  zkp_schnorr_proof_t *psi_sch;
+  zkp_schnorr_proof_t *psi_sch_proof;
+  zkp_schnorr_proof_t *psi_sch_anchor;
+  zkp_schnorr_secret_t psi_sch_secret;
+
   zkp_paillier_blum_modulus_proof_t *psi_paillier;
   zkp_ring_pedersen_param_proof_t *psi_rped;
   zkp_no_small_factors_t **psi_factors;

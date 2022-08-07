@@ -25,9 +25,10 @@ zkp_pailler_range_with_ddh (batched and packed)
 zkp_ddh_with_dlog
 
 TODO (03/08)
-Change scalar_operation to bn_ctx argument.
-Change group_operation to support multiple exp and base point (and bn_ctx)
+V Change scalar_operation to bn_ctx argument.
+V Change group_operation to support multiple exp and base point (and bn_ctx)
+X Change new_*_array to allow const input ref (or NULL)
+
 Use montgomery when multiplying many (verification. Paillier randomness proving)
-Change new_*_array to allow const input ref (or NULL)
 Impl lightweight version (different branch)
 

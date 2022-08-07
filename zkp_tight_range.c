@@ -282,7 +282,7 @@ void zkp_tight_range_prove (zkp_tight_range_proof_t *proof, const zkp_tight_rang
   ring_pedersen_commit(proof->T_2, &secret->splitting->alpha_2, 1, lambda_2, public->rped_pub);
   ring_pedersen_commit(proof->T_3, &secret->splitting->alpha_3, 1, lambda_3, public->rped_pub);
 
-  group_operation(Y, NULL, NULL, ec_group_generator(public->ec), gamma, public->ec, bn_ctx);
+  group_operation(Y, NULL, gamma, NULL, NULL, public->ec, bn_ctx);
 
   ring_pedersen_commit(U, &gamma, 1, omega, public->rped_pub);
   ring_pedersen_commit(V_1, &y_1, 1, v_1, public->rped_pub);
@@ -436,7 +436,7 @@ int   zkp_tight_range_verify (const zkp_tight_range_proof_t *proof, const zkp_ti
   BN_copy(minus_4e, minus_e);
   BN_mul_word(minus_4e, 4);
 
-  group_operation(Y, NULL, NULL, ec_group_generator(public->ec), proof->sigma, public->ec, bn_ctx);
+  group_operation(Y, NULL, proof->sigma, NULL, NULL, public->ec, bn_ctx);
   group_operation(Y, Y, NULL, public->X, minus_4e, public->ec, bn_ctx);
 
   ring_pedersen_commit(U, &proof->sigma, 1, proof->tau, public->rped_pub);

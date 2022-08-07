@@ -785,7 +785,7 @@ int asymoff_signing_aggregate_execute_final (asymoff_sign_agg_data_t *party) {
     pi_sig_local_proofs[j-1] = party->in_aggregate_msg_3[j].pi_sig_local_agg_proof;
   }
   
-  zkp_el_gamal_dlog_copy(party->pi_eph_agg_proof, party->pi_eph_local_agg_proof);
+  zkp_el_gamal_dlog_copy_anchor(party->pi_eph_agg_proof, party->pi_eph_local_agg_proof);
   zkp_el_gamal_dlog_aggregate_local_proofs(party->pi_eph_agg_proof, pi_eph_local_proofs, num_parties-1);
   
   if (zkp_el_gamal_dlog_verify(party->pi_eph_agg_proof, &party->pi_eph_agg_public, party->aux, 0) != 1) {
@@ -793,7 +793,7 @@ int asymoff_signing_aggregate_execute_final (asymoff_sign_agg_data_t *party) {
     return 1;
   }
 
-  zkp_double_el_gamal_copy(party->pi_chi_agg_proof, party->pi_chi_local_agg_proof);
+  zkp_double_el_gamal_copy_anchor(party->pi_chi_agg_proof, party->pi_chi_local_agg_proof);
   zkp_double_el_gamal_aggregate_local_proofs(party->pi_chi_agg_proof, pi_chi_local_proofs, num_parties-1);
   
   if (zkp_double_el_gamal_verify(party->pi_chi_agg_proof, &party->pi_chi_agg_public, party->aux) != 1) {
@@ -801,7 +801,7 @@ int asymoff_signing_aggregate_execute_final (asymoff_sign_agg_data_t *party) {
     return 1;
   }
 
-  zkp_well_formed_signature_copy(party->pi_sig_agg_proof, party->pi_sig_local_agg_proof);
+  zkp_well_formed_signature_copy_anchor(party->pi_sig_agg_proof, party->pi_sig_local_agg_proof);
   zkp_well_formed_signature_aggregate_local_proofs(party->pi_sig_agg_proof, pi_sig_local_proofs, num_parties-1, party->paillier_pub[0]);
 
   if (zkp_well_formed_signature_verify(party->pi_sig_agg_proof, &party->pi_sig_agg_public, party->aux, bitlen_plus_1_num_parties) != 1) {

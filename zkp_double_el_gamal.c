@@ -18,16 +18,12 @@ zkp_double_el_gamal_proof_t *zkp_double_el_gamal_new (ec_group_t ec)
   return proof;
 }
 
-void zkp_double_el_gamal_copy (zkp_double_el_gamal_proof_t * copy_proof, zkp_double_el_gamal_proof_t * const proof)
+void zkp_double_el_gamal_copy_anchor (zkp_double_el_gamal_proof_t * copy_anchor, zkp_double_el_gamal_proof_t * const anchor)
 {
-  group_elem_copy(copy_proof->U1, proof->U1);
-  group_elem_copy(copy_proof->U2, proof->U2);
-  group_elem_copy(copy_proof->W1, proof->W1);
-  group_elem_copy(copy_proof->W2, proof->W2);
-
-  scalar_copy(copy_proof->z, proof->z);
-  scalar_copy(copy_proof->w_1, proof->w_1);
-  scalar_copy(copy_proof->w_2, proof->w_2);
+  group_elem_copy(copy_anchor->U1, anchor->U1);
+  group_elem_copy(copy_anchor->U2, anchor->U2);
+  group_elem_copy(copy_anchor->W1, anchor->W1);
+  group_elem_copy(copy_anchor->W2, anchor->W2);
 }
 
 void zkp_double_el_gamal_free (zkp_double_el_gamal_proof_t *proof)

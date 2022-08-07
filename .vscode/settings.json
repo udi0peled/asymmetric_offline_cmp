@@ -29,7 +29,8 @@
       "iterator": "c",
       "memory": "c",
       "zkp_el_gamal_dlog.h": "c",
-      "complex": "c"
+      "complex": "c",
+      "zkp_range_el_gamal_commitment.h": "c"
     },
     "C_Cpp.intelliSenseEngineFallback": "Disabled"
 }

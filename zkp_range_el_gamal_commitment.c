@@ -157,10 +157,8 @@ void zkp_range_el_gamal_prove (zkp_range_el_gamal_proof_t *proof, const zkp_rang
   paillier_encryption_encrypt(proof->packed_D, alpha_pack, r, public->paillier_pub);
 
   for (uint64_t p = 0; p < packing_size; ++p) {
-    group_operation(proof->V1[p], NULL, NULL, ec_group_generator(public->ec), beta[p], public->ec, bn_ctx);
-
-    group_operation(proof->V2[p], NULL, NULL, ec_group_generator(public->ec), alpha[p], public->ec, bn_ctx);
-    group_operation(proof->V2[p], proof->V2[p], NULL, public->Y, beta[p], public->ec, bn_ctx);
+    group_operation(proof->V1[p], NULL, beta[p], NULL, NULL, public->ec, bn_ctx);
+    group_operation(proof->V2[p], NULL, alpha[p], public->Y, beta[p], public->ec, bn_ctx);
   }
 
   ring_pedersen_commit(proof->packed_T, alpha, packing_size, gamma, public->rped_pub);
@@ -171,8 +169,6 @@ void zkp_range_el_gamal_prove (zkp_range_el_gamal_proof_t *proof, const zkp_rang
 
     BN_copy(proof->z_1[p], alpha[p]);
     BN_copy(proof->w[p], beta[p]);
-
-// TODO: Falty proove causes memory error and wrong error check by party
 
     for (uint64_t i = 0; i < packed_len; ++i) {
 
@@ -245,24 +241,32 @@ int   zkp_range_el_gamal_verify (const zkp_range_el_gamal_proof_t *proof, const 
   }
 
   is_verified &= (scalar_equal(lhs, rhs) == 1);
+    
+  // For quicker multi group exponentiation
+  gr_elem_t *curr_bases = calloc(packed_len, sizeof(gr_elem_t));
 
   for (uint64_t p = 0; p < packing_size; ++p) {
 
-      group_operation(lhs_gr, NULL, NULL, ec_group_generator(public->ec), proof->w[p], public->ec, bn_ctx);
+      group_operation(lhs_gr, NULL, proof->w[p], NULL, NULL, public->ec, bn_ctx);
       
-      group_elem_copy(rhs_gr, proof->V1[p]);
-      for (uint64_t i = 0; i < packed_len; ++i) group_operation(rhs_gr, rhs_gr, NULL, public->A1[packing_size*i + p], e[i], public->ec, bn_ctx);
-      
-      is_verified &= (scalar_equal(lhs, rhs) == 1);
+      for (uint64_t i = 0; i < packed_len; ++i) curr_bases[i] = public->A1[packing_size*i + p];
 
-      group_operation(lhs_gr, NULL, NULL, ec_group_generator(public->ec), proof->z_1[p], public->ec, bn_ctx);
-      group_operation(lhs_gr, lhs_gr, NULL, public->Y, proof->w[p], public->ec, bn_ctx);
-
-      group_elem_copy(rhs_gr, proof->V2[p]);
-      for (uint64_t i = 0; i < packed_len; ++i) group_operation(rhs_gr, rhs_gr, NULL, public->A2[packing_size*i + p], e[i], public->ec, bn_ctx);
+      group_multi_oper(rhs_gr, NULL, curr_bases, e, packed_len, public->ec, bn_ctx);
+      group_operation(rhs_gr, rhs_gr, NULL, proof->V1[p], NULL, public->ec, bn_ctx);
       
       is_verified &= (group_elem_equal(lhs_gr, rhs_gr, public->ec) == 1);
+
+      group_operation(lhs_gr, NULL, proof->z_1[p], public->Y, proof->w[p], public->ec, bn_ctx);
+
+      for (uint64_t i = 0; i < packed_len; ++i) curr_bases[i] = public->A2[packing_size*i + p];
+      
+      group_multi_oper(rhs_gr, NULL, curr_bases, e, packed_len, public->ec, bn_ctx);
+      group_operation(rhs_gr, rhs_gr, NULL, proof->V2[p], NULL, public->ec, bn_ctx);
+
+      is_verified &= (group_elem_equal(lhs_gr, rhs_gr, public->ec) == 1);
   }
+
+  free(curr_bases);
 
   ring_pedersen_commit(lhs, proof->z_1, packing_size, proof->packed_z_3, public->rped_pub);
   

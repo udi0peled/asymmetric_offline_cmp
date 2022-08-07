@@ -31,26 +31,19 @@ zkp_well_formed_signature_proof_t *zkp_well_formed_signature_new (uint64_t batch
   return proof;
 }
 
-void zkp_well_formed_signature_copy(zkp_well_formed_signature_proof_t * copy_proof, zkp_well_formed_signature_proof_t * const proof)
+void zkp_well_formed_signature_copy_anchor(zkp_well_formed_signature_proof_t * copy_anchor, zkp_well_formed_signature_proof_t * const anchor)
 {
-  uint64_t packing_size = proof->packing_size;
+  uint64_t packing_size = anchor->packing_size;
 
-  copy_proof->packing_size = packing_size;
+  copy_anchor->packing_size = packing_size;
 
-  scalar_copy(copy_proof->V, proof->V);
-  scalar_copy(copy_proof->T, proof->T);
-  scalar_copy(copy_proof->d, proof->d);
-  scalar_copy(copy_proof->w, proof->w);
+  scalar_copy(copy_anchor->V, anchor->V);
+  scalar_copy(copy_anchor->T, anchor->T);
 
-  gr_el_array_copy(copy_proof->A1, proof->A1, packing_size);
-  gr_el_array_copy(copy_proof->A2, proof->A2, packing_size);
-  gr_el_array_copy(copy_proof->B1, proof->B1, packing_size);
-  gr_el_array_copy(copy_proof->B2, proof->B2, packing_size);
-
-  scalar_array_copy(copy_proof->z_LB, proof->z_LB, packing_size);
-  scalar_array_copy(copy_proof->z_UA, proof->z_UA, packing_size);
-  scalar_array_copy(copy_proof->sigma_LB, proof->sigma_LB, packing_size);
-  scalar_array_copy(copy_proof->sigma_UA, proof->sigma_UA, packing_size);
+  gr_el_array_copy(copy_anchor->A1, anchor->A1, packing_size);
+  gr_el_array_copy(copy_anchor->A2, anchor->A2, packing_size);
+  gr_el_array_copy(copy_anchor->B1, anchor->B1, packing_size);
+  gr_el_array_copy(copy_anchor->B2, anchor->B2, packing_size);
 }
 
 void zkp_well_formed_signature_free (zkp_well_formed_signature_proof_t *proof)
@@ -123,15 +116,11 @@ void  zkp_well_formed_signature_anchor (zkp_well_formed_signature_proof_t *parti
   ring_pedersen_commit(partial_proof->T, rped_s_exps, 2*packing_size, partial_secret->nu, partial_public->rped_pub);
 
   for (uint64_t p = 0; p < packing_size; ++p) {
-    group_operation(partial_proof->A1[p], NULL, NULL, ec_group_generator(partial_public->ec), partial_secret->delta_UA[p], ec, bn_ctx);
+    group_operation(partial_proof->A1[p], NULL, partial_secret->delta_UA[p], NULL, NULL, ec, bn_ctx);
+    group_operation(partial_proof->A2[p], NULL, partial_secret->alpha[p], partial_public->Y, partial_secret->delta_UA[p], ec, bn_ctx);
 
-    group_operation(partial_proof->A2[p], NULL, NULL, ec_group_generator(partial_public->ec), partial_secret->alpha[p], ec, bn_ctx);
-    group_operation(partial_proof->A2[p], partial_proof->A2[p], NULL, partial_public->Y, partial_secret->delta_UA[p], ec, bn_ctx);
-
-    group_operation(partial_proof->B1[p], NULL, NULL, ec_group_generator(partial_public->ec), partial_secret->delta_LB[p], ec, bn_ctx);
-
-    group_operation(partial_proof->B2[p], NULL, NULL, ec_group_generator(partial_public->ec), partial_secret->beta[p], ec, bn_ctx);
-    group_operation(partial_proof->B2[p], partial_proof->B2[p], NULL, partial_public->Y, partial_secret->delta_LB[p], ec, bn_ctx);
+    group_operation(partial_proof->B1[p], NULL, partial_secret->delta_LB[p], NULL,  NULL, ec, bn_ctx);
+    group_operation(partial_proof->B2[p], NULL, partial_secret->beta[p], partial_public->Y, partial_secret->delta_LB[p], ec, bn_ctx);
   }
 
   scalar_free(packed);
@@ -310,10 +299,11 @@ int   zkp_well_formed_signature_verify (const zkp_well_formed_signature_proof_t 
     BN_mod_mul(computed_proof->T, computed_proof->T, temp, public->rped_pub->N, bn_ctx);
   }
 
+  // For quicker multi group exponentiation
+  gr_elem_t *curr_bases = calloc(packed_len, sizeof(gr_elem_t));
+
   for (uint64_t p = 0; p < packing_size; ++p) {
 
-    // For quicker multi group exponentiation
-    gr_elem_t *curr_bases = calloc(packed_len, sizeof(gr_elem_t));
 
     for (uint64_t i = 0; i < packed_len; ++i) curr_bases[i] = public->U1[packing_size*i + p];
     group_multi_oper(computed_proof->A1[p], proof->sigma_UA[p], curr_bases, minus_e, packed_len, ec, bn_ctx);
@@ -328,9 +318,9 @@ int   zkp_well_formed_signature_verify (const zkp_well_formed_signature_proof_t 
     for (uint64_t i = 0; i < packed_len; ++i) curr_bases[i] = public->L2[packing_size*i + p];
     group_multi_oper(computed_proof->B2[p], proof->z_LB[p], curr_bases, minus_e, packed_len, ec, bn_ctx);
     group_operation(computed_proof->B2[p], computed_proof->B2[p], NULL, public->Y, proof->sigma_LB[p], ec, bn_ctx);
-
-    free(curr_bases);
   }
+
+  free(curr_bases);
 
   is_verified &= (scalar_equal(computed_proof->V, proof->V) == 1);
   is_verified &= (scalar_equal(computed_proof->T, proof->T) == 1);

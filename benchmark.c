@@ -192,8 +192,11 @@ void asymoff_presigning_send_msg_to_all_others(asymoff_presigning_data_t **presi
   uint64_t (*send_func)(asymoff_presigning_data_t*, asymoff_presigning_data_t*);
 
   switch (round) {
-    case 1: send_func = asymoff_presigning_send_msg_1; break;
-    case 2: send_func = asymoff_presigning_send_msg_2; break;
+    case 1: send_func = asymoff_presigning_aggregate_send_msg_1; break;
+    case 2: send_func = asymoff_presigning_aggregate_send_msg_2; break;
+    case 3: send_func = asymoff_presigning_aggregate_send_msg_3; break;
+    case 4: send_func = asymoff_presigning_send_msg_to_offline; break;
+    case 5: send_func = asymoff_presigning_send_msg_from_offline; break;
     default: return;
   }
   
@@ -210,36 +213,53 @@ void presigning_execute(asymoff_party_data_t **parties, uint64_t presign_size) {
   int res;
   zero_measurements();
 
-
   asymoff_presigning_data_t **presign_parties =  asymoff_presigning_parties_new(parties, presign_size);
 
   for (uint64_t i = 1; i < NUM_PARTIES; ++i) {
     start_timer();
-    res = asymoff_presigning_execute_round_1(presign_parties[i]);
+    res = asymoff_presigning_aggregate_execute_round_1(presign_parties[i]);
     exec_time[0][i] = get_time();
     assert(res == 0);
     asymoff_presigning_send_msg_to_all_others(presign_parties, i, 1);
   }
 
-  for (uint64_t i = 0; i < NUM_PARTIES; ++i) {
+  for (uint64_t i = 1; i < NUM_PARTIES; ++i) {
     start_timer();
-    res = asymoff_presigning_execute_round_2(presign_parties[i]);
+    res = asymoff_presigning_aggregate_execute_round_2(presign_parties[i]);
     exec_time[1][i] = get_time();
     assert(res == 0);
     asymoff_presigning_send_msg_to_all_others(presign_parties, i, 2);
   }
 
-  for (uint64_t i = 0; i < NUM_PARTIES; ++i) {
+  for (uint64_t i = 1; i < NUM_PARTIES; ++i) {
     start_timer();
-    res = asymoff_presigning_execute_final(presign_parties[i]);
+    res = asymoff_presigning_aggregate_execute_round_3(presign_parties[i]);
     exec_time[2][i] = get_time();
     assert(res == 0);
+    asymoff_presigning_send_msg_to_all_others(presign_parties, i, 3);
   }
-  
-  asymoff_presigning_export_data(parties, presign_parties);
-  
-  print_measurements(2);
 
+  for (uint64_t i = 1; i < NUM_PARTIES; ++i) {
+    start_timer();
+    res = asymoff_presigning_aggregate_execute_final(presign_parties[i]);
+    exec_time[3][i] = get_time();
+    assert(res == 0);
+    asymoff_presigning_send_msg_to_all_others(presign_parties, i, 4);
+  }
+
+  start_timer();
+  res = asymoff_presigning_execute_offline(presign_parties[0]);
+  exec_time[4][0] = get_time();
+  assert(res == 0);
+
+  asymoff_presigning_send_msg_to_all_others(presign_parties, 0, 5);
+
+  print_measurements(4);
+
+  start_timer();
+  asymoff_presigning_export_data(parties, presign_parties);
+  printf("\nExporting data: %f\n", get_time());
+  
   asymoff_presigning_parties_free(presign_parties);
 }
 
@@ -515,13 +535,13 @@ int main(int argc, char *argv[]) {
 
   //print_after_presigning(parties, 1);
 
-  signing_cmp_execute(parties, num_sigs);
+  // signing_cmp_execute(parties, num_sigs);
 
   //signing_cmp_mock_execute(parties, presign_size);
 
   //print_signing_cmp_ouput(parties, 1);
 
-  signing_aggregate_execute(parties, num_sigs);
+  // signing_aggregate_execute(parties, num_sigs);
 
   asymoff_protocol_parties_free_batch(parties);
   asymoff_protocol_parties_free(parties);

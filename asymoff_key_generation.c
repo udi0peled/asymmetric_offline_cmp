@@ -28,16 +28,16 @@ asymoff_key_gen_data_t **asymoff_key_gen_parties_new(asymoff_party_data_t ** con
     kgd_parties[i]->y = scalar_new();
     kgd_parties[i]->Y = group_elem_new(ec);
 
-    kgd_parties[i]->tau = scalar_new();
-    kgd_parties[i]->A = group_elem_new(ec);
-
     kgd_parties[i]->paillier_priv = paillier_encryption_private_new();
     kgd_parties[i]->paillier_pub = paillier_encryption_public_new();
 
     kgd_parties[i]->rped_priv = ring_pedersen_private_new();
     kgd_parties[i]->rped_pub = ring_pedersen_public_new();
 
-    kgd_parties[i]->psi_sch      = zkp_schnorr_new(ec);
+    kgd_parties[i]->psi_sch_anchor = zkp_schnorr_new(ec);
+    kgd_parties[i]->psi_sch_proof  = zkp_schnorr_new(ec);
+    kgd_parties[i]->psi_sch_secret.a = scalar_new();
+
     kgd_parties[i]->psi_paillier = zkp_paillier_blum_new();
     kgd_parties[i]->psi_rped     = zkp_ring_pedersen_param_new();
     kgd_parties[i]->psi_factors  = calloc(num_parties, sizeof(zkp_no_small_factors_t*));
@@ -80,13 +80,14 @@ void asymoff_key_gen_parties_free(asymoff_key_gen_data_t **kgd_parties)
     group_elem_free(kgd_parties[i]->X);
     scalar_free(kgd_parties[i]->y);
     group_elem_free(kgd_parties[i]->Y);
-    scalar_free(kgd_parties[i]->tau);
-    group_elem_free(kgd_parties[i]->A);
     paillier_encryption_free_keys(kgd_parties[i]->paillier_priv, kgd_parties[i]->paillier_pub);
   
     ring_pedersen_free_param(kgd_parties[i]->rped_priv, kgd_parties[i]->rped_pub);
 
-    zkp_schnorr_free(kgd_parties[i]->psi_sch);
+    zkp_schnorr_free(kgd_parties[i]->psi_sch_anchor);
+    zkp_schnorr_free(kgd_parties[i]->psi_sch_proof);
+    scalar_free(kgd_parties[i]->psi_sch_secret.a);
+
     zkp_paillier_blum_free(kgd_parties[i]->psi_paillier);
     zkp_ring_pedersen_param_free(kgd_parties[i]->psi_rped);
     
@@ -126,7 +127,7 @@ void asymoff_key_gen_round_1_hash(hash_chunk hash, asymoff_key_gen_msg_round_2_t
   group_elem_to_bytes(&temp_bytes, GROUP_ELEMENT_BYTES, msg_2->Y, ec, 0);
   SHA512_Update(&sha_ctx, temp_bytes, GROUP_ELEMENT_BYTES);
 
-  group_elem_to_bytes(&temp_bytes, GROUP_ELEMENT_BYTES, msg_2->A, ec, 0);
+  group_elem_to_bytes(&temp_bytes, GROUP_ELEMENT_BYTES, msg_2->psi_sch_anchor->A, ec, 0);
   SHA512_Update(&sha_ctx, temp_bytes, GROUP_ELEMENT_BYTES);
 
   scalar_to_bytes(&temp_bytes, PAILLIER_MODULUS_BYTES, msg_2->paillier_pub->N, 0);
@@ -155,8 +156,10 @@ int asymoff_key_gen_execute_round_1(asymoff_key_gen_data_t *party) {
   group_operation(party->Y, NULL, party->y, NULL, NULL, ec, bn_ctx);
 
   zkp_schnorr_public_t psi_sch_public;
+  psi_sch_public.batch_size = 1;
   psi_sch_public.ec = ec;
-  zkp_schnorr_anchor(party->A, party->tau, &psi_sch_public);
+
+  zkp_schnorr_anchor(party->psi_sch_anchor, &party->psi_sch_secret, &psi_sch_public);
 
   paillier_encryption_generate_private(party->paillier_priv, 4*PAILLIER_MODULUS_BYTES);
   paillier_encryption_copy_keys(NULL, party->paillier_pub, party->paillier_priv, NULL);
@@ -169,7 +172,7 @@ int asymoff_key_gen_execute_round_1(asymoff_key_gen_data_t *party) {
 
   // Temporarily generate future decomitment to hash, in order to commit
   asymoff_key_gen_msg_round_2_t msg_2;
-  msg_2.A = party->A;
+  msg_2.psi_sch_anchor = party->psi_sch_anchor;
   msg_2.srid = &party->srid;
   msg_2.X = party->X;
   msg_2.Y = party->Y;
@@ -213,7 +216,7 @@ uint64_t asymoff_key_gen_send_msg_2(asymoff_key_gen_data_t *sender, asymoff_key_
 
   asymoff_key_gen_msg_round_2_t *in_msg_2 = &receiver->in_msg_2[sender->i];
 
-  in_msg_2->A = sender->A;
+  in_msg_2->psi_sch_anchor = sender->psi_sch_anchor;
   in_msg_2->srid = &sender->srid;
   in_msg_2->X = sender->X;
   in_msg_2->Y = sender->Y;
@@ -286,13 +289,14 @@ int asymoff_key_gen_execute_round_3(asymoff_key_gen_data_t *party) {
   // Set Schnorr ZKP public claim and secret, then prove
 
   zkp_schnorr_public_t psi_sch_public;
+  psi_sch_public.batch_size = 1;
   psi_sch_public.ec = party->ec;
-  psi_sch_public.X = party->X;
+  psi_sch_public.X = &party->X;
   
-  zkp_schnorr_secret_t psi_sch_secret;
-  psi_sch_secret.x = party->x;
+  party->psi_sch_secret.x = &party->x;
 
-  zkp_schnorr_prove(party->psi_sch, party->tau, &psi_sch_secret, &psi_sch_public, party->aux);
+  zkp_schnorr_copy_anchor(party->psi_sch_proof, party->psi_sch_anchor);
+  zkp_schnorr_prove(party->psi_sch_proof, &party->psi_sch_secret, &psi_sch_public, party->aux);
 
   // ZKP for muduli
   zkp_paillier_blum_prove(party->psi_paillier, party->paillier_priv, party->aux);
@@ -304,7 +308,7 @@ int asymoff_key_gen_execute_round_3(asymoff_key_gen_data_t *party) {
 uint64_t asymoff_key_gen_send_msg_3(asymoff_key_gen_data_t *sender, asymoff_key_gen_data_t *receiver) {
   asymoff_key_gen_msg_round_3_t *in_msg_3 = &receiver->in_msg_3[sender->i];
 
-  in_msg_3->psi_sch = sender->psi_sch;
+  in_msg_3->psi_sch_proof = sender->psi_sch_proof;
   in_msg_3->psi_paillier = sender->psi_paillier;
   in_msg_3->psi_rped = sender->psi_rped;
 
@@ -315,6 +319,7 @@ int asymoff_key_gen_execute_round_4(asymoff_key_gen_data_t *party) {
   pinfo("Player %ld: Executing Round 4\n", party->i);
 
   zkp_schnorr_public_t psi_sch_public;
+  psi_sch_public.batch_size = 1;
   psi_sch_public.ec = party->ec;
 
   // Validate data recevied from others
@@ -322,16 +327,14 @@ int asymoff_key_gen_execute_round_4(asymoff_key_gen_data_t *party) {
     if (party->i == j) continue;
 
     asymoff_key_gen_msg_round_3_t *in_msg_3 = &party->in_msg_3[j];
-    // Verify Schnorr ZKP anchor A is as commited before
-    if (group_elem_equal(in_msg_3->psi_sch->A, party->in_msg_2[j].A, party->ec) != 1) {
-      printf("A in ZKP is different then anchored. Received from party %ld\n", j);
-      return 1;
-    }
+   
+    zkp_schnorr_copy_anchor(in_msg_3->psi_sch_proof, party->in_msg_2[j].psi_sch_anchor);
 
     // Verify Schnorr ZKP
     zkp_aux_info_update(party->aux, sizeof(hash_chunk), &j, sizeof(uint64_t));      // Update j to proving player
-    psi_sch_public.X = party->in_msg_2[j].X;
-    if (zkp_schnorr_verify(in_msg_3->psi_sch, &psi_sch_public, party->aux) != 1) {
+    psi_sch_public.X = &party->in_msg_2[j].X;
+
+    if (zkp_schnorr_verify(in_msg_3->psi_sch_proof, &psi_sch_public, party->aux) != 1) {
       printf("Schnorr ZKP verification failed. Received from party %ld\n", j);
       return 1;
     }
