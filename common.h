@@ -24,7 +24,7 @@ static void start_timer() { start_time_##tag = clock(); } \
 static double get_time(const char* str) { \
   end_time_##tag = clock(); \
   double diff_time = ((double)(end_time_##tag - start_time_##tag)) /CLOCKS_PER_SEC; \
-  if (str) { printf(str); printf("%f\n", diff_time); } \
+  if (str) { pinfo("%s", str); pinfo("%f\n", diff_time); } \
   return diff_time; } \
    
 

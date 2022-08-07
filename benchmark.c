@@ -592,15 +592,15 @@ int main(int argc, char *argv[]) {
   if (argc >= 3) sscanf(argv[2], "%ld", &num_sigs);
   MAKE_PACKING_MULTIPLE(num_sigs);
 
-  if (argc >= 4) sscanf(argv[3], "%ld", &print_flags);
-  with_info_print   = print_flags & 0x01;
-  with_measurements = print_flags & 0x02;
-
-  int mock_keygen = 0;
+  int full_keygen = 0;
   int run_lightweight = 0;
 
-  for (int i = 1; i < argc; ++i) if (argv[i][0] == 'm') mock_keygen = 1;
-  for (int i = 1; i < argc; ++i) if (argv[i][0] == 'l') run_lightweight = 1;
+  for (int i = 1; i < argc; ++i) {
+    if (argv[i][0] == 'k') full_keygen       = 1;
+    if (argv[i][0] == 'l') run_lightweight   = 1;
+    if (argv[i][0] == 'm') with_measurements = 0;
+    if (argv[i][0] == 't') with_info_print   = 0;
+  }
 
   // time_experiment(presign_size);
   // return 0;
@@ -608,8 +608,8 @@ int main(int argc, char *argv[]) {
   asymoff_party_data_t **parties = asymoff_protocol_parties_new(NUM_PARTIES);
   asymoff_protocol_parties_set(parties, NULL, NULL);
 
-  if (mock_keygen) key_gen_protocol_mock_execute(parties);
-  else key_gen_protocol_execute(parties);
+  if (full_keygen) key_gen_protocol_execute(parties);
+  else key_gen_protocol_mock_execute(parties);
   
   //print_after_keygen(parties);
 
