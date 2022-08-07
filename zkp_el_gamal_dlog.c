@@ -2,8 +2,6 @@
 #include "common.h"
 #include "zkp_el_gamal_dlog.h"
 
-ENABLE_TIME(el_gamal_dlog)
-
 zkp_el_gamal_dlog_proof_t *zkp_el_gamal_dlog_new (uint64_t batch_size, ec_group_t ec)
 {
   zkp_el_gamal_dlog_proof_t *proof = malloc(sizeof(zkp_el_gamal_dlog_proof_t));
@@ -72,7 +70,6 @@ void  zkp_el_gamal_dlog_anchor (zkp_el_gamal_dlog_proof_t *partial_proof, zkp_el
   
   BN_CTX *bn_ctx = BN_CTX_secure_new();
 
-  start_timer();
   for (uint64_t i = 0; i < batch_size; ++i) {
 
     scalar_sample_in_range(partial_secret->lambda[i], ec_group_order(ec), 0, bn_ctx);

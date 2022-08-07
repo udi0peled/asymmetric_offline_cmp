@@ -7,6 +7,7 @@
 #include "asymoff_protocol.h"
 #include "asymoff_key_generation.h"
 #include "asymoff_presigning.h"
+#include "asymoff_lightweight_presigning.h"
 #include "asymoff_signing_cmp.h"
 #include "asymoff_signing_aggregate.h"
 
@@ -187,6 +188,86 @@ void print_after_keygen(asymoff_party_data_t **parties) {
  *  Presigning  *
  ****************/
 
+// Lightweight Presigning
+
+void asymoff_lightweight_presigning_send_msg_to_all_others(asymoff_lightweight_presigning_data_t **presign_parties, uint64_t sender_i, int round) {
+
+  uint64_t (*send_func)(asymoff_lightweight_presigning_data_t*, asymoff_lightweight_presigning_data_t*);
+
+  switch (round) {
+    case 1: send_func = asymoff_lightweight_presigning_aggregate_send_msg_1; break;
+    case 2: send_func = asymoff_lightweight_presigning_aggregate_send_msg_2; break;
+    case 3: send_func = asymoff_lightweight_presigning_aggregate_send_msg_3; break;
+    case 4: send_func = asymoff_lightweight_presigning_send_msg_to_offline; break;
+    case 5: send_func = asymoff_lightweight_presigning_send_msg_from_offline; break;
+    default: return;
+  }
+  
+  for (uint64_t j = 0; j < presign_parties[sender_i]->num_parties; ++j) {
+    if (sender_i == j) continue;
+    sent_bytelen[round-1][sender_i][j] = send_func(presign_parties[sender_i], presign_parties[j]);
+  }
+}
+
+void lightweight_presigning_execute(asymoff_party_data_t **parties, uint64_t presign_size) {
+  
+  printf("\n_____ Lightweight Presigning %ld batch _____\n", presign_size);
+  
+  int res;
+  zero_measurements();
+
+  asymoff_lightweight_presigning_data_t **presign_parties =  asymoff_lightweight_presigning_parties_new(parties, presign_size);
+
+  for (uint64_t i = 1; i < NUM_PARTIES; ++i) {
+    start_timer();
+    res = asymoff_lightweight_presigning_aggregate_execute_round_1(presign_parties[i]);
+    exec_time[0][i] = get_time();
+    assert(res == 0);
+    asymoff_lightweight_presigning_send_msg_to_all_others(presign_parties, i, 1);
+  }
+
+  for (uint64_t i = 1; i < NUM_PARTIES; ++i) {
+    start_timer();
+    res = asymoff_lightweight_presigning_aggregate_execute_round_2(presign_parties[i]);
+    exec_time[1][i] = get_time();
+    assert(res == 0);
+    asymoff_lightweight_presigning_send_msg_to_all_others(presign_parties, i, 2);
+  }
+
+  for (uint64_t i = 1; i < NUM_PARTIES; ++i) {
+    start_timer();
+    res = asymoff_lightweight_presigning_aggregate_execute_round_3(presign_parties[i]);
+    exec_time[2][i] = get_time();
+    assert(res == 0);
+    asymoff_lightweight_presigning_send_msg_to_all_others(presign_parties, i, 3);
+  }
+
+  for (uint64_t i = 1; i < NUM_PARTIES; ++i) {
+    start_timer();
+    res = asymoff_lightweight_presigning_aggregate_execute_final(presign_parties[i]);
+    exec_time[3][i] = get_time();
+    assert(res == 0);
+    asymoff_lightweight_presigning_send_msg_to_all_others(presign_parties, i, 4);
+  }
+
+  start_timer();
+  res = asymoff_lightweight_presigning_execute_offline(presign_parties[0]);
+  exec_time[4][0] = get_time();
+  assert(res == 0);
+
+  asymoff_lightweight_presigning_send_msg_to_all_others(presign_parties, 0, 5);
+
+  print_measurements(4);
+
+  start_timer();
+  asymoff_lightweight_presigning_export_data(parties, presign_parties);
+  printf("\nExporting data: %f\n", get_time());
+  
+  asymoff_lightweight_presigning_parties_free(presign_parties);
+}
+
+// Full Presigning 
+
 void asymoff_presigning_send_msg_to_all_others(asymoff_presigning_data_t **presign_parties, uint64_t sender_i, int round) {
 
   uint64_t (*send_func)(asymoff_presigning_data_t*, asymoff_presigning_data_t*);
@@ -203,13 +284,12 @@ void asymoff_presigning_send_msg_to_all_others(asymoff_presigning_data_t **presi
   }
 }
 
-void presigning_execute(asymoff_party_data_t **parties, uint64_t presign_size) {
+void full_presigning_execute(asymoff_party_data_t **parties, uint64_t presign_size) {
   
   printf("\n_____ Presigning %ld batch _____\n", presign_size);
   
   int res;
   zero_measurements();
-
 
   asymoff_presigning_data_t **presign_parties =  asymoff_presigning_parties_new(parties, presign_size);
 
@@ -243,6 +323,13 @@ void presigning_execute(asymoff_party_data_t **parties, uint64_t presign_size) {
   asymoff_presigning_parties_free(presign_parties);
 }
 
+// General
+
+void presigning_execute(asymoff_party_data_t **parties, uint64_t presign_size, int lightweight_presigning) {
+  if (lightweight_presigning) lightweight_presigning_execute(parties, presign_size);
+  else full_presigning_execute(parties, presign_size);
+}
+
 void print_after_presigning(asymoff_party_data_t **parties, uint64_t num_print) {
 
   printf("Data After Pre-Signing\n");
@@ -270,7 +357,6 @@ void print_after_presigning(asymoff_party_data_t **parties, uint64_t num_print) 
     }
   }
 }
-
 
 /*****************
  *  Signing CMP  *
@@ -528,7 +614,7 @@ int main(int argc, char *argv[]) {
 
   asymoff_protocol_parties_new_batch(parties, presign_size);
 
-  presigning_execute(parties, presign_size);
+  presigning_execute(parties, presign_size, 1);
 
   //print_after_presigning(parties, 1);
 
