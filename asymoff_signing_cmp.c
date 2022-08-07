@@ -53,8 +53,8 @@ asymoff_sign_cmp_data_t **asymoff_signing_cmp_parties_new(asymoff_party_data_t *
     party->x = parties[i]->x;
 
     party->online_X = group_elem_new(ec);
-    group_operation(party->online_X, NULL , NULL,NULL, NULL, ec, bn_ctx);
-    for (uint64_t i = 1; i < num_parties; ++i) group_operation(party->online_X, party->online_X, NULL, party->X[i], NULL, ec, bn_ctx);
+    EC_POINT_set_to_infinity(ec, party->online_X);
+    for (uint64_t i = 1; i < num_parties; ++i) EC_POINT_add(ec, party->online_X, party->online_X, party->X[i], bn_ctx);
     
     party->paillier_priv  = parties[i]->paillier_priv;
     party->paillier_pub   = parties[i]->paillier_pub;
@@ -603,7 +603,7 @@ int asymoff_signing_cmp_execute_round_3(asymoff_sign_cmp_data_t *party) {
 
       // Aggregate Lambda
 
-      group_operation(party->Lambda[l], party->Lambda[l], NULL, in_cmp_msg_2->H_gamma[l], NULL, party->ec, bn_ctx);
+      EC_POINT_add(party->ec, party->Lambda[l], party->Lambda[l], in_cmp_msg_2->H_gamma[l], bn_ctx);
       
       // Compute chi_i
 
@@ -711,7 +711,7 @@ int asymoff_signing_cmp_execute_final(asymoff_sign_cmp_data_t *party) {
 
     for (uint64_t l = 0; l < num_sigs; ++l) {
       scalar_add(joint_delta[l], joint_delta[l], in_cmp_msg_3->delta[l], ec_group_order(party->ec), bn_ctx);
-      group_operation(joint_Delta[l], joint_Delta[l], NULL, in_cmp_msg_3->Delta[l], NULL, party->ec, bn_ctx);
+      EC_POINT_add(party->ec, joint_Delta[l], joint_Delta[l], in_cmp_msg_3->Delta[l], bn_ctx);
     }
   }
 

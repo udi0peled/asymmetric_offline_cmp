@@ -4,25 +4,7 @@
 #include <openssl/sha.h>
 #include <stdarg.h>
 
-// TIME
-#include <time.h>
-
-clock_t presigning_start_time, presigning_end_time;
-
-static void start_timer() {
-  presigning_start_time = clock();
-}
-
-static double get_time(const char* str) {
-  presigning_end_time = clock();
-  double diff_time = ((double)(presigning_end_time - presigning_start_time)) /CLOCKS_PER_SEC;
-  if (str) {
-    printf(str);
-    printf("%f\n", diff_time);
-  }
-
-  return diff_time;
-}
+ENABLE_TIME(presign)
 
 asymoff_presigning_data_t **asymoff_presigning_parties_new(asymoff_party_data_t ** const parties, uint64_t batch_size) 
 {
@@ -476,7 +458,7 @@ int asymoff_presigning_execute_offline (asymoff_presigning_data_t *party) {
 
   zkp_schnorr_secret_t phi_sch_secret;
   phi_sch_secret.a = scalar_new();
-  phi_sch_secret.x     = offline->alpha;
+  phi_sch_secret.x = offline->alpha;
 
   zkp_aux_info_update(party->aux, sizeof(hash_chunk), &party->i, sizeof(uint64_t));
   zkp_schnorr_anchor(offline->phi_sch, &phi_sch_secret, &phi_sch_public);
@@ -556,9 +538,12 @@ int asymoff_presigning_export_data(asymoff_party_data_t **parties, asymoff_presi
     scalar_array_copy(parties[i]->nonce, presign_parties[i]->online->k, party->batch_size);
     gr_el_array_copy (parties[i]->H, party->msg_from_offline->H, party->batch_size);
     
-  // // For convinience
-  party->in_msg_2[party->i].B1 = party->online->B1;
-  party->in_msg_2[party->i].B2 = party->online->B2;
+    gr_el_array_copy(parties[i]->joint_B1, party->online->joint_B1, party->batch_size);
+    gr_el_array_copy(parties[i]->joint_B2, party->online->joint_B2, party->batch_size);
+
+    // // For convinience
+    party->in_msg_2[party->i].B1 = party->online->B1;
+    party->in_msg_2[party->i].B2 = party->online->B2;
 
     for (uint64_t j = 1; j < num_parties; ++j) {
       gr_el_array_copy(parties[i]->B1[j], party->in_msg_2[j].B1, party->batch_size);
