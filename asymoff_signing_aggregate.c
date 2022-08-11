@@ -104,9 +104,6 @@ asymoff_sign_agg_data_t **asymoff_signing_aggregate_parties_new(asymoff_party_da
       party->pi_eph_local_agg_proof = zkp_el_gamal_dlog_new(num_sigs, ec);
       party->pi_eph_agg_proof       = zkp_el_gamal_dlog_new(num_sigs, ec);
       
-      // party->pi_eph_agg_public.B1 = new_gr_el_array(num_sigs, party->ec);
-      // party->pi_eph_agg_public.B2 = new_gr_el_array(num_sigs, party->ec);
-
       party->pi_eph_anchor_secret.lambda = scalar_array_new(num_sigs);
       party->pi_eph_anchor_secret.rho    = scalar_array_new(num_sigs);
 
@@ -116,11 +113,6 @@ asymoff_sign_agg_data_t **asymoff_signing_aggregate_parties_new(asymoff_party_da
       party->pi_chi_local_agg_proof = zkp_double_el_gamal_new(ec);
       party->pi_chi_agg_proof       = zkp_double_el_gamal_new(ec);
       
-      // party->pi_chi_agg_public.B1 = new_gr_el_array(num_sigs, party->ec);
-      // party->pi_chi_agg_public.B2 = new_gr_el_array(num_sigs, party->ec);
-      // party->pi_chi_agg_public.V1 = new_gr_el_array(num_sigs, party->ec);
-      // party->pi_chi_agg_public.V2 = new_gr_el_array(num_sigs, party->ec);
-
       party->pi_chi_anchor_secret.alpha = scalar_new();
       party->pi_chi_anchor_secret.beta  = scalar_new();
       party->pi_chi_anchor_secret.gamma = scalar_new();
@@ -412,6 +404,7 @@ int asymoff_signing_aggregate_execute_round_1(asymoff_sign_agg_data_t *party) {
   scalar_t packed = scalar_new();
   scalar_t rped_s_exps[2*PACKING_SIZE];
 
+  start_timer();
   for (uint64_t l = 0; l < num_sigs; ++l) {
 
     scalar_set_power_of_2(temp, 256+64); // TODO: Fix all EPS and ELL
@@ -445,6 +438,7 @@ int asymoff_signing_aggregate_execute_round_1(asymoff_sign_agg_data_t *party) {
     group_operation(party->pi_sig_local_public.U2[l], NULL, NULL, party->V2[l], r, ec, bn_ctx);   
     group_operation(party->pi_sig_local_public.U2[l], party->pi_sig_local_public.U2[l], NULL, party->B2[party->i][l], party->msgs[l], ec, bn_ctx); 
   }
+  get_time("computing local public L1, L2, U1, U2, and anchor secrets: ");
 
   for (uint64_t l = 0; l < packed_len; ++l) {
 
@@ -979,7 +973,7 @@ int asymoff_signing_aggregate_execute_offline (asymoff_sign_agg_data_t *party, s
     group_operation(pi_sig_agg_public.U2[l], NULL, NULL, party->joint_B2[l], party->msgs[l], ec, bn_ctx);
     group_operation(pi_sig_agg_public.U2[l], pi_sig_agg_public.U2[l], NULL, msg->joint_V2[l], r, ec, bn_ctx);
   }
-  get_time("computing L1, L2, U1, U2: ");
+  get_time("computing aggregated public L1, L2, U1, U2: ");
 
   start_timer();
   if (zkp_well_formed_signature_verify(msg->pi_sig_agg_proof, &pi_sig_agg_public, party->aux, bitlen_plus_1_num_parties) != 1) {

@@ -154,9 +154,9 @@ void pack_plaintexts(scalar_t packed, const scalar_t *plaintexts, uint64_t packi
     // To allow correct unpacking later
     if (test_decoding) {
       if (BN_num_bits(plaintexts[p]) >= PACKING_SHIFT-1) {
-        BN_set_word(packed, 0);
+        //BN_set_word(packed, 0);
         printf("PACKING ERROR ########################### plaintext bitlen = %d too big for packing shift %d\n", BN_num_bits(plaintexts[p]), PACKING_SHIFT);
-      break;
+      //break;
       }
     }
 
@@ -169,7 +169,7 @@ void pack_plaintexts(scalar_t packed, const scalar_t *plaintexts, uint64_t packi
   if (domain) {
     if (BN_cmp(packed, domain) == 1) {
       printf("ACKING ERROR ########################### packed bitlengh = %d overflows modulus\n", BN_num_bits(packed));
-      BN_set_word(packed, 0);
+      //BN_set_word(packed, 0);
     }
   }
 }

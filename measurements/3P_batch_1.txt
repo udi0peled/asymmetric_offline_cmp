@@ -1,61 +1,90 @@
-Key Generation
 
-Round 1, Party 0 to Party 1, Bytes Sent: 64
-Round 1, Party 0 to Party 2, Bytes Sent: 64
-Round 1, Party 1 to Party 0, Bytes Sent: 64
+Usage: ../benchmark <presign_size> <num_sig> <num_parties> <print_flags>
+
+presign_size: number of pre-signatures to generate (interactive offline <-> online). default: 3
+
+num_sig: number of signatures to sign out of pre-signatures (interactive online. msg to offline, responds with signature). default: 3
+
+Note: both presign_size and num_sig are forced to be multiples of 3
+
+print_flags: integer. 0x01 bit - print round info, 0x02 bit - print timing (sec) and communication (bytes). defualt: 3
+
+Key Generation - Mock
+
+_____ Presigning 3 batch _____
+
+Round 1, Party 1 to Party 0, Bytes Sent: 2668
+Round 1, Party 1 to Party 2, Bytes Sent: 2668
+Round 1, Party 2 to Party 0, Bytes Sent: 2668
+Round 1, Party 2 to Party 1, Bytes Sent: 2668
+
+Round 2, Party 0 to Party 1, Bytes Sent: 4047
+Round 2, Party 0 to Party 2, Bytes Sent: 4047
+
+Round 1, Party 1, Time: 0.033950
+Round 1, Party 2, Time: 0.034125
+
+Round 2, Party 0, Time: 0.066099
+Round 2, Party 1, Time: 0.018294
+Round 2, Party 2, Time: 0.017840
+
+Round 3, Party 0, Time: 0.000005
+Round 3, Party 1, Time: 0.015738
+Round 3, Party 2, Time: 0.015805
+
+_____ Signing CMP 3 msgs ______
+
+Round 1, Party 1 to Party 2, Bytes Sent: 8206
+Round 1, Party 2 to Party 1, Bytes Sent: 8206
+
+Round 2, Party 1 to Party 2, Bytes Sent: 37615
+Round 2, Party 2 to Party 1, Bytes Sent: 37615
+
+Round 3, Party 1 to Party 2, Bytes Sent: 451
+Round 3, Party 2 to Party 1, Bytes Sent: 451
+
+Round 1, Party 1, Time: 0.067038
+Round 1, Party 2, Time: 0.064647
+
+Round 2, Party 1, Time: 0.238406
+Round 2, Party 2, Time: 0.241691
+
+Round 3, Party 1, Time: 0.169379
+Round 3, Party 2, Time: 0.169774
+
+Round 4, Party 1, Time: 0.008555
+Round 4, Party 2, Time: 0.008931
+
+_____ Signing Aggregate 3 msgs _____
+
 Round 1, Party 1 to Party 2, Bytes Sent: 64
-Round 1, Party 2 to Party 0, Bytes Sent: 64
 Round 1, Party 2 to Party 1, Bytes Sent: 64
 
-Round 2, Party 0 to Party 1, Bytes Sent: 675
-Round 2, Party 0 to Party 2, Bytes Sent: 675
-Round 2, Party 1 to Party 0, Bytes Sent: 675
-Round 2, Party 1 to Party 2, Bytes Sent: 675
-Round 2, Party 2 to Party 0, Bytes Sent: 675
-Round 2, Party 2 to Party 1, Bytes Sent: 675
+Round 2, Party 1 to Party 2, Bytes Sent: 2827
+Round 2, Party 2 to Party 1, Bytes Sent: 2827
 
-Round 3, Party 0 to Party 1, Bytes Sent: 51745
-Round 3, Party 0 to Party 2, Bytes Sent: 51745
-Round 3, Party 1 to Party 0, Bytes Sent: 51745
-Round 3, Party 1 to Party 2, Bytes Sent: 51745
-Round 3, Party 2 to Party 0, Bytes Sent: 51745
-Round 3, Party 2 to Party 1, Bytes Sent: 51745
+Round 3, Party 1 to Party 2, Bytes Sent: 2665
+Round 3, Party 2 to Party 1, Bytes Sent: 2665
 
-Round 4, Party 0 to Party 1, Bytes Sent: 5793
-Round 4, Party 0 to Party 2, Bytes Sent: 5793
-Round 4, Party 1 to Party 0, Bytes Sent: 2001
-Round 4, Party 1 to Party 2, Bytes Sent: 2001
-Round 4, Party 2 to Party 0, Bytes Sent: 2001
-Round 4, Party 2 to Party 1, Bytes Sent: 2001
-batch size = 1
-Presigning
+Round 4, Party 1 to Party 0, Bytes Sent: 3369
 
-Round 1, Party 0 to Party 1, Bytes Sent: 0
-Round 1, Party 0 to Party 2, Bytes Sent: 0
-Round 1, Party 1 to Party 0, Bytes Sent: 2079
-Round 1, Party 1 to Party 2, Bytes Sent: 2079
-Round 1, Party 2 to Party 0, Bytes Sent: 2079
-Round 1, Party 2 to Party 1, Bytes Sent: 2079
+Round 1, Party 1, Time: 0.048015
+Round 1, Party 2, Time: 0.047483
 
-Round 2, Party 0 to Party 1, Bytes Sent: 2498
-Round 2, Party 0 to Party 2, Bytes Sent: 2498
-Round 2, Party 1 to Party 0, Bytes Sent: 0
-Round 2, Party 1 to Party 2, Bytes Sent: 0
-Round 2, Party 2 to Party 0, Bytes Sent: 0
-Round 2, Party 2 to Party 1, Bytes Sent: 0
+Round 2, Party 1, Time: 0.000001
+Round 2, Party 2, Time: 0.000001
 
-Round 0, Party 0, Time: 0.000001
-Round 0, Party 1, Time: 0.049803
-Round 0, Party 2, Time: 0.050399
+Round 3, Party 1, Time: 0.002310
+Round 3, Party 2, Time: 0.002298
 
-Round 1, Party 0, Time: 0.095987
-Round 1, Party 1, Time: 0.019269
-Round 1, Party 2, Time: 0.020001
+Round 4, Party 1, Time: 0.034777
+Round 4, Party 2, Time: 0.033014
 
-Round 2, Party 0, Time: 0.000001
-Round 2, Party 1, Time: 0.026178
-Round 2, Party 2, Time: 0.029736
+Round 5, Party 0, Time: 0.050410
 
-real	0m5.007s
-user	0m4.982s
-sys	0m0.024s
+_____ All messages signed succesfully! _____
+
+
+real	0m2.651s
+user	0m2.633s
+sys	0m0.006s

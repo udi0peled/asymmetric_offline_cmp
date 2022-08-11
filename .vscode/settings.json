@@ -31,7 +31,8 @@
       "zkp_el_gamal_dlog.h": "c",
       "complex": "c",
       "zkp_range_el_gamal_commitment.h": "c",
-      "asymoff_lightweight_presigning.h": "c"
+      "asymoff_lightweight_presigning.h": "c",
+      "ratio": "c"
     },
     "C_Cpp.intelliSenseEngineFallback": "Disabled"
 }
