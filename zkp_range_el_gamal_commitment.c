@@ -5,6 +5,8 @@
 #define SOUNDNESS_ELL 256
 #define SLACKNESS_EPS (SOUNDNESS_ELL + 64)
 
+ENABLE_TIME(rddh)
+
 zkp_range_el_gamal_proof_t *zkp_range_el_gamal_new (uint64_t batch_size, uint64_t packing_size, ec_group_t ec)
 {
   assert(batch_size % packing_size == 0);
@@ -98,8 +100,9 @@ void zkp_range_el_gamal_challenge (scalar_t *e, const zkp_range_el_gamal_proof_t
 
   //assert(fs_data + fs_data_len == data_pos);
 
+  start_timer();
   fiat_shamir_scalars_in_range(e, packed_len, ec_group_order(public->ec), fs_data, fs_data_len);
-
+  get_time("rddh proof fiat-shamir: ");
   for (uint64_t i = 0; i < packed_len; ++i) {
     scalar_make_signed(e[i], ec_group_order(public->ec));
   }
@@ -131,12 +134,14 @@ void zkp_range_el_gamal_prove (zkp_range_el_gamal_proof_t *proof, const zkp_rang
 
   scalar_set_power_of_2(temp_range, SOUNDNESS_ELL + SLACKNESS_EPS);
 
+  //start_timer();
   for (uint64_t p = 0; p < packing_size; ++p) {
     scalar_sample_in_range(alpha[p], temp_range, 0, bn_ctx);
     scalar_make_signed(alpha[p], temp_range);
 
     scalar_sample_in_range(beta[p], ec_group_order(public->ec), 0, bn_ctx);
   }
+  //get_time("sampling: ");
 
   BN_lshift(temp_range, public->rped_pub->N, SLACKNESS_EPS);
 
@@ -147,24 +152,25 @@ void zkp_range_el_gamal_prove (zkp_range_el_gamal_proof_t *proof, const zkp_rang
 
   // Start computing anchors
   BN_lshift(temp_range, public->rped_pub->N, SOUNDNESS_ELL);
-
+  //start_timer();
   for (uint64_t i = 0; i < packed_len; ++i) {
     scalar_sample_in_range(mu[i], temp_range, 0, bn_ctx);
     ring_pedersen_commit(proof->packed_S[i], &secret->x[packing_size*i], packing_size, mu[i], public->rped_pub);
   }
+  //get_time("ring ped commit: ");
 
   pack_plaintexts(alpha_pack, alpha, packing_size, public->paillier_pub->N, 1);
   paillier_encryption_encrypt(proof->packed_D, alpha_pack, r, public->paillier_pub);
-
+  
   for (uint64_t p = 0; p < packing_size; ++p) {
     group_operation(proof->V1[p], NULL, beta[p], NULL, NULL, public->ec, bn_ctx);
     group_operation(proof->V2[p], NULL, alpha[p], public->Y, beta[p], public->ec, bn_ctx);
   }
 
   ring_pedersen_commit(proof->packed_T, alpha, packing_size, gamma, public->rped_pub);
-
+  
   zkp_range_el_gamal_challenge(e, proof, public, aux);
-
+  
   for (uint64_t p = 0; p < packing_size; ++p) {
 
     BN_copy(proof->z_1[p], alpha[p]);
@@ -193,7 +199,7 @@ void zkp_range_el_gamal_prove (zkp_range_el_gamal_proof_t *proof, const zkp_rang
     BN_mul(temp, mu[i], e[i], bn_ctx);
     BN_add(proof->packed_z_3, proof->packed_z_3, temp); 
   }
-
+  
   scalar_array_free(alpha, packing_size);
   scalar_array_free(beta, packing_size);
 
@@ -292,6 +298,6 @@ int   zkp_range_el_gamal_verify (const zkp_range_el_gamal_proof_t *proof, const 
 }
 
 uint64_t  zkp_range_el_gamal_proof_bytelen (uint64_t batch_size, uint64_t packing_size) {
-  return 3*PAILLIER_MODULUS_BYTES + 2*RING_PED_MODULUS_BYTES + packing_size*(2*GROUP_ELEMENT_BYTES + GROUP_ORDER_BYTES + SOUNDNESS_ELL/8 + SLACKNESS_EPS/8) + SLACKNESS_EPS/8 + batch_size*RING_PED_MODULUS_BYTES;
+  return 3*PAILLIER_MODULUS_BYTES + 2*RING_PED_MODULUS_BYTES + packing_size*(2*GROUP_ELEMENT_BYTES + GROUP_ORDER_BYTES + SOUNDNESS_ELL/8 + SLACKNESS_EPS/8) + SLACKNESS_EPS/8 + batch_size*RING_PED_MODULUS_BYTES/packing_size;
 }
 

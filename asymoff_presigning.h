@@ -54,6 +54,8 @@ typedef struct {
   scalar_t *k;
   scalar_t *Paillier_packed_K;
 
+  scalar_t *nu;
+
   zkp_range_el_gamal_proof_t **phi_Rddh;
 
 } asymoff_presigning_data_online_t;
@@ -75,7 +77,7 @@ typedef struct
 
   asymoff_presigning_data_offline_t *offline;
   asymoff_presigning_data_online_t  *online;
-  
+
   // Array of in coming messages from other parties
   asymoff_presigning_msg_round_1_t *in_msg_1;
   asymoff_presigning_msg_round_2_t *in_msg_2;

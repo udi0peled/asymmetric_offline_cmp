@@ -219,6 +219,8 @@ int   zkp_paillier_blum_verify (zkp_paillier_blum_modulus_proof_t *proof, const 
   is_verified &= (uint64_t) BN_num_bytes(public->N) == PAILLIER_MODULUS_BYTES;
   is_verified &= BN_is_prime_ex(public->N, 128, bn_ctx, NULL) == 0;
 
+  // TODO: verify y is co-prime to N, and N = 1 mod 4.
+
   scalar_t y[STATISTICAL_SECURITY];
   for (uint64_t i = 0; i < STATISTICAL_SECURITY; ++i) y[i] = scalar_new();
   

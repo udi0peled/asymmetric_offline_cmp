@@ -21,7 +21,7 @@
 #include "algebraic_elements.h"
 #include "paillier_cryptosystem.h"
 
-#define RING_PEDERSEN_MULTIPLICITY 6
+#define RING_PEDERSEN_MULTIPLICITY 8
 
 typedef struct
 {

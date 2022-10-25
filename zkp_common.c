@@ -3,6 +3,8 @@
 #include <openssl/bn.h>
 #include <stdint.h>
 
+
+#include "common.h"
 #include "zkp_common.h"
 
 /**
@@ -12,28 +14,24 @@
 #define FS_HALF 32      // Half of SHA512 64 bytes digest
 #define PACKING_SHIFT 682 // TODO: Check
 
-/** 
- *  Denote hash digest as 2 equal length (FS_HALF) parts (LH, RH).
- *  Together (LH,RH,data) is curr_digest.
- *  Iteratively Hash (RH,data) to get next Hash digest (LH,RH).
- *  Concatenate LH from all iterations to combined digest, until getting at least required digest_len bytes.
- *  Initialize first RH to given state, and final RH returned at state - which allows for future calls on same data, getting new digests by continuing the final state.
- */
+static void fiat_shamir_init_state_from_data(uint8_t state[FS_HALF], const uint8_t *data, uint64_t data_len) {
+  uint8_t digest[2*FS_HALF];
+  SHA512(data, data_len, digest);
+  memcpy(state, digest, FS_HALF);
+}
 
-static void fiat_shamir_bytes_from_state(uint8_t *digest, uint64_t digest_len, const uint8_t *data, uint64_t data_len, uint8_t state[FS_HALF])
+static void fiat_shamir_bytes_from_state(uint8_t *digest, uint64_t digest_len, uint8_t state[FS_HALF])
 { 
   // Initialize RH to state, so the first hash will operate on (state, data).
-  uint8_t *curr_digest = malloc(2*FS_HALF + data_len);
-  memcpy(curr_digest + FS_HALF, state, FS_HALF);
-  memcpy(curr_digest + 2*FS_HALF, data, data_len);
-
+  uint8_t curr_digest[2*FS_HALF];
   uint64_t add_curr_digest_bytes;
 
   // Continue until remaining needed digest length is 0
   while (digest_len > 0)
   {  
     // hash previous (RH,data) to get new (LH, RH)
-    SHA512(curr_digest + FS_HALF, FS_HALF + data_len, curr_digest);
+    SHA512(state, FS_HALF, curr_digest);
+    memcpy(state, curr_digest + FS_HALF, FS_HALF);
 
     add_curr_digest_bytes = (digest_len < FS_HALF ? digest_len : FS_HALF);
     
@@ -44,17 +42,15 @@ static void fiat_shamir_bytes_from_state(uint8_t *digest, uint64_t digest_len, c
     digest_len -= add_curr_digest_bytes;
   }
 
-  // Keep last RH as state for future calls on same data
-  memcpy(state, curr_digest + FS_HALF, FS_HALF);
-  memset(curr_digest, 0, 2*FS_HALF + data_len);
-  free(curr_digest);
+  memset(curr_digest, 0, 2*FS_HALF);
 }
 
 void fiat_shamir_bytes(uint8_t *digest, uint64_t digest_len, const uint8_t *data, uint64_t data_len)
 {
   // Start from default (agreed upon) state of all zeros
-  uint8_t fs_state[FS_HALF] = {0};
-  fiat_shamir_bytes_from_state(digest, digest_len, data, data_len, fs_state);
+  uint8_t fs_state[FS_HALF];
+  fiat_shamir_init_state_from_data(fs_state, data, data_len);
+  fiat_shamir_bytes_from_state(digest, digest_len, fs_state);
   memset(fs_state, 0, FS_HALF);
 }
 
@@ -62,15 +58,15 @@ void fiat_shamir_bytes(uint8_t *digest, uint64_t digest_len, const uint8_t *data
  *  Get num_res scalars from fiat-shamir on data.
  *  Rejection sampling each scalar until fits in given range (to get pseudo-uniform values)
  */
-
 void fiat_shamir_scalars_in_range(scalar_t *results, uint64_t num_res, const scalar_t range, const uint8_t *data, uint64_t data_len)
 {
   uint64_t num_bits = BN_num_bits(range);
   uint64_t num_bytes = BN_num_bytes(range);
 
-  // Start from default (agreed upon) state of all zeros
-  uint8_t fs_state[FS_HALF] = {0};
   uint8_t *result_bytes = calloc(num_bytes, 1);
+
+  uint8_t fs_state[FS_HALF];
+  fiat_shamir_init_state_from_data(fs_state, data, data_len);
 
   for (uint64_t i_res = 0; i_res < num_res; ++i_res)
   {
@@ -80,7 +76,7 @@ void fiat_shamir_scalars_in_range(scalar_t *results, uint64_t num_res, const sca
     // If doesn't, get next "fresh" scalar continuing from last state.
     while (BN_cmp(results[i_res], range) != -1)
     {
-      fiat_shamir_bytes_from_state(result_bytes, num_bytes, data, data_len, fs_state);
+      fiat_shamir_bytes_from_state(result_bytes, num_bytes, fs_state);
       BN_bin2bn(result_bytes, num_bytes, results[i_res]);
       // Truncate irrelevant bits (w/o biasing distribution)
       BN_mask_bits(results[i_res], num_bits);

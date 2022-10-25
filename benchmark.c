@@ -344,6 +344,62 @@ void full_presigning_execute(asymoff_party_data_t **parties, uint64_t presign_si
   asymoff_presigning_parties_free(presign_parties);
 }
 
+void full_presigning_mock_execute(asymoff_party_data_t **parties, uint64_t presign_size) {
+  
+  printf("\n_____ Presigning %ld batch - mocked parties 2 ... %ld ____\n", presign_size, num_parties);
+  
+  printf("\nCan't mock yet, calling regular function\n");
+
+  full_presigning_execute(parties, presign_size);
+
+  return; 
+
+  int res;
+  zero_measurements();
+
+  asymoff_presigning_data_t **presign_parties =  asymoff_presigning_parties_new(parties, presign_size);
+
+  asymoff_presigning_data_t **mock_presign_parties = calloc(num_parties, sizeof(asymoff_presigning_data_t *));
+  mock_presign_parties[0] = presign_parties[0];
+  for (uint64_t i = 1; i < num_parties; ++i) mock_presign_parties[i] = presign_parties[1];
+
+  for (uint64_t i = 1; i < 2; ++i) {
+    start_timer();
+    res = asymoff_presigning_execute_round_1(mock_presign_parties[i]);
+    exec_time[0][i] = get_time();
+    assert(res == 0);
+  }
+
+  for (uint64_t i = 1; i < num_parties; ++i) {
+    asymoff_presigning_send_msg_to_all_others(mock_presign_parties, i, 1);
+  }
+
+  for (uint64_t i = 0; i < 2; ++i) {
+    start_timer();
+    res = asymoff_presigning_execute_round_2(mock_presign_parties[i]);
+    exec_time[1][i] = get_time();
+    assert(res == 0);
+  }
+
+  for (uint64_t i = 0; i < num_parties; ++i) {
+    asymoff_presigning_send_msg_to_all_others(mock_presign_parties, i, 2);
+  }
+
+  for (uint64_t i = 0; i < 2; ++i) {
+    start_timer();
+    res = asymoff_presigning_execute_final(mock_presign_parties[i]);
+    exec_time[2][i] = get_time();
+    assert(res == 0);
+  }
+  
+  asymoff_presigning_export_data(parties, mock_presign_parties);
+  
+  print_measurements(2);
+
+  free(mock_presign_parties);
+  asymoff_presigning_parties_free(presign_parties);
+}
+
 // General
 
 void print_after_presigning(asymoff_party_data_t **parties, uint64_t num_print) {
@@ -373,6 +429,31 @@ void print_after_presigning(asymoff_party_data_t **parties, uint64_t num_print) 
     }
   }
 }
+
+
+void compute_ecdsa_signature(scalar_t r, scalar_t s, const scalar_t msg, const scalar_t priv_key, const scalar_t nonce, ec_group_t ec)
+{
+  scalar_t ec_order = ec_group_order(ec);
+
+  gr_elem_t R = group_elem_new(ec);
+
+  BN_CTX *bn_ctx = BN_CTX_secure_new();
+
+  EC_POINT_mul(ec, R, nonce, NULL, NULL, bn_ctx);
+  group_elem_get_x(r, R, ec, ec_order);
+
+  scalar_t nonce_inv = scalar_new();
+  BN_mod_inverse(nonce_inv, nonce, ec_order, bn_ctx);
+
+  BN_mod_mul(s, r, priv_key, ec_order, bn_ctx);
+  BN_mod_add(s, s, msg, ec_order, bn_ctx);
+  BN_mod_mul(s, s, nonce_inv, ec_order, bn_ctx);
+  
+  group_elem_free(R);
+  scalar_free(nonce_inv);
+  BN_CTX_free(bn_ctx);
+}
+
 
 /*****************
  *  Signing CMP  *
@@ -582,12 +663,77 @@ void signing_aggregate_execute(asymoff_party_data_t **parties, uint64_t num_msgs
  *  Time Experiments
  */
 
+void time_experiment(uint64_t num) {
+  
+  ec_group_t ec = ec_group_new();
+  scalar_t ec_order = ec_group_order(ec);
+  
+  scalar_t x = scalar_new();
+  scalar_t msg = scalar_new();
+  scalar_t nonce = scalar_new();
+  scalar_t r = scalar_new();
+  scalar_t s = scalar_new();
+
+  BN_rand_range(x, ec_order);  
+  BN_rand_range(msg, ec_order);  
+  BN_rand_range(nonce, ec_order);  
+
+  start_timer();
+  for (uint64_t i = 0; i < num; ++i) {
+    compute_ecdsa_signature(r, s, msg, x, nonce, ec);
+    BN_add_word(msg, 1);
+    BN_sub_word(nonce, 1);
+  }
+  double sign_time = get_time();
+  printf("Signing %ld msgs took %f secs\n", num, sign_time);
+
+
+  BN_CTX *bn_ctx = BN_CTX_secure_new();
+  
+  uint64_t paillier_prime_bitlen = PAILLIER_MODULUS_BYTES*4;
+  uint64_t exp_bitlen;
+
+  scalar_t base = scalar_new();
+  scalar_t exp = scalar_new();
+  scalar_t res = scalar_new();
+
+  paillier_private_key_t *paillier_priv = paillier_encryption_private_new();
+  paillier_encryption_generate_private(paillier_priv, paillier_prime_bitlen);
+ 
+  BN_set_word(base, 2);
+
+  exp_bitlen = paillier_prime_bitlen*2;
+  BN_rand(exp, exp_bitlen, 1, 1);
+
+  start_timer();
+  for (uint64_t i = 0; i < num; ++i) {
+    BN_mod_exp(res, base, exp, paillier_priv->N, bn_ctx);
+    BN_copy(exp, res);
+    BN_mask_bits(exp, exp_bitlen);
+  }
+  double exp_time = get_time();
+  printf("2^k [mod N]%ld times, k bitlen = %d, N bitlen = %d: %f sec\n", num, BN_num_bits(exp), BN_num_bits(paillier_priv->N), exp_time);
+
+  scalar_free(x);
+  scalar_free(msg);
+  scalar_free(nonce);
+  scalar_free(r);
+  scalar_free(s);
+
+  scalar_free(base);
+  scalar_free(exp);
+  scalar_free(res);
+
+  BN_CTX_free(bn_ctx);
+}
+
 int main(int argc, char *argv[]) {
   
   uint64_t presign_size = 3;
   uint64_t num_sigs = presign_size;
 
   int mock_keygen = 0;
+  int mock_presign = 0;
   int run_lightweight = 0;
 
   usage(argv[0], presign_size, presign_size, num_parties);
@@ -600,7 +746,9 @@ int main(int argc, char *argv[]) {
 
     if ((strncmp(argv[i], "-parties", 8) == 0) && (argc >= ++i)) sscanf(argv[i], "%ld", &num_parties);
 
-    if ((strncmp(argv[i], "-mock", 5) == 0)) mock_keygen = 1;
+    if ((strncmp(argv[i], "-mock-key", 9) == 0)) mock_keygen = 1;
+
+    if ((strncmp(argv[i], "-mock-pre", 9) == 0)) mock_presign = 1;
 
     if ((strncmp(argv[i], "-light", 6) == 0)) run_lightweight = 1;
 
@@ -613,8 +761,7 @@ int main(int argc, char *argv[]) {
   MAKE_PACKING_MULTIPLE(presign_size);
   MAKE_PACKING_MULTIPLE(num_sigs);
 
-
-  // time_experiment(presign_size);
+  // time_experiment(num_sigs);
   // return 0;
 
   alloc_measurements_arrays();
@@ -629,8 +776,12 @@ int main(int argc, char *argv[]) {
 
   asymoff_protocol_parties_new_batch(parties, presign_size);
 
-  if (run_lightweight) lightweight_presigning_execute(parties, presign_size);
-  else full_presigning_execute(parties, presign_size);
+  if (mock_presign) {
+    full_presigning_mock_execute(parties, presign_size);
+  } else {
+    if (run_lightweight) lightweight_presigning_execute(parties, presign_size);
+    else full_presigning_execute(parties, presign_size);
+  }
 
   //print_after_presigning(parties, 1);
 
@@ -638,7 +789,7 @@ int main(int argc, char *argv[]) {
 
   //signing_cmp_mock_execute(parties, presign_size);
 
-  //print_signing_cmp_ouput(parties, 1);
+  // print_signing_cmp_ouput(parties, 1);
 
   signing_aggregate_execute(parties, num_sigs);
 

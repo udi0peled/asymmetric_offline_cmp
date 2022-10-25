@@ -32,7 +32,9 @@
       "complex": "c",
       "zkp_range_el_gamal_commitment.h": "c",
       "asymoff_lightweight_presigning.h": "c",
-      "ratio": "c"
+      "ratio": "c",
+      "__locale": "c",
+      "asymoff_signing_aggregate.h": "c"
     },
     "C_Cpp.intelliSenseEngineFallback": "Disabled"
 }

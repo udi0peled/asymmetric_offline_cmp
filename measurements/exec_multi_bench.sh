@@ -1,10 +1,23 @@
 #!/bin/bash
 
-{ time ../benchmark 1 p;} &> 3P_batch_1.txt
-{ time ../benchmark 10 p;} &> 3P_batch_10.txt
-{ time ../benchmark 50 p;} &> 3P_batch_50.txt
-{ time ../benchmark 100 p;} &> 3P_batch_100.txt
-{ time ../benchmark 500 p;} &> 3P_batch_500.txt
-{ time ../benchmark 1000 p;} &> 3P_batch_1000.txt
-{ time ../benchmark 5000 1 p;} &> 3P_batch_5000.txt
-{ time ../benchmark 10000 1 p;} &> 3P_batch_10000.txt
+PARAMS="-no-print -mock-key"
+
+# for NUM_PARTIES in 2 3 5 
+# do
+#   for PRE_SIGN in 200 250 300 350 400 450 500
+#   do
+#     { time ../benchmark -pre $PRE_SIGN  -sign 1     -parties $NUM_PARTIES $PARAMS;} &> run_1_pack_"$NUM_PARTIES"_parties_"$PRE_SIGN"_presign.txt
+#   done
+# done
+
+# for NUM_PARTIES in 7 
+# do
+#   for PRE_SIGN in 100
+#   do
+#     { time ../benchmark -pre $PRE_SIGN  -sign 100     -parties $NUM_PARTIES $PARAMS;} &> run_sign_100_"$NUM_PARTIES"_parties_"$PRE_SIGN"_presign.txt
+#   done
+# done
+
+{ time ../benchmark  -sign 3 -parties 3 -no-print -mock-key -pre 100000;} &> full_100K.txt
+{ time ../benchmark  -sign 3 -parties 3 -no-print -mock-key -pre 100000 -light;} &> light_100K.txt
+

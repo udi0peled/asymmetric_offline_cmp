@@ -6,7 +6,7 @@
       "request": "launch",
       "program": "${workspaceFolder}/benchmark",
       "console": "internalConsole",
-      "args": [],
+      "args": ["-mock-key", "-mock-pre"],
       "stopAtEntry": false,
       "cwd": "${workspaceFolder}",
       "environment": [],
