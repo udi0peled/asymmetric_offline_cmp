@@ -29,7 +29,7 @@ static void fiat_shamir_bytes_from_state(uint8_t *digest, uint64_t digest_len, u
   // Continue until remaining needed digest length is 0
   while (digest_len > 0)
   {  
-    // hash previous (RH,data) to get new (LH, RH)
+    // hash previous (RH) to get new (LH, RH)
     SHA512(state, FS_HALF, curr_digest);
     memcpy(state, curr_digest + FS_HALF, FS_HALF);
 
