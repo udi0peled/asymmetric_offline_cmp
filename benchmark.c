@@ -39,7 +39,7 @@ static double get_time() {
 }
 
 void usage(const char prgrm[], uint64_t presign_size, uint64_t num_sig, uint64_t num_parties) {
-  printf("\nUsage: %s -pre <presign_size: %ld> -sign <num_sig: %ld> -parties <num_parties: %ld> -mock-keygen -light -no-print -no-measure\n\n"
+  printf("\nUsage: %s -pre <presign_size: %ld> -sign <num_sig: %ld> -parties <num_parties: %ld> [-mock-key] [-mock-pre] [-mock-cmp] [-light] [-no-print] [-no-measure]\n\n"
           "presign_size: number of pre-signatures to generate (interactive offline <-> online) full or lightweight.\n\n"
           "num_sig: number of signatures to sign out of pre-signatures (interactive online. msg to offline, responds with signature)\n\n"
           "Note: both presign_size and num_sig are forced to be multiples of %d\n\n", 
