@@ -734,6 +734,7 @@ int main(int argc, char *argv[]) {
 
   int mock_keygen = 0;
   int mock_presign = 0;
+  int mock_cmp = 0;
   int run_lightweight = 0;
 
   usage(argv[0], presign_size, presign_size, num_parties);
@@ -749,6 +750,8 @@ int main(int argc, char *argv[]) {
     if ((strncmp(argv[i], "-mock-key", 9) == 0)) mock_keygen = 1;
 
     if ((strncmp(argv[i], "-mock-pre", 9) == 0)) mock_presign = 1;
+    
+    if ((strncmp(argv[i], "-mock-cmp", 10) == 0)) mock_cmp = 1;
 
     if ((strncmp(argv[i], "-light", 6) == 0)) run_lightweight = 1;
 
@@ -785,9 +788,8 @@ int main(int argc, char *argv[]) {
 
   //print_after_presigning(parties, 1);
 
-  signing_cmp_execute(parties, num_sigs);
-
-  //signing_cmp_mock_execute(parties, presign_size);
+  if (mock_cmp) signing_cmp_mock_execute(parties, num_sigs);
+  else signing_cmp_execute(parties, num_sigs);
 
   // print_signing_cmp_ouput(parties, 1);
 
