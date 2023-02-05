@@ -102,7 +102,7 @@ void zkp_range_el_gamal_challenge (scalar_t *e, const zkp_range_el_gamal_proof_t
 
   start_timer();
   fiat_shamir_scalars_in_range(e, packed_len, ec_group_order(public->ec), fs_data, fs_data_len);
-  get_time("rddh proof fiat-shamir: ");
+  get_time("rddh proof fiat-shamir:	");
   for (uint64_t i = 0; i < packed_len; ++i) {
     scalar_make_signed(e[i], ec_group_order(public->ec));
   }
@@ -141,7 +141,7 @@ void zkp_range_el_gamal_prove (zkp_range_el_gamal_proof_t *proof, const zkp_rang
 
     scalar_sample_in_range(beta[p], ec_group_order(public->ec), 0, bn_ctx);
   }
-  //get_time("sampling: ");
+  //get_time("sampling:	");
 
   BN_lshift(temp_range, public->rped_pub->N, SLACKNESS_EPS);
 
@@ -157,7 +157,7 @@ void zkp_range_el_gamal_prove (zkp_range_el_gamal_proof_t *proof, const zkp_rang
     scalar_sample_in_range(mu[i], temp_range, 0, bn_ctx);
     ring_pedersen_commit(proof->packed_S[i], &secret->x[packing_size*i], packing_size, mu[i], public->rped_pub);
   }
-  //get_time("ring ped commit: ");
+  //get_time("ring ped commit:	");
 
   pack_plaintexts(alpha_pack, alpha, packing_size, public->paillier_pub->N, 1);
   paillier_encryption_encrypt(proof->packed_D, alpha_pack, r, public->paillier_pub);

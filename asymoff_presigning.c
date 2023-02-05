@@ -4,7 +4,7 @@
 #include <openssl/sha.h>
 #include <stdarg.h>
 
-//ENABLE_TIME(presign)
+ENABLE_TIME(presign)
 
 asymoff_presigning_data_t **asymoff_presigning_parties_new(asymoff_party_data_t ** const parties, uint64_t batch_size) 
 {
@@ -146,7 +146,6 @@ int asymoff_presigning_execute_round_1(asymoff_presigning_data_t *party) {
 
   scalar_t packed_k = scalar_new();
   
-  // start_timer();
   for (uint64_t l = 0; l < batch_size; ++l) {
   
     scalar_sample_in_range(online->k[l], ec_group_order(party->ec), 0, bn_ctx);
@@ -155,18 +154,16 @@ int asymoff_presigning_execute_round_1(asymoff_presigning_data_t *party) {
     group_operation(online->B1[l], NULL, online->b[l], NULL, NULL, ec, bn_ctx);
     group_operation(online->B2[l], NULL, online->k[l], party->Y, online->b[l], ec, bn_ctx);
   }
-  // get_time("sampled and group_operation: ");
 
-  //start_timer();
+  start_timer();
   for (uint64_t packed_l = 0, l = 0; packed_l < packed_len; ++packed_l, l += PACKING_SIZE) {
     //paillier_encryption_sample(online->nu[packed_l],party->paillier_pub[party->i]);
     BN_rand_range(online->nu[packed_l], party->paillier_pub[party->i]->N);
     pack_plaintexts(packed_k, &online->k[l], PACKING_SIZE, party->paillier_pub[party->i]->N, 1);
     paillier_encryption_encrypt(online->Paillier_packed_K[packed_l], packed_k, online->nu[packed_l], party->paillier_pub[party->i]);
   }
-  //get_time("paillier packed: ");
+  get_time("paillier packed:	");
 
-  // start_timer();
   for (uint64_t j = 0; j < num_parties; ++j) {
     if (j == party->i ) continue;
     
@@ -187,9 +184,10 @@ int asymoff_presigning_execute_round_1(asymoff_presigning_data_t *party) {
     phi_Rddh_secret.x = online->k;
 
     zkp_aux_info_update(party->aux, sizeof(hash_chunk), &party->i, sizeof(uint64_t));
+    start_timer();
     zkp_range_el_gamal_prove(online->phi_Rddh[j], &phi_Rddh_secret, &phi_Rddh_public, party->aux);
+    get_time("zkp_range_el_gamal_prove:	");
   }
-  // get_time("Rddh proofs: ");
 
   scalar_free(packed_k);
   BN_CTX_free(bn_ctx);
@@ -239,10 +237,12 @@ int asymoff_presigning_execute_round_2(asymoff_presigning_data_t *party) {
     phi_Rddh_public.ec   = party->ec;
 
     zkp_aux_info_update(party->aux, sizeof(hash_chunk), &j, sizeof(uint64_t));
+    start_timer();
     if (zkp_range_el_gamal_verify(in_msg_1->phi_Rddh, &phi_Rddh_public, party->aux) != 1) {
       printf("ZKP Range El Gamal Commitment verification failed. Received from party %ld\n", j);
       return 1;
     }
+    get_time("zkp_range_el_gamal_verify:	");
   }
 
   if (party->i != 0) return 0;
@@ -299,7 +299,9 @@ int asymoff_presigning_execute_round_2(asymoff_presigning_data_t *party) {
 
     zkp_aux_info_update(party->aux, sizeof(hash_chunk), &party->i, sizeof(uint64_t));
 
+    start_timer();
     zkp_range_el_gamal_prove(offline->phi_Rddh[j], &phi_Rddh_secret, &phi_Rddh_public, party->aux);
+    get_time("zkp_range_el_gamal_prove:	");
   }
 
   scalar_array_free(rho, packed_len);
@@ -358,11 +360,13 @@ int asymoff_presigning_execute_final(asymoff_presigning_data_t *party) {
   phi_Rddh_public.ec   = party->ec;
 
   zkp_aux_info_update(party->aux, sizeof(hash_chunk), &party_0_i, sizeof(uint64_t));
+  start_timer();
   if (zkp_range_el_gamal_verify(in_msg_2->phi_Rddh, &phi_Rddh_public, party->aux) != 1)
   {
     printf("ZKP Range El Gamal Commitment verification failed. Received from party %ld\n", party_0_i);
     return 1;
   }
+  get_time("zkp_range_el_gamal_verify:	");
 
   BN_CTX_free(bn_ctx);
 

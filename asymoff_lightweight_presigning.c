@@ -189,20 +189,22 @@ int asymoff_lightweight_presigning_aggregate_execute_round_1(asymoff_lightweight
     scalar_sample_in_range(online->k[l], ec_group_order(party->ec), 0, bn_ctx);
     scalar_sample_in_range(online->b[l], ec_group_order(party->ec), 0, bn_ctx);
   }
-  get_time("Sampling k,b: ");
+  get_time("Sampling k,b:	");
 
   for (uint64_t l = 0; l < batch_size; ++l) {
     group_operation(online->B1[l], NULL, online->b[l], NULL, NULL, ec, bn_ctx);
     group_operation(online->B2[l], NULL, online->k[l], party->Y, online->b[l], ec, bn_ctx);
   }
-  get_time("computing all B1/2: ");
+  get_time("computing all B1/2:	");
 
   zkp_el_gamal_public_t pi_ddh_public;
   pi_ddh_public.batch_size  = batch_size;
   pi_ddh_public.ec = party->ec;
   pi_ddh_public.Y  = party->Y;
   
+  start_timer();
   zkp_el_gamal_anchor(online->phi_ddh_anchor, &online->phi_ddh_anchor_secret, &pi_ddh_public);
+  get_time("zkp_el_gamal_anchor:	");
 
   RAND_bytes(online->u, sizeof(hash_chunk));
 
@@ -317,7 +319,7 @@ int asymoff_lightweight_presigning_aggregate_execute_round_3(asymoff_lightweight
       EC_POINT_add(party->ec, online->joint_B2[l], online->joint_B2[l], party->in_msg_2[j].B2[l], bn_ctx);
     }
   }
-  get_time("Computing joint B1/2: ");
+  get_time("Computing joint B1/2:	");
 
   // Aggregate Proofs
 
@@ -342,8 +344,13 @@ int asymoff_lightweight_presigning_aggregate_execute_round_3(asymoff_lightweight
   online->phi_ddh_anchor_secret.b = online->b;
   online->phi_ddh_anchor_secret.k = online->k;
   
+  start_timer();
   zkp_el_gamal_aggregate_anchors(online->phi_ddh_local_agg_proof, phi_ddh_anchors, num_parties-1);
+  get_time("zkp_el_gamal_aggregate_anchors:	");
+
+  start_timer();
   zkp_el_gamal_prove(online->phi_ddh_local_agg_proof, &online->phi_ddh_anchor_secret, &phi_ddh_agg_public, party->aux);
+  get_time("zkp_el_gamal_prove:	");
 
   free(phi_ddh_anchors);
 
@@ -384,8 +391,10 @@ int asymoff_lightweight_presigning_aggregate_execute_final  (asymoff_lightweight
     phi_ddh_local_proofs[j-1] = party->in_msg_3[j].phi_ddh_local_agg_proof;
   }
   
+  start_timer();
   zkp_el_gamal_copy_anchor(online->phi_ddh_agg_proof, online->phi_ddh_local_agg_proof);
   zkp_el_gamal_aggregate_local_proofs(online->phi_ddh_agg_proof, phi_ddh_local_proofs, num_parties-1);
+  get_time("zkp_el_gamal_aggregate_local_proofs:	");
   
   zkp_el_gamal_public_t phi_ddh_agg_public;
   phi_ddh_agg_public.batch_size = party->batch_size;
@@ -441,10 +450,12 @@ int asymoff_lightweight_presigning_execute_offline (asymoff_lightweight_presigni
   
   zkp_aux_info_update(party->aux, sizeof(hash_chunk), &num_parties, sizeof(uint64_t));
 
+  start_timer();
   if (zkp_el_gamal_verify(in_msg->phi_ddh_agg_proof, &phi_ddh_agg_public, party->aux) != 1) {
     printf("Aggregated ZKP El Gamal verification for B failed.\n");
     return 1;
   }
+  get_time("zkp_el_gamal_verify:	");
 
   for (uint64_t l = 0; l < batch_size; ++l) {
     scalar_sample_in_range(offline->alpha[l], ec_group_order(party->ec), 0, bn_ctx);

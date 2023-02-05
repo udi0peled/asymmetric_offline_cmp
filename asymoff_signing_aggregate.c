@@ -370,8 +370,10 @@ int asymoff_signing_aggregate_execute_round_1(asymoff_sign_agg_data_t *party) {
   pi_eph_public.ec = party->ec;
   pi_eph_public.Y  = party->Y;
 
+  start_timer();
   zkp_el_gamal_dlog_anchor(party->pi_eph_anchor, &party->pi_eph_anchor_secret, &pi_eph_public);
-
+  get_time("zkp_el_gamal_dlog_anchor:	");
+  
   // ZKP Double El Gamal
     
   // Sample and compute
@@ -392,7 +394,9 @@ int asymoff_signing_aggregate_execute_round_1(asymoff_sign_agg_data_t *party) {
   pi_chi_public.X  = party->online_X;
   pi_chi_public.Y  = party->Y;
   
+  start_timer();
   zkp_double_el_gamal_anchor(party->pi_chi_anchor, &party->pi_chi_anchor_secret, &pi_chi_public);
+  get_time("zkp_double_el_gamal_anchor:	");
 
   // --- ZKP Well Formed Signature ---
 
@@ -404,7 +408,7 @@ int asymoff_signing_aggregate_execute_round_1(asymoff_sign_agg_data_t *party) {
   scalar_t packed = scalar_new();
   scalar_t rped_s_exps[2*PACKING_SIZE];
 
-  start_timer();
+  //start_timer();
   for (uint64_t l = 0; l < num_sigs; ++l) {
 
     scalar_set_power_of_2(temp, 256+64); // TODO: Fix all EPS and ELL
@@ -438,7 +442,7 @@ int asymoff_signing_aggregate_execute_round_1(asymoff_sign_agg_data_t *party) {
     group_operation(party->pi_sig_local_public.U2[l], NULL, NULL, party->V2[l], r, ec, bn_ctx);   
     group_operation(party->pi_sig_local_public.U2[l], party->pi_sig_local_public.U2[l], NULL, party->B2[party->i][l], party->msgs[l], ec, bn_ctx); 
   }
-  get_time("computing local public L1, L2, U1, U2, and anchor secrets: ");
+  //get_time("computing local public L1, L2, U1, U2, and anchor secrets:	");
 
   for (uint64_t l = 0; l < packed_len; ++l) {
 
@@ -471,7 +475,9 @@ int asymoff_signing_aggregate_execute_round_1(asymoff_sign_agg_data_t *party) {
   pi_sig_public.W  = party->W_0;
   pi_sig_public.Y  = party->Y;
   
+  start_timer();
   zkp_well_formed_signature_anchor(party->pi_sig_anchor, &party->pi_sig_anchor_secret, &pi_sig_public);
+  get_time("zkp_well_formed_signature_anchor:	");
 
   scalar_free(r);
   scalar_free(eta);
@@ -622,8 +628,13 @@ int asymoff_signing_aggregate_execute_round_3(asymoff_sign_agg_data_t *party) {
   party->pi_eph_anchor_secret.b = party->b;
   party->pi_eph_anchor_secret.k = party->nonce;
   
+  start_timer();
   zkp_el_gamal_dlog_aggregate_anchors(party->pi_eph_local_agg_proof, pi_eph_anchors, num_parties-1);
+  get_time("zkp_el_gamal_dlog_aggregate_anchors:	");
+
+  start_timer();
   zkp_el_gamal_dlog_prove(party->pi_eph_local_agg_proof, &party->pi_eph_anchor_secret, &party->pi_eph_agg_public, party->aux, 0);
+  get_time("zkp_el_gamal_dlog_prove:	");
   
   // ----- ZKP Double El Gamal ------
   
@@ -671,9 +682,14 @@ int asymoff_signing_aggregate_execute_round_3(asymoff_sign_agg_data_t *party) {
     pi_chi_anchors[j-1] = party->in_aggregate_msg_2[j].pi_chi_anchor;
   }
   
+  start_timer();
   zkp_double_el_gamal_aggregate_anchors(party->pi_chi_local_agg_proof, pi_chi_anchors, num_parties-1);
+  get_time("zkp_double_el_gamal_aggregate_anchors:	");
+
+  start_timer();
   zkp_double_el_gamal_prove(party->pi_chi_local_agg_proof, &party->pi_chi_anchor_secret, &party->pi_chi_agg_public, party->aux);
-  
+  get_time("zkp_double_el_gamal_prove:	");
+
   // ----- ZKP Well Formed Signature -----
 
   // Compute aggregate 
@@ -733,8 +749,13 @@ int asymoff_signing_aggregate_execute_round_3(asymoff_sign_agg_data_t *party) {
     pi_sig_anchors[j-1] = party->in_aggregate_msg_2[j].pi_sig_anchor;
   }
   
+  start_timer();
   zkp_well_formed_signature_aggregate_anchors(party->pi_sig_local_agg_proof, pi_sig_anchors, num_parties-1, party->paillier_pub[0], party->rped_pub[0]);
+  get_time("zkp_well_formed_signature_aggregate_anchors:	");
+
+  start_timer();
   zkp_well_formed_signature_prove(party->pi_sig_local_agg_proof, &party->pi_sig_anchor_secret, &party->pi_sig_agg_public, party->aux);
+  get_time("zkp_well_formed_signature_prove:	");
   
   free(pi_eph_anchors);
   free(pi_chi_anchors);
@@ -791,29 +812,41 @@ int asymoff_signing_aggregate_execute_final (asymoff_sign_agg_data_t *party) {
     pi_sig_local_proofs[j-1] = party->in_aggregate_msg_3[j].pi_sig_local_agg_proof;
   }
   
+  start_timer();
   zkp_el_gamal_dlog_copy_anchor(party->pi_eph_agg_proof, party->pi_eph_local_agg_proof);
   zkp_el_gamal_dlog_aggregate_local_proofs(party->pi_eph_agg_proof, pi_eph_local_proofs, num_parties-1);
-  
+  get_time("zkp_el_gamal_dlog_aggregate_local_proofs:	");
+
+  start_timer();
   if (zkp_el_gamal_dlog_verify(party->pi_eph_agg_proof, &party->pi_eph_agg_public, party->aux, 0) != 1) {
     printf("Aggregated ZKP Ephemeral El Gamal DLog verification failed.\n");
     return 1;
   }
+  get_time("zkp_el_gamal_dlog_verify:	");
 
+  start_timer();
   zkp_double_el_gamal_copy_anchor(party->pi_chi_agg_proof, party->pi_chi_local_agg_proof);
   zkp_double_el_gamal_aggregate_local_proofs(party->pi_chi_agg_proof, pi_chi_local_proofs, num_parties-1);
+  get_time("zkp_double_el_gamal_aggregate_local_proofs:	");
   
+  start_timer();
   if (zkp_double_el_gamal_verify(party->pi_chi_agg_proof, &party->pi_chi_agg_public, party->aux) != 1) {
     printf("Aggregated Chi ZKP Double El Gamal verification failed.\n");
     return 1;
   }
+  get_time("zkp_double_el_gamal_verify:	");
 
+  start_timer();
   zkp_well_formed_signature_copy_anchor(party->pi_sig_agg_proof, party->pi_sig_local_agg_proof);
   zkp_well_formed_signature_aggregate_local_proofs(party->pi_sig_agg_proof, pi_sig_local_proofs, num_parties-1, party->paillier_pub[0]);
+  get_time("zkp_well_formed_signature_aggregate_local_proofs:	");
 
+  start_timer();
   if (zkp_well_formed_signature_verify(party->pi_sig_agg_proof, &party->pi_sig_agg_public, party->aux, bitlen_plus_1_num_parties) != 1) {
     printf("Aggregated ZKP Well Formed Signature verification failed.\n");
     return 1;
   }
+  get_time("zkp_well_formed_signature_verify:	");
 
   free(pi_eph_local_proofs);
   free(pi_chi_local_proofs);
@@ -919,7 +952,7 @@ int asymoff_signing_aggregate_execute_offline (asymoff_sign_agg_data_t *party, s
     printf("Aggregated ZKP Ephemeral El Gamal DLog verification failed.\n");
     return 1;
   }
-  get_time("zkp_el_gamal_dlog_verify: ");
+  get_time("zkp_el_gamal_dlog_verify:	");
 
   zkp_double_el_gamal_public_t pi_chi_agg_public;
 
@@ -933,12 +966,11 @@ int asymoff_signing_aggregate_execute_offline (asymoff_sign_agg_data_t *party, s
   pi_chi_agg_public.V2 = msg->joint_V2;
   
   start_timer();
-
   if (zkp_double_el_gamal_verify(msg->pi_chi_agg_proof, &pi_chi_agg_public, party->aux) != 1) {
     printf("Aggregated Chi ZKP Double El Gamal verification failed.\n");
     return 1;
   }
-  get_time("zkp_double_el_gamal_verify: ");
+  get_time("zkp_double_el_gamal_verify:	");
 
   zkp_well_formed_signature_public_t pi_sig_agg_public;
 
@@ -960,7 +992,7 @@ int asymoff_signing_aggregate_execute_offline (asymoff_sign_agg_data_t *party, s
 
   scalar_t r = scalar_new();
 
-  start_timer();
+  //start_timer();
   for (uint64_t l = 0; l < num_sigs; ++l) {
     group_elem_get_x(r, msg->R[l], ec, ec_order);
     group_operation(pi_sig_agg_public.L1[l], NULL, NULL, party->joint_B1[l], r, ec, bn_ctx);
@@ -973,14 +1005,14 @@ int asymoff_signing_aggregate_execute_offline (asymoff_sign_agg_data_t *party, s
     group_operation(pi_sig_agg_public.U2[l], NULL, NULL, party->joint_B2[l], party->msgs[l], ec, bn_ctx);
     group_operation(pi_sig_agg_public.U2[l], pi_sig_agg_public.U2[l], NULL, msg->joint_V2[l], r, ec, bn_ctx);
   }
-  get_time("computing aggregated public L1, L2, U1, U2: ");
+  //get_time("computing aggregated public L1, L2, U1, U2:	");
 
   start_timer();
   if (zkp_well_formed_signature_verify(msg->pi_sig_agg_proof, &pi_sig_agg_public, party->aux, bitlen_plus_1_num_parties) != 1) {
     printf("Aggregated ZKP Well Formed Signature verification failed.\n");
     return 1;
   }
-  get_time("zkp_well_formed_signature_verify: ");
+  get_time("zkp_well_formed_signature_verify:	");
 
   scalar_t dec_packed_sigma = scalar_new();
   scalar_t temp = scalar_new();
@@ -993,7 +1025,7 @@ int asymoff_signing_aggregate_execute_offline (asymoff_sign_agg_data_t *party, s
     paillier_encryption_decrypt(dec_packed_sigma, msg->packed_Z[l], party->paillier_offline_priv);
     unpack_plaintexts(&party->signature_sigma[PACKING_SIZE*l], PACKING_SIZE, dec_packed_sigma);
   }
-  get_time("Decrypting and unpacking Paillier: ");
+  get_time("Decrypting and unpacking Paillier:	");
 
   start_timer();
   for (uint64_t l = 0; l < num_sigs; ++l) {
@@ -1007,7 +1039,7 @@ int asymoff_signing_aggregate_execute_offline (asymoff_sign_agg_data_t *party, s
       return 1;
     }
   }
-  get_time("Computing signature anv verifying: ");
+  get_time("Computing signature anv verifying:	");
 
   scalar_array_copy(signature_s, party->signature_sigma, num_sigs);
 
