@@ -57,7 +57,7 @@ asymoff_key_gen_data_t **asymoff_key_gen_parties_new(asymoff_party_data_t ** con
   kgd_parties[0]->pi_tight  = calloc(num_parties, sizeof(zkp_tight_range_proof_t));
   
   for (uint64_t j = 1; j < num_parties; ++j) {
-    kgd_parties[0]->pi_tight[j]  = zkp_tight_range_new(ec);
+    kgd_parties[0]->pi_tight[j]  = zkp_tight_range_new();
   }
 
   return kgd_parties;

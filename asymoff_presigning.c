@@ -192,9 +192,6 @@ int asymoff_presigning_execute_round_1(asymoff_presigning_data_t *party) {
   scalar_free(packed_k);
   BN_CTX_free(bn_ctx);
 
-  // TODO: Echo Broadcast B,K?
-  // TODO: No Commit/Decommit hash?
-
   return 0;
 }
 
